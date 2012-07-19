@@ -1,0 +1,1511 @@
+
+#Module mojo.app
+
+The mojo.app module contains the mojo @App class along with various support functions for controlling application behaviour.
+
+
+#Class App
+
+This is the main application class.
+
+All mojo based applications should declare a class that extends @App and that implements the @OnCreate, @OnUpdate, @OnRender and @OnLoading methods.
+
+Then, in the @Main function of your application you should create a new instance of this class. The @OnCreate, @OnUpdate, @OnRender and @OnLoading methods will be called by mojo as you application runs.
+
+@OnCreate is called when mojo has been initialized and your app can safely start using mojo functions. This is generally where code to load images, sounds and other resources is placed, and code to set the initial update rate goes (see: @SetUpdateRate).
+
+@OnUpdate is called when the update timer ticks, and is where your game logic code should go. The update timer is set using the @SetUpdateRate function.
+
+@OnRender is called when your application should render itself. If the update timer is ticking, this is also called as soon after OnUpdate as possible.
+
+@OnLoading is called insetad of @OnRender when your application should render itself, but there are still resources being loaded.
+
+Import note:
+
+No mojo functions or methods should be used before @OnCreate is called! Before this, mojo is not fully initialized and cannot be safely used. This means that global variables cannot be initialied using @Millisecs, @LoadImage or indeed ANY mojo functions.
+
+
+Example:
+{{
+Import mojo.app
+
+Class MyApp Extends App
+
+	Method OnCreate()
+		Print "App succesfully created!"
+	End
+
+End
+
+Function Main()
+	Print "Creating new app..."
+	New MyApp
+End
+}}
+
+Example 2:
+{{
+Import mojo.app
+Import mojo.graphics
+Import mojo.input
+
+Class MyGame Extends App
+	Field x:Int=0
+	Field y:Int=0
+	
+	Method OnCreate()
+		'Load any graphics or sounds here
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		x=MouseX
+		y=MouseY
+	End
+	
+	Method OnRender()
+		Cls (0,0,0)
+		DrawText "Hello World!",x,y
+	End
+End
+
+Function Main()
+	New MyGame
+End
+}}
+
+#Method OnCreate
+
+Syntax:
+
+Method @OnCreate()
+
+Description:
+
+The @OnCreate method is called when mojo has been initialized and the application has been successfully created.
+
+At this point, the application can be considered to be 'up and running'.
+
+At this point, applications can start loading resources such as images and sounds, and set an update rate using @SetUpdateRate.
+
+Example:
+{{
+Import mojo.app
+Import mojo.graphics
+Import mojo.input
+
+Class MyGame Extends App
+	Field x:Int=0
+	Field y:Int=0
+	Field playerShipSprite:Image
+		
+	Method OnCreate()
+
+		'Load any images and sounds here
+		'ship.png must be found in your project's .data folder
+		playerShipSprite=LoadImage("ship.png")
+
+		SetUpdateRate 30
+
+		End
+	
+	Method OnUpdate()
+		x=MouseX
+		y=MouseY
+	End
+	
+	Method OnRender()
+		Cls
+		DrawImage playerShipSprite,x,y
+	End
+End
+
+Function Main()
+	New MyGame
+End
+}}
+
+#Method OnUpdate
+
+Syntax:
+
+Method @OnUpdate()
+
+Description:
+
+This method is automatically called when the application's update timer ticks. Once OnUpdate has been called, mojo will then attempt to call OnRender as soon as possible.
+
+Note that OnUpdate is only called if SetUpdateRate has been called to start the update timer. Otherwise, your application will receive OnRender calls only.
+
+OnUpdate is commonly used in conjunction with OnRender() to manage the main game loop. OnUpdate is typically used to update objects and gameplay logic, while OnRender is used to draw graphics.  
+
+See Also:
+@SetUpdateRate
+
+
+#Method OnRender
+
+Syntax:
+
+Method @OnRender()
+
+Description:
+
+This method is automatically called when the application should render itself, such as when the application first starts, or following an OnUpdate call.
+
+If your application is taking to long to update and/render itself, OnRender calls may be skipped to allow it to 'catch up'.
+
+
+See Also:
+@OnUpdate
+
+
+#Method OnLoading
+
+Syntax:
+
+Method @OnLoading()
+
+Description:
+
+This method is called instead of OnRender when the application should render itself, but there are still resources such as images or sounds in the process of being loaded.
+
+#End
+
+
+#Function LoadState
+
+Syntax:
+
+Function @LoadState:String()
+
+Description:
+
+Loads application state.
+
+This is generally used to load such things as user preferences and high score tables.
+
+
+#Function SaveState
+
+Syntax:
+
+Function @SaveState( @state$ )
+
+Parameters:
+
+@state - the application state to save.
+
+Description:
+
+Saves application state.
+
+This is generally used to save such data as user preferences and high score tables.
+
+
+#Function LoadString
+
+Syntax:
+
+Function @LoadString$( @path$ )
+
+Parameters:
+
+@path - path of a file string to load as a string.
+
+Description:
+
+Returns the contents of a text file as a single string.  
+
+The string can be any length and may contain escape sequence characters (see the monkey Language Reference for a full list). For example, a text file could contain game data separated with line breaks which could be loaded as a string and then split into sub-strings.
+
+Monkey will only load files that end with the file extension .txt, .xml, .ini. (this is so monkey knows the file format and how to handle it when translating).  
+
+Like all game data, the text file must be saved in your project's .data folder or one of its sub-folders.
+
+Example:
+{{
+Import mojo.app
+
+Class LoadStringExample Extends App
+	Field filename:String = "data.txt"	'Change this to the name of any .txt file in your project's .data folder
+	Field textFile:String
+	Field data:String[]
+		
+	Method OnCreate()
+		textFile=LoadString(filename)
+		If textFile="" Then Print "Could not open the file "+filename+".  Check that it is in your project's .data folder."
+
+		'String.Split() is a very useful command.
+		'It splits up a string and populates an array with the pieces (each data of the text file).
+		Local data:String[]=textFile.Split("~n")	'~n is the line break escape character
+		
+		'The individual data[] elements may have trailing characters (spare spaces and escape characters) at the start and end
+		'Let's String.Trim() the trailing characters away
+		For Local lineNumber:Int = 0 to data.Length()-1
+			data[lineNumber]=data[lineNumber].Trim
+		Next
+		
+		'Print out the contents
+		For Local lineNumber:Int = 0 to data.Length()-1
+			Print data[lineNumber]
+		Next
+	End
+End
+
+Function Main()
+	New LoadStringExample
+End
+}}
+
+#Function SetUpdateRate
+
+Syntax:
+
+Function @SetUpdateRate( @hertz )
+
+Parameters:
+
+@hertz - update rate in 'updates per second'
+
+Description:
+
+Sets the application's update rate.
+
+This is the number of times per second that the application's OnUpdate method should be called. Common update rates are 15, 30 or 60 updates per second.
+
+OnRender is also called at the same frequency if possible (after each OnUpdate), meaning SetUpdateRate effectively also sets the target frames per second.
+
+
+See also:
+@OnUpdate
+
+
+#Function MilliSecs
+
+Syntax:
+
+Function @MilliSecs()
+
+Description:
+
+Returns the number milliseconds (thousandths of a second) the application has been running. Divide this by 1000.0 to get the number of seconds the applications has been running.  
+
+#End
+
+#Module mojo.graphics
+
+The graphics module contains various functions that allow you to draw 2D graphics on all monkey target platforms.
+
+Features include rotation, scaling, alpha blending transparency, animation frames, matrix transformations and an Image class that contains many useful methods to manage your images.
+
+Many of the graphics commands affect the current drawing mode and alter all graphics rendered afterwards, until the drawing mode is changed again. For example, SetAlpha will alter the transparency of all graphics, text, lines and other shapes drawn, until Alpha is set to 1 (non-transparency, the default setting).
+
+
+#Class Image
+
+An image is a rectangular area of pixels, loaded from an image file with @LoadImage or grabbed from other images with @GrabImage.
+
+Images can be drawn with @DrawImage or @DrawImageRect.
+
+Images have a width, a height and a handle. A handle is a 'local origin' which allows you to control the centre point of an image when drawing it.
+
+Images can also contain multiple 'frames'. When drawing an image, a specific frame may be drawn.
+
+
+#Global DefaultFlags
+
+Syntax:
+
+Global @DefaultFlags=0
+
+Description:
+
+The image flags used by default when an image is loaded or created.
+
+Image flags can be one of:
+
+@Image.MidHandle -– If this flag is used then tThe image is handled by its midpoint.
+
+
+#Method Width
+
+Syntax:
+
+Method @Width()
+
+Description:
+
+Returns the width of the current image in pixels. This is not affected by the current matrix, which only applies when rendering the image.
+
+
+#Method Height
+
+Syntax:
+
+Method @Height()
+
+Description:
+
+Returns the height of the current image in pixels. This is not affected by the current matrix, which only applies when rendering the image.
+
+
+#Method Frames
+
+Syntax:
+
+Method @Frames() 
+
+Description:
+
+Returns the number of frames of the current image. The number of frames is set when an image is loaded or grabbed.
+
+
+#Method HandleX
+
+Syntax:
+
+Method @HandleX#()
+
+Description:
+
+Returns the x coordinate of the current image's handle.
+
+See Also:
+@SetHandle
+
+#Method HandleY
+
+Syntax:
+
+Method @HandleY#()
+
+Description:
+
+Returns the y coordinate of the current image's handle.
+
+See Also:
+@SetHandle
+
+#Method SetHandle
+
+Syntax:
+
+Method @SetHandle( @x#, @y# )
+
+@x, @y - coordinates that specify the handle location in this image.
+
+Description: 
+
+Sets the image offset handle for this image. The handle is a 2D offset subtracted from the x,y coordinates of the image when it is drawn.  
+
+By default, images have a handle of 0,0, meaning the top-left pixel appears at the coordinates used in DrawImage.  Images loaded using the MidHandle flag have their handle automatically calculated to be in their centre horizontally and vertically.
+
+The image handle is subtracted before rotation and scale are applied providing a 'local' origin.
+
+
+#Method GrabImage
+
+Syntax:
+
+Method @GrabImage:Image( @x, @y, @frame_width, @frame_height, @frame_count=1, @flags=Image.DefaultFlags )
+
+Parameters:
+
+Description:
+
+#End
+
+#Function DeviceWidth
+
+Syntax:
+
+Function @DeviceWidth()
+
+Description:
+
+Returns the width of the graphics device as an integer.
+
+Please note that you cannot directly control the width and height of the graphics device via mojo.
+
+These properties are instead assumed to be initialized and maintained by target specific 'project code', such as the containing html/javascript page of an html5 targetted mojo app.
+
+
+See also:
+@DeviceHeight
+
+#Function DeviceHeight
+
+Syntax:
+
+Function @DeviceHeight()
+
+Description:
+
+Returns the height of the graphics device as an integer.
+
+Please npte that you cannot directly control the width and height of the graphics device via mojo.
+
+These properties are instead assumed to be initialized and maintained by target specific 'project code', such as the containing html/javascript page of an html5 targetted mojo app.
+
+
+See also:
+@DeviceWidth
+
+#Function LoadImage
+
+Syntax:
+
+Function @LoadImage:Image( @path$, @frameCount=1, @flags=Image.DefaultFlags )
+
+Function @LoadImage:Image( @path$, @frameWidth, @frameHeight, @frameCount, @flags=Image.DefaultFlags )
+
+Parameters:
+
+@path - the data file path of the image to load, relative to your applications .data folder.
+
+@frameCount - the number of frames contained in the image.
+
+@frameWidth, @frameHeight - the size of each frame contained in the image.
+
+Description:
+
+Loads an image from @path.
+
+The image must be a PNG or JPEG image format, and must have the three-letter file extension .png or .jpg (not .jpeg).  PNGs with alpha transparency channels are supported.  
+
+Like all game data, the image file must be saved in your project's .data folder or one of its sub-folders.
+
+
+#Function Cls
+
+Syntax:
+
+Function @Cls( @color:Color )
+
+Function @Cls( @red#=0, @green#=0, @blue#=0, @alpha=1 )
+
+Function @Cls( @argb )
+
+Parameters:
+
+@color - a Color object.
+
+@red, @green, @blue, @alpha - color components in the range 0 to 1.
+
+@argb - a packed ARGB color.
+
+Description:
+
+Clears the graphics device to the specified color.
+
+The current color, alpha and blend mode are ignored by @Cls, however the scissor rect is still used.
+
+Note: The @alpha argument is currently ignored.
+
+
+#Function SetScissor
+
+Syntax:
+
+Function @SetScissor( @x#, @y#, @width#, @height# )
+
+Parameters:
+
+@x, @y - coordinates of the upper left of the scissor rectangle.
+
+@width, @height - width and height of the scissor rectangle.
+
+Description:
+
+Sets the current scissor rectangle to the rectangle specified by @x, @y, @width and @height.
+
+All drawing commands are 'clipped' to the current scissor rectangle. To disable clipping, set the scissor rectangle to 0,0,DeviceWidth,DeviceHeight.
+
+The rectangle coordinates used with @SetScissor are device coordinates, and are not affected by the current matrix.
+
+
+#Function GetScissor
+
+Syntax:
+
+Function @GetScissor:Float[]()
+
+Description:
+
+Returns the current scissor rectangle as a 4 component float array containg the scissor rectangle's x,y, width and height coordinates respectively.
+
+
+#Function SetBlend
+
+Syntax:
+
+Function @SetBlend( @mode )
+
+Parameters:
+
+@mode - the blend mode to set.
+
+Description:
+
+Sets the current blending mode to @mode.
+
+The current blending mode affects all drawing commands except for @Cls.
+
+The @mode parameter can be one of the following:...
+
+0 - Normal alpha blending.
+
+1 - Target dependent 'lighten' blending. The precise effect depends on the target platform, and may be slower than normal alpha blend.
+
+
+#Function GetBlend
+
+Syntax:
+
+Function @GetBlend()
+
+Description:
+
+Returns the current blend mode.
+
+
+#Function SetColor
+
+Syntax:
+
+Function @SetColor( @red#, @green#, @blue# )
+
+Parameters:
+
+@red, @green, @blue - color components in the range 0 to 255.
+
+Description:
+
+Sets the current color.
+
+The current color is used by all drawing operations except @Cls and @DrawImage.
+
+Example:
+{{
+Import mojo.app
+Import mojo.graphics
+
+'Lots of ways to set the color!
+
+Class MyApp Extends App
+
+	Method OnRender()
+		SetColor Red			'red
+		DrawRect 0,0,DeviceWidth/2,DeviceHeight/2
+		
+		SetColor $ff00ff00		'green
+		DrawRect DeviceWidth/2,0,DeviceWidth/2,DeviceHeight/2
+		
+		SetColor 0,0,1			'blue
+		DrawRect 0,DeviceHeight/2,DeviceWidth/2,DeviceHeight/2
+		
+		SetColor ARGB(255,0,0)	'yellow
+		DrawRect DeviceWidth/2,DeviceHeight/2,DeviceWidth/2,DeviceHeight/2
+	End
+
+End
+
+Function Main()
+	New MyApp
+End
+}}
+
+#Function GetColor
+
+Syntax:
+
+Function @GetColor:Float[]()
+
+Description:
+
+Returns the current color as a 3 component float array containg the current color's red, green and blue components respectively.
+
+
+#Function SetAlpha
+
+Syntax:
+
+Function @SetAlpha( @alpha )
+
+Parameters:
+
+@alpha - alpha value in the range 0 to 1.
+
+Description:
+
+Sets the current alpha level.
+
+The alpha level is used by all drawing operations except @Cls.
+
+
+#Function GetAlpha
+
+Syntax:
+
+Function @GetAlpha#()
+
+Description:
+
+Returns the current alpha level.
+
+
+#Function SetFont
+
+Syntax:
+
+Function @SetFont( @font:Image, @firstChar=32 )
+
+Parameters:
+
+@font - an image describing the font. Each image frame represents a single character in the font.
+
+@firstChar - the character code that frame 0 in the font represents.
+
+Description:
+
+Sets the font for use with DrawText.
+
+@font may be Null, in which case an internal 7x11 white-on-black font is used and the @firstChar parameter is ignored.
+
+Note: The font functionality in mojo is very limited and intended mainly for debugging purposes.
+
+
+#Function GetFont
+
+Syntax:
+
+Function @GetFont:Image()
+
+Description:
+
+Returns the current font.
+
+
+#Function SetMatrix
+
+Syntax:
+
+Function @SetMatrix( @matrix#[] )
+
+Function @SetMatrix( @ix#, @iy#, @jx#, @jy#, @tx#, @ty# )
+
+Parameters:
+
+@matrix - a float array containing matrix components.
+
+@ix, @iy, @jx, @jy, @tx, @ty - matrix components.
+
+Description:
+
+Sets the current matrix.
+
+
+#Function GetMatrix
+
+Syntax:
+
+Function @GetMatrix:Float[]()
+
+Description:
+
+Returns the current matrix as an array of floats.
+
+
+#Function PushMatrix
+
+Syntax:
+
+Function @PushMatrix()
+
+Description:
+
+Pushes the current matrix onto the internal matrix stack.
+
+The matrix can be restored at a later time using @PopMatrix.
+
+
+#Function PopMatrix
+
+Syntax:
+
+Function @PopMatrix()
+
+Description:
+
+Pops a matrix from the internal matrix stack and makes it the current matrix.
+
+
+#Function Transform
+
+Syntax:
+
+Function @Transform( @ix#, @iy#, @jx#, @jy#, @tx#, @ty# )
+
+Parameters:
+
+@ix, @iy, @jx, @jy, @tx, @ty - matrix components.
+
+Description:
+
+Multiplies the current matrix by the specified matrix.
+
+
+#Function Translate
+
+Syntax:
+
+Function @Translate( @x#, @y# )
+
+Parameters:
+
+@x, @y - translation offsets
+
+Description:
+
+Multiplies the current matrix by a matrix representing the specified translation.
+
+
+#Function Scale
+
+Syntax:
+
+Function @Scale( @x#, @y# )
+
+Parameters:
+
+@x, @y - scale factors.
+
+Description:
+
+Multiplies the current matrix by a matrix representing the specified scale.
+
+
+#Function Rotate
+
+Syntax:
+
+Function @Rotate( @angle# )
+
+Parameters:
+
+@angle - rotation angle in degrees.
+
+Description:
+
+Multiplies the current matrix by a matrix representing the specified rotation.
+
+
+#Function DrawLine
+
+Syntax:
+
+Function @DrawLine( @x1#, @y1#, @x2#, @y2# )
+
+Parameters:
+
+@x1, @y1 - the start coordinates of the line.
+
+@x2, @y2 - the end coordinates of the line.
+
+Description:
+
+Draws a line from @x1, @y1 to @x2, @y2.
+
+The line is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawRect
+
+Syntax:
+
+Function @DrawRect( @x#, @y#, @width#, @height# )
+
+Parameters:
+
+@x, @y			- coordinates of the top-left of the rectangle.
+
+@width, @height	- width and height of the rectangle.
+
+Description:
+
+Draws a rectangle of size @width, @height at the coordinates @x, @y.
+
+The rectangle is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawOval
+
+Syntax:
+
+Function @DrawOval( @x#, @y#, @width#, @height# )
+
+Parameters:
+
+@x, @y			- coordinates of the top-left of the oval.
+
+@width, @height	- width and height of the oval.
+
+Description:
+
+Draws an oval of size @width, @height at coordinates @x, @y.
+
+The oval is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawCircle
+
+Syntax:
+
+Function @DrawCircle( @x#, @y#, @radius# )
+
+Parameters:
+
+@x, @y - coordinates of the center of the circle.
+
+@radius - radius of the circle.
+
+Decscription:
+
+Draws a circle of radius @radius at coordinates @x, @y.
+
+The circle is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawEllipse
+
+Syntax:
+
+Function @DrawEllipse( @x#, @y#, @xRadius#, @yRadius# )
+
+Parameters:
+
+@x, @y - coordinates of the center of the ellipse.
+
+@xRadius, @yRadius - horizontal and vertical radii of the ellipse.
+
+Decscription:
+
+Draws an ellipse of radii @xRadius, @yRadius at coordinates @x, @y.
+
+The ellipse is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawImage
+
+Syntax:
+
+Function @DrawImage( @image:Image, @x#, @y#, @frame=0 )
+
+Function @DrawImage( @image:Image, @x#, @y#, @rotation#, @scaleX#, @scaleY#, @frame=0 )
+
+Parameters:
+
+@image - image to draw.
+
+@x, @y - coordinates to draw image at.
+
+@rotation - local image rotation in degrees.
+
+@scaleX, @scaleY - local image scale.
+
+Description:
+
+Draws an image.
+
+
+#Function DrawImageRect
+
+Syntax:
+
+Function @DrawImageRect( @image:Image, @x#, @y#, @srcX, @srcY, @srcWidth, @srcHeight, @frame=0 )
+
+Function @DrawImageRect( @image:Image, @x#, @y#, @srcX, @srcY, @srcWidth, @srcHeight, @rotation#, @scaleX#, @scaleY#, @frame=0 )
+
+Parameters:
+
+@image - image to draw.
+
+@x, @y - coordinates to draw image at.
+
+@srcRect - source rectangle.
+
+@srcX, @srcY, @srcWidth, @srcHeight - source rectangle.
+
+@rotation - local image rotation in degrees.
+
+@scaleX, @scaleY - local image scale.
+
+Description:
+
+Draws an image.
+
+
+#Function DrawText
+
+Syntax:
+
+Function @DrawText( @text$, @x, @y, @xalign=0, @yalign=0 )
+
+Parameters:
+
+@text - the text to draw.
+
+@x, @y - coordinates to draw the text at.
+
+@xalign, @yalign - how to align the text.
+
+Description:
+
+Draws @text at coordinates @x, @y in the current font.
+
+The current font may be modified using SetFont. By default, an internal 7x11 white-on-black font is used.
+
+@xalign and @yalign allow you to control the alignment of the text and should be in the range 0 for left/top alignment to 1 for
+right/bottom alignment. A value of .5 can be used for centering text horizontally or vertically.
+
+Note: The font functionality in mojo is very limited and intended mainly for debugging purposes.
+
+
+#End
+
+#Module mojo.input
+
+The input module allows programs to check for user input from a wide variety of devices such keyboards, mice, joysticks and touchsceens.
+
+The input module uses a 'polling' input model, meaning that your program must continually check (or 'poll') the state of input devices. Polling is usually performed during the @OnUpdate phase of your program.
+
+The following constants are for use with @KeyDown and @KeyHit: 
+{{
+KEY_BACKSPACE
+KEY_TAB
+KEY_ENTER
+KEY_ESCAPE
+KEY_SPACE
+KEY_SHIFT
+KEY_CONTROL
+KEY_PAGEUP
+KEY_PAGEDOWN
+KEY_END
+KEY_HOME
+KEY_LEFT
+KEY_UP
+KEY_RIGHT
+KEY_DOWN
+KEY_INSERT
+KEY_DELETE
+KEY_F1
+KEY_F2
+KEY_F3
+KEY_F4
+KEY_F5
+KEY_F6
+KEY_F7
+KEY_F8
+KEY_F9
+KEY_F10
+KEY_F11
+KEY_F12
+KEY_0
+KEY_1
+KEY_2
+KEY_3
+KEY_4
+KEY_5
+KEY_6
+KEY_7
+KEY_8
+KEY_9
+KEY_A
+KEY_B
+KEY_C
+KEY_D
+KEY_E
+KEY_F
+KEY_G
+KEY_H
+KEY_I
+KEY_J
+KEY_K
+KEY_L
+KEY_M
+KEY_N
+KEY_O
+KEY_P
+KEY_Q
+KEY_R
+KEY_S
+KEY_T
+KEY_U
+KEY_V
+KEY_W
+KEY_X
+KEY_Y
+KEY_Z
+KEY_TILDE
+KEY_MINUS
+KEY_EQUALS
+KEY_OPENBRACKET
+KEY_CLOSEBRACKET
+KEY_BACKSLASH
+KEY_SEMICOLON
+KEY_QUOTES
+KEY_COMMA
+KEY_PERIOD
+KEY_SLASH
+}}
+
+As a convenience, the commands @KeyDown and @KeyHit can also be used to test non-keyboard devices using these additional constants: 
+{{
+KEY_LMB			'Left mouse button
+KEY_RMB			'Right mouse button
+KEY_MMB			'Middle mouse button
+
+KEY_JOY0_A		'A button on joystick 0
+KEY_JOY0_B		'B button on joystick 0
+KEY_JOY0_X		'X button on joystick 0
+KEY_JOY0_Y		'Y button on joystick 0
+KEY_JOY0_LEFT	'left button on joystick 0
+KEY_JOY0_UP		'up button on joystick 0
+KEY_JOY0_RIGHT	'right button on joystick 0
+KEY_JOY0_DOWN	'down button on joystick 0
+
+KEY_TOUCH0		'First touch - note: 32 touch codes supported. KEY_TOUCHn=KEY_TOUCH0+n, where n>=0 and n<32
+}}
+
+The following constants are for use with @MouseDown and @MouseHit: 
+{{
+MOUSE_LEFT
+MOUSE_RIGHT
+MOUSE_MIDDLE
+}}
+
+The following constants are for use with @JoyDown and @JoyHit: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+The following constants are for use with @GetChar: 
+{{
+CHAR_TAB
+CHAR_BACKSPACE
+CHAR_ENTER
+CHAR_ESCAPE
+CHAR_PAGEUP
+CHAR_PAGEDOWN
+CHAR_END
+CHAR_HOME
+CHAR_LEFT
+CHAR_UP
+CHAR_RIGHT
+CHAR_DOWN
+CHAR_INSERT
+CHAR_DELETE
+}}
+
+
+#Function KeyDown
+
+Syntax:
+
+Function @KeyDown( @key )
+
+Parameters:
+
+@key - keycode of the key to check.
+
+Description:
+
+Returns true if the specified key is currently held down, otherwise false.
+
+Note that any on/off style 'buttons' on any device can be read using the @KeyDown and @KeyHit commands. For example, to read the state of the left mouse button you can use @KeyDown( KEY_LMB ) in addition to @MouseDown( MOUSE_LEFT ).
+
+See also:
+@KeyHit
+
+#Function KeyHit
+
+Syntax:
+
+Function @KeyHit( @key )
+
+Parameters:
+
+@key - keycode of the key to check.
+
+Description:
+
+Returns the number of times the specified key has been hit since the last OnUpdate.
+
+Note that any on/off style 'buttons' on any device can be read using the @KeyDown and @KeyHit commands. For example, to read the state of the left mouse button you can use @KeyDown( KEY_LMB ) in addition to @MouseDown( MOUSE_LEFT ).
+
+Example:
+{{
+Import mojo.app
+Import mojo.graphics
+Import mojo.input
+
+Class MyGame Extends App
+	Field myMouseHit:Int = False
+	Field lineY:Int=200
+			
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		myMouseHit=KeyHit(KEY_LMB)	'Uses KeyHit to check the left mouse button.  You could also use MouseHit(0)
+		
+		If myMouseHit=True and MouseY<lineY
+			Print "You clicked above the line."
+		Else If myMouseHit=True and MouseY>=lineY
+			Print "You clicked on or below the line."
+		End
+	End
+	
+	Method OnRender()
+		Cls (0,0,0)
+		SetColor (255,255,255)
+		DrawLine 0,lineY,800,lineY
+	End
+End
+
+Function Main()
+	New MyGame
+End
+}}
+See also:
+@KeyDown
+
+
+#Function GetChar
+
+Syntax:
+
+Function @GetChar()
+
+Description:
+
+Returns the character code of the next character in the keyboard character queue, or 0 if no more characters are available.
+
+The keyboard queue contains characters codes as opposed to the key codes used by KeyDown and KeyUp.
+
+Character codes differ from key codes in that they are generally printable and may be modified by the shift, control and alt keys.
+
+The mapping from key codes to character codes is controlled by the underlying OS, but in pratice will generally map to ASCII codes.
+
+The input module also provides special character code mappings for a number of unprintable keys: 
+{{
+CHAR_TAB
+CHAR_BACKSPACE
+CHAR_ENTER
+CHAR_ESCAPE
+CHAR_PAGEUP
+CHAR_PAGEDOWN
+CHAR_END
+CHAR_HOME
+CHAR_LEFT
+CHAR_UP
+CHAR_RIGHT
+CHAR_DOWN
+CHAR_INSERT
+CHAR_DELETE
+}}
+
+#Function MouseX
+
+Syntax:
+
+Function @MouseX#()
+
+Description:
+
+Returns the x coordinate of the mouse pointer.
+
+On devices with a touch screen but no mouse, @MouseX will instead return @TouchX( 0 ).
+
+See also:
+@MouseY
+
+
+#Function MouseY
+
+Syntax:
+
+Function @MouseY#()
+
+Description:
+
+Returns the y coordinate of the mouse pointer.
+
+On devices with a touch screen but no mouse, @MouseY will instead return @TouchY( 0 ).
+
+See also:
+@MouseX
+
+
+#Function MouseDown
+
+Syntax:
+
+Function @MouseDown( @button=MOUSE_LEFT )
+
+Parameters:
+
+@button - mouse button to check: @MOUSE_LEFT, @MOUSE_RIGHT or @MOUSE_MIDDLE
+
+Description:
+
+Returns true if the specified mouse button is currently held down, otherwise false.
+
+
+#Function MouseHit
+
+Syntax:
+
+Function @MouseHit( @button=MOUSE_LEFT )
+
+Parameters:
+
+@button - mouse button to check: @MOUSE_LEFT, @MOUSE_RIGHT or @MOUSE_MIDDLE
+
+Description:
+
+Returns the number of times the specified mouse button has been pressed since the last OnUpdate.
+
+
+#Function JoyDown
+
+Syntax:
+
+Function @JoyDown( @button )
+
+Parameters:
+
+@button - joystick button to test.
+
+Description:
+
+Return true if the specified joystick button is currently held down.
+
+@button should be one of the following: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+
+#Function JoyHit
+
+Syntax:
+
+Function @JoyHit( @button )
+
+Parameters:
+
+@button - joystick button to test.
+
+Description:
+
+Return the number of times the specified joystick button has been pressed since the last OnUpdate.
+
+@button should be one of the following: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+
+#Function TouchX
+
+Syntax:
+
+Function @TouchX#( @index=0 )
+
+Description:
+
+Returns the x coordinate of the finger on a touch screen device.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+On devices with a mouse but no touch screen, @TouchX( 0 ) will instead return @MouseX.
+
+See also:
+@TouchY, @TouchDown, @TouchHit
+
+
+#Function TouchY
+
+Syntax:
+
+Function @TouchY#( @index=0 )
+
+Description:
+
+Returns the y coordinate of the finger on a touch screen device.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+On devices with a mouse but no touch screen, @TouchY( 0 ) will instead return @MouseY.
+
+See also:
+@TouchX, @TouchDown, @TouchHit
+
+
+#Function TouchDown
+
+Syntax:
+
+Function @TouchDown( @index=0 )
+
+Parameters:
+
+@index - finger index in the range 0 to 31.
+
+Description:
+
+Returns true if the finger specified by @index is currently touching the touchscreen, otherwise false.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+If a finger is touching, you can get its x and y coordinates using the @TouchX and @TouchY commands.
+
+On devices with a mouse but no touch screen, @TouchDown( 0 ) will instead return @MouseDown( MOUSE_LEFT ).
+
+Example:
+{{
+Import mojo.app
+Import mojo.graphics
+Import mojo.input
+
+Class TouchCountApp Extends App
+
+	Field touching
+	
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		touching=0
+		For Local i=0 Until 32
+			If TouchDown( i ) touching+=1
+		Next
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText touching,0,0
+	End
+End
+
+Function Main()
+	New TouchCountApp
+End
+}}
+See also:
+@TouchX, @TouchY, @TouchHit
+
+
+#Function TouchHit
+
+Syntax:
+
+Function @TouchHit( @index=0 )
+
+Parameters:
+
+@index - finger index in the range 0 to 31.
+
+Description:
+
+Returns the number of times the specified finger has made contact with the touchscreen since the last OnUpdate.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+If a finger is touching, you can get its x and y coordinates using the @TouchX and @TouchY commands.
+
+On devices with a mouse but no touch screen, @TouchHit( 0 ) will instead return @MouseHit( MOUSE_LEFT ).
+
+See also:
+@TouchX, @TouchY, @TouchHit
+
+#End
+
+#Module mojo.audio
+
+The mojo.audio module contains functions for loading and playing sounds and music.
+
+Audio files must be placed into the applications data directory.
+
+
+#Class Sound
+
+Sound objects contain audio data preloaded from files.
+
+#End
+
+
+#Function LoadSound
+
+Syntax:
+
+Function @LoadSound:Sound( @path$ )
+
+Parameters:
+
+@path - file path of the sound to load.
+
+Description:
+
+Loads and returns a sound object.
+
+#Function PlaySound
+
+Syntax:
+
+Function @PlaySound( @sound:Sound )
+
+Parameters:
+
+@sound - a sound object.
+
+Description:
+
+Plays a sound.

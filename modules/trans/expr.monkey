@@ -10,7 +10,7 @@ Class Expr
 	Field exprType:Type
 	
 	Method ToString$()
-		Return "expression"
+		Return "Expression"
 	End
 	
 	Method Semant:Expr()
@@ -18,11 +18,11 @@ Class Expr
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
-		Err ToString()+" cannot be assigned to"
+		Err ToString()+" cannot be assigned to."
 	End
 	
 	Method SemantFunc:Expr( args:Expr[] )
-		Return Null
+		Err ToString()+" cannot be invoked."
 	End
 	
 	Method SemantScope:ScopeDecl()
@@ -30,7 +30,7 @@ Class Expr
 	End
 
 	Method Eval$()
-		Err ToString()+" is not constant"
+		Err ToString()+" cannot be statically evaluated."
 	End
 	
 	Method EvalConst:Expr()
@@ -81,7 +81,7 @@ Class Expr
 		If lhs.ExtendsType( rhs ) Return rhs
 		If rhs.ExtendsType( lhs ) Return lhs
 		
-		Err "Can't balance types "+lhs.ToString()+" and "+rhs.ToString()
+		Err "Can't balance types "+lhs.ToString()+" and "+rhs.ToString()+"."
 	End
 	
 	Method CastArgs:Expr[]( args:Expr[],funcDecl:FuncDecl )
@@ -135,6 +135,32 @@ Class ConstExpr Extends Expr
 	Field value$
 	
 	Method New( ty:Type,value$ )
+	
+		If IntType( ty )
+			Local radix
+			If value.StartsWith( "%" )
+				radix=1
+			Else If value.StartsWith( "$" )
+				radix=4
+			Endif
+			If radix
+				Local val=0
+				For Local i=1 Until value.Length
+					Local ch=value[i]
+					If ch>=48 And ch<58
+						val=val Shl radix | (ch & 15)
+					Else
+						val=val Shl radix | ((ch & 15)+9)
+					Endif
+				Next
+				value=String( val )
+			Endif
+		Else If FloatType( ty )
+			If Not (value.Contains("e") Or value.Contains("E") Or value.Contains("."))
+				value+=".0"
+			Endif
+		Endif
+		
 		Self.ty=ty
 		Self.value=value
 	End
@@ -593,17 +619,18 @@ Class UnaryExpr Extends Expr
 	End
 	
 	Method Eval$()
+		Local val$=expr.Eval()
 		Select op
-		Case "+"
-			Return expr.Eval()
 		Case "~~"
-			Return ~Int( expr.Eval() )
+			Return ~Int( val )
+		Case "+"
+			Return val
 		Case "-"
-			If IntType( exprType ) Return -Int( expr.Eval() )
-			If FloatType( exprType ) Return -Float( expr.Eval() )
-			InternalErr
+			If val.StartsWith( "-" ) Return val[1..]
+			Return "-"+val
 		Case "not"
-			If expr.Eval() Return "" Else Return "1"
+			If val Return ""
+			Return "1"
 		End Select
 		InternalErr
 	End

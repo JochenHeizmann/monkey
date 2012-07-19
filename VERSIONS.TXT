@@ -1,6 +1,33 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V36 *****
+
+Modules:
+
+Fixed nasty crash bug in Map.
+
+
+Monk:
+
+Disabled ParseError for gcc errors.
+
+Replaced a bunch of \n's with ~n's.
+
+
+Trans (1.07):
+
+Fixed const eval of negative vals.
+
+Fixed INTLIT '%' prefix.
+
+Fixed new override bug for overrides that skip a class.
+
+Fixed EvalFunc bug that allowed ()().
+
+Fixed infinite loop with unterminated string literal.
+
+
 ***** V35 ***** 
 
 Modules:

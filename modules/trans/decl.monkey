@@ -648,22 +648,26 @@ Class FuncDecl Extends BlockDecl
 
 		'check we exactly match an override
 		If sclass And Not IsCtor()
-			Local found
-			For Local decl:=Eachin sclass.FuncDecls
-				If decl.ident<>ident Continue
-				found=True
-				decl.Semant
-				If IsMethod()<>decl.IsMethod()
-					overrides=Null
-					Exit
+			While sclass
+				Local found
+				For Local decl:=Eachin sclass.FuncDecls
+					If decl.ident<>ident Continue
+					found=True
+					decl.Semant
+					If IsMethod()<>decl.IsMethod()
+						overrides=Null
+						Exit
+					Endif
+					If EqualsType( decl )
+						overrides=FuncDecl( decl.actual )
+					Endif
+				Next
+				If found And Not overrides
+					Err "Overriding method does not match any overridden method."
 				Endif
-				If EqualsType( decl )
-					overrides=FuncDecl( decl.actual )
-				Endif
-			Next
-			If found And Not overrides
-				Err "Overriding method does not match any overridden method."
-			Endif
+				If found Exit
+				sclass=sclass.superClass
+			Wend
 		Endif
 		
 		attrs|=DECL_SEMANTED

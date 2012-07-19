@@ -1,0 +1,725 @@
+
+#Module mojo.graphics
+
+The graphics module contains various functions that allow you to draw 2D graphics on all monkey target platforms.
+
+The modules supports rendering of file based images, and a small set of simple primitives.
+
+Transparency effects can be achieved using @SetAlpha to set the global alpha level, and fullscreen rotation and scaling effects can be achieved using the various matrix commands such as @Translate, @Rotate and @Scale.
+
+The graphics module is state based, and commands that 'set' various states will remain in effect until a subsequent 'set' modifies the state.
+
+
+#Class Image
+
+An image is a rectangular area of pixels, loaded from an image file with @LoadImage or grabbed from another image with @GrabImage.
+
+Images can be drawn with @DrawImage or @DrawImageRect.
+
+Images have a width, a height and a handle. A handle is a 'local origin' which allows you to control the centre point of an image when drawing it.
+
+Images can also contain multiple 'frames', and when drawing an image a specific frame may be drawn. Each frame in a multi-frame image is the same width and height.
+
+Images can also be used as 'image atlases'. An image atlas is a single image that contains multiple smaller images. You can use the @GrabImage method of @Image to 'grab' an image from an atlas.
+
+The idea behind image atlases is that they can be rendered much more efficiently by graphics hardware, so for best results you should try and make as much use of image atlases as possibly. As a nice side effect, image atlases can also be convenient for artists to deal with.
+
+Import note: When creating an image atlas or an image containing multiple animation frames, it is a good idea to add a single pixel border around each frame that extends the pixels at the edges of the frame. This will prevent rendering 'noise' caused by accidental 'fetches' of pixels outside the frame, which can sometimes occur due to mathematical inaccuracies. To enable padding, you should use one of the image padding flags: Image.XPadding, Image.YPadding or Image.XYPadding when using @LoadImage or @GrabImage.
+
+
+#Global DefaultFlags
+
+Syntax::
+
+Global @DefaultFlags=0
+
+Description::
+
+The image flags used by default when an image is loaded or created.
+
+Image flags can be one of:
+
+@{Image.MidHandle}	- indicates the image should be automatically handled by its centre once reated.
+
+@{Image.XPadding} - indicates each image frame includes a one pixel padding border to the left and to the right.
+
+@{Image.YPadding} - indicates each image frame includes a one pixel padding border above and below.
+
+@{Image.XYPadding} - indicates both @XPadding and @YPadding.
+
+See also:
+
+@LoadImage, @GrabImage
+
+
+#Method Width
+
+Syntax::
+
+Method @Width()
+
+Description::
+
+Returns the width of the image in pixels. In the case of multi-frame images, this is the width of a single image frame. 
+
+The returned value is not affected by the current matrix, which only applies when rendering the image.
+
+See also::
+
+@ImageHeight
+
+
+#Method Height
+
+Syntax::
+
+Method @Height()
+
+Description::
+
+Returns the height of the image in pixels. In the case of multi-frame images, this is the height of a single image frame. 
+
+The returned value is not affected by the current matrix, which only applies when rendering the image.
+
+See also::
+
+@ImageWidth
+
+
+#Method Frames
+
+Syntax::
+
+Method @Frames() 
+
+Description::
+
+Returns the number of frames of the current image. The number of frames is set when an image is loaded or grabbed.
+
+
+#Method HandleX
+
+Syntax::
+
+Method @HandleX#()
+
+Description::
+
+Returns the x coordinate of the current image's handle.
+
+See Also::
+
+@SetHandle
+
+
+#Method HandleY
+
+Syntax::
+
+Method @HandleY#()
+
+Description::
+
+Returns the y coordinate of the current image's handle.
+
+See Also::
+
+@SetHandle
+
+
+#Method SetHandle
+
+Syntax::
+
+Method @SetHandle( @x#, @y# )
+
+@x, @y - coordinates that specify the handle location.
+
+Description::
+
+Sets the image offset handle for this image. The handle is a 2D offset subtracted from the x,y coordinates of the image when it is drawn.  
+
+By default, images have a handle of 0,0, meaning the top-left pixel appears at the coordinates used in DrawImage.
+
+By specifying Image.MidHandle when loading or grabbing an image - or by setting Image.Default flags to Image.MidHandle before hand - images will automatically be handled by their centre instead.
+
+The image handle is subtracted before rotation and scale are applied providing a 'local' origin.
+
+
+#Method GrabImage
+
+Syntax::
+
+Method @GrabImage:Image( @x, @y, @width, @height, @count=1, @flags=Image.DefaultFlags )
+
+Parameters::
+
+@x, @y, @width, @height - coordinates of rectangle to grab.
+
+@count - number of frames to grab.
+
+@flags - image creation flags.
+
+Description::
+
+@GrabImage creates a new image by 'grabbing' a rectangular region of the current image.
+
+Multiple frame images are assumed to be laid out in a horizontal strip, in which case @width and @height are the dimensions of each frame, and the source image must be wide enough to contain the entire strip.
+
+Note that if image flags includes any padding, then the specified rectangle includes padding. This means image width and/or height may be '2 less' than the @width and/or @height you specify.
+
+See @DefaultFlags for a list of valid image flags.
+
+See also:
+
+@DefaultFlags, @LoadImage
+
+#End
+
+
+#Function DeviceWidth
+
+Syntax::
+
+Function @DeviceWidth()
+
+Description::
+
+Returns the width of the graphics device as an integer.
+
+Note that you cannot directly control the size of the graphics device via mojo. This must be done by editting the 'native' project code for the target.
+
+
+See also::
+
+@DeviceHeight
+
+
+#Function DeviceHeight
+
+Syntax::
+
+Function @DeviceHeight()
+
+Description::
+
+Returns the height of the graphics device as an integer.
+
+Please note that you cannot directly control the size of the graphics device via mojo. This must be done by editing the 'native' project code for the target.
+
+
+See also::
+
+@DeviceWidth
+
+
+#Function LoadImage
+
+Syntax::
+
+Function @LoadImage:Image( @path$, @frames=1, @flags=Image.DefaultFlags )
+
+Function @LoadImage:Image( @path$, @frameWidth, @frameHeight, @frameCount, @flags=Image.DefaultFlags )
+
+Parameters::
+
+@path - the data file path of the image to load, relative to your applications .data folder.
+
+@frames - the number of frames contained in the image.
+
+Description::
+
+Loads an image from @path.
+
+For the first form of @LoadImage, the frames of a multi-frame image must be laid out in a single horizontal strip, in which case the width of the image is the width of image file divided by the number of frames, and the height of the image is the height of the image file.
+
+For the second form, the frames of a multi-frame image may occupy more than 1 row. In this case, frames should be laid out left-to-right, top-to-bottom.
+
+The image must be a PNG or JPEG image format, and must have the three-letter file extension .png or .jpg (not .jpeg). PNGs with alpha transparency channels are supported.
+
+Like all game data, the image file must be saved in your project's .data folder or one of its sub-folders.
+
+If your images contain edge padding, you will need to use one of the padding flags such as @XYPadding.
+
+See @DefaultFlags for a list of valid image flags.
+
+See also:
+
+@DefaultFlags, @GrabImage
+
+
+#Function Cls
+
+Syntax::
+
+Function @Cls( @color:Color )
+
+Function @Cls( @red#=0, @green#=0, @blue#=0 )
+
+Function @Cls( @argb )
+
+Parameters::
+
+@color - a Color object.
+
+@red, @green, @blue - color components in the range 0 to 255.
+
+@argb - a packed ARGB color.
+
+Description::
+
+Clears the graphics device to the specified color.
+
+The current color, alpha and blend mode are ignored by @Cls. However, the scissor rect is still used so only the area inside the scissor rect is cleared.
+
+
+#Function SetScissor
+
+Syntax::
+
+Function @SetScissor( @x#, @y#, @width#, @height# )
+
+Parameters::
+
+@x, @y - coordinates of the upper left of the scissor rectangle.
+
+@width, @height - width and height of the scissor rectangle.
+
+Description::
+
+Sets the current scissor rectangle to the rectangle specified by @x, @y, @width and @height.
+
+All drawing commands are 'clipped' to the current scissor rectangle. To disable clipping, set the scissor rectangle to 0,0,DeviceWidth,DeviceHeight.
+
+The rectangle coordinates used with @SetScissor are device coordinates, and are not affected by the current matrix.
+
+
+#Function GetScissor
+
+Syntax::
+
+Function @GetScissor:Float[]()
+
+Description::
+
+Returns the current scissor rectangle as a 4 component float array containg the scissor rectangle's x,y, width and height coordinates respectively.
+
+
+#Function SetBlend
+
+Syntax::
+
+Function @SetBlend( @mode )
+
+Parameters::
+
+@mode - the blend mode to set.
+
+Description::
+
+Sets the current blending mode to @mode.
+
+The current blending mode affects all drawing commands except for @Cls.
+
+The @mode parameter can be one of the following:...
+
+0 - Normal alpha blending.
+
+1 - Target dependent 'lighten' blending. The precise effect depends on the target platform, and may be slower than normal alpha blend.
+
+
+#Function GetBlend
+
+Syntax::
+
+Function @GetBlend()
+
+Description::
+
+Returns the current blend mode.
+
+
+#Function SetColor
+
+Syntax::
+
+Function @SetColor( @red#, @green#, @blue# )
+
+Parameters::
+
+@red, @green, @blue - color components in the range 0 to 255.
+
+Description::
+
+Sets the current color.
+
+The current color is used by all drawing operations except @Cls and @DrawImage.
+
+
+#Function GetColor
+
+Syntax::
+
+Function @GetColor:Float[]()
+
+Description::
+
+Returns the current color as a 3 component float array containg the current color's red, green and blue components respectively.
+
+
+#Function SetAlpha
+
+Syntax::
+
+Function @SetAlpha( @alpha )
+
+Parameters::
+
+@alpha - global alpha value in the range 0 to 1.
+
+Description::
+
+Sets the current global alpha.
+
+Alpha controls the 'mixing' that occurs when rendering. An alpha value of 1 results in completely opaque rendering, while 0 results in completely transparent rendering.
+
+In the case of images which contain alpha, the alpha used for rendering is the product of each image pixel's alpha and the current global alpha.
+
+Global alpha affects all drawing operations except for @Cls.
+
+
+#Function GetAlpha
+
+Syntax::
+
+Function @GetAlpha#()
+
+Description::
+
+Returns the current alpha level.
+
+
+#Function SetFont
+
+Syntax::
+
+Function @SetFont( @font:Image, @firstChar=32 )
+
+Parameters::
+
+@font - an image describing the font. Each image frame represents a single character in the font.
+
+@firstChar - the character code that frame 0 in the font represents.
+
+Description::
+
+Sets the font for use with DrawText.
+
+@font may be Null, in which case an internal 7x11 white-on-black font is used and the @firstChar parameter is ignored.
+
+Note: The font functionality in mojo is very limited and intended mainly for debugging purposes.
+
+
+#Function GetFont
+
+Syntax::
+
+Function @GetFont:Image()
+
+Description::
+
+Returns the current font.
+
+
+#Function SetMatrix
+
+Syntax::
+
+Function @SetMatrix( @matrix#[] )
+
+Function @SetMatrix( @ix#, @iy#, @jx#, @jy#, @tx#, @ty# )
+
+Parameters::
+
+@matrix - a float array containing matrix components.
+
+@ix, @iy, @jx, @jy, @tx, @ty - matrix components.
+
+Description::
+
+Sets the current matrix.
+
+
+#Function GetMatrix
+
+Syntax::
+
+Function @GetMatrix:Float[]()
+
+Description::
+
+Returns the current matrix as an array of floats.
+
+
+#Function PushMatrix
+
+Syntax::
+
+Function @PushMatrix()
+
+Description::
+
+Pushes the current matrix onto the internal matrix stack.
+
+The matrix can be restored at a later time using @PopMatrix.
+
+
+#Function PopMatrix
+
+Syntax::
+
+Function @PopMatrix()
+
+Description::
+
+Pops a matrix from the internal matrix stack and makes it the current matrix.
+
+
+#Function Transform
+
+Syntax::
+
+Function @Transform( @ix#, @iy#, @jx#, @jy#, @tx#, @ty# )
+
+Parameters::
+
+@ix, @iy, @jx, @jy, @tx, @ty - matrix components.
+
+Description::
+
+Multiplies the current matrix by the specified matrix.
+
+
+#Function Translate
+
+Syntax::
+
+Function @Translate( @x#, @y# )
+
+Parameters::
+
+@x, @y - translation offsets
+
+Description::
+
+Multiplies the current matrix by a matrix representing the specified translation.
+
+
+#Function Scale
+
+Syntax::
+
+Function @Scale( @x#, @y# )
+
+Parameters::
+
+@x, @y - scale factors.
+
+Description::
+
+Multiplies the current matrix by a matrix representing the specified scale.
+
+
+#Function Rotate
+
+Syntax::
+
+Function @Rotate( @angle# )
+
+Parameters::
+
+@angle - rotation angle in degrees.
+
+Description::
+
+Multiplies the current matrix by a matrix representing the specified rotation.
+
+
+#Function DrawLine
+
+Syntax::
+
+Function @DrawLine( @x1#, @y1#, @x2#, @y2# )
+
+Parameters::
+
+@x1, @y1 - the start coordinates of the line.
+
+@x2, @y2 - the end coordinates of the line.
+
+Description::
+
+Draws a line from @x1, @y1 to @x2, @y2.
+
+The line is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawRect
+
+Syntax::
+
+Function @DrawRect( @x#, @y#, @width#, @height# )
+
+Parameters::
+
+@x, @y			- coordinates of the top-left of the rectangle.
+
+@width, @height	- width and height of the rectangle.
+
+Description::
+
+Draws a rectangle of size @width, @height at the coordinates @x, @y.
+
+The rectangle is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawOval
+
+Syntax::
+
+Function @DrawOval( @x#, @y#, @width#, @height# )
+
+Parameters::
+
+@x, @y			- coordinates of the top-left of the oval.
+
+@width, @height	- width and height of the oval.
+
+Description::
+
+Draws an oval of size @width, @height at coordinates @x, @y.
+
+The oval is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawCircle
+
+Syntax::
+
+Function @DrawCircle( @x#, @y#, @radius# )
+
+Parameters::
+
+@x, @y - coordinates of the center of the circle.
+
+@radius - radius of the circle.
+
+Decscription::
+
+Draws a circle of radius @radius at coordinates @x, @y.
+
+The circle is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawEllipse
+
+Syntax::
+
+Function @DrawEllipse( @x#, @y#, @xRadius#, @yRadius# )
+
+Parameters::
+
+@x, @y - coordinates of the center of the ellipse.
+
+@xRadius, @yRadius - horizontal and vertical radii of the ellipse.
+
+Decscription::
+
+Draws an ellipse of radii @xRadius, @yRadius at coordinates @x, @y.
+
+The ellipse is drawn using the current color, alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+
+#Function DrawImage
+
+Syntax::
+
+Function @DrawImage( @image:Image, @x#, @y#, @frame=0 )
+
+Function @DrawImage( @image:Image, @x#, @y#, @rotation#, @scaleX#, @scaleY#, @frame=0 )
+
+Parameters::
+
+@image - image to draw.
+
+@x, @y - coordinates to draw image at.
+
+@rotation - local image rotation in degrees.
+
+@scaleX, @scaleY - local image scale.
+
+Description::
+
+Draws an image at coordinates @x, @y, offset by the image's handle.
+
+The image is drawn using the current alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+The @rotation and @scaleX, @scaleY parameters provide a convenient way for you to 'locally' rotate and scale the image.
+
+
+
+#Function DrawImageRect
+
+Syntax::
+
+Function @DrawImageRect( @image:Image, @x#, @y#, @srcX, @srcY, @srcWidth, @srcHeight, @frame=0 )
+
+Function @DrawImageRect( @image:Image, @x#, @y#, @srcX, @srcY, @srcWidth, @srcHeight, @rotation#, @scaleX#, @scaleY#, @frame=0 )
+
+Parameters::
+
+@image - image to draw.
+
+@x, @y - coordinates to draw image at.
+
+@srcRect - source rectangle.
+
+@srcX, @srcY, @srcWidth, @srcHeight - source rectangle.
+
+@rotation - local image rotation in degrees.
+
+@scaleX, @scaleY - local image scale.
+
+Description::
+
+Draws a sub-rectangle of an image at coordinates @x, @y, offset by the image's handle.
+
+The image is drawn using the current alpha, blend mode and matrix, and is clipped to the current scissor rectangle.
+
+The @rotation and @scaleX, @scaleY parameters provide a convenient way for you to 'locally' rotate and scale the image.
+
+
+
+#Function DrawText
+
+Syntax::
+
+Function @DrawText( @text$, @x, @y, @xalign=0, @yalign=0 )
+
+Parameters::
+
+@text - the text to draw.
+
+@x, @y - coordinates to draw the text at.
+
+@xalign, @yalign - how to align the text.
+
+Description::
+
+Draws @text at coordinates @x, @y in the current font.
+
+The current font may be modified using SetFont. By default, an internal 7 x 13 white-on-black font is used.
+
+@xalign and @yalign allow you to control the alignment of the text and should be in the range 0 for left/top alignment to 1 for right/bottom alignment. A value of .5 can be used for centering text horizontally or vertically.
+
+Note: The font functionality in mojo is very limited and intended mainly for debugging purposes.

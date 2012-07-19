@@ -2354,7 +2354,7 @@ Type TSearchRequester Extends TRequester
 		If safetyCount < 0 Then Return False
 		If safetyCount >= safetyThreshold Then
 			Local instances=safetyResetCount*safetyThreshold+safetyCount
-			If Confirm( "There have been "+instances+" instances found.\n\nWould you like To Continue?") Then
+			If Confirm( "There have been "+instances+" instances found.~n~nWould you like To Continue?") Then
 				safetyCount = 0
 				safetyResetCount:+1
 			Else
@@ -3745,7 +3745,7 @@ Type TOutputPanel Extends TToolPanel	'used build and run
 		Try
 			If pipe pipe.WriteLine(l)
 		Catch ex:TStreamWriteException
-			Write "Process debug failure. Cannot write:\n"+l+"~n"
+			Write "Process debug failure. Cannot write:~n"+l+"~n"
 			Stop
 		EndTry	
 	End Method
@@ -3908,7 +3908,7 @@ Type TOutputPanel Extends TToolPanel	'used build and run
 		mess=line[p+12..]
 
 		host.SelectError file,1,row
-		Notify "Compile Error\n\n"+mess
+		Notify "Compile Error~n~n"+mess
 		host.SetStatus mess		
 		
 		transerror=True
@@ -6303,6 +6303,7 @@ Type TCodePlay
 	Method ParseError(err$)
 		Local		mess$,file$,p,q
 		Local		Line,column
+		
 ' bcc error
 		If err$[..13]="Compile Error"
 			err=err[14..]
@@ -6323,10 +6324,13 @@ Type TCodePlay
 				file=FullPath(file[..p-1])				
 				SelectError file,column,Line
 			EndIf
-			Notify "Compile Error\n\n"+mess
+			Notify "Compile Error~n~n"+mess
 			SetStatus mess
 			Return
 		EndIf
+		
+		Return
+
 ' gcc error
 		err=err.Replace(EOL+"   "," ")
 		While err
@@ -6345,7 +6349,7 @@ Type TCodePlay
 					If Line
 						mess=mess[q+1..]
 						SelectError file,column,Line
-						Notify "Compile Error\n\n"+mess
+						Notify "Compile Error~n~n"+mess
 						Return
 					EndIf
 					p=q+1
@@ -6520,7 +6524,7 @@ Type TCodePlay
 'build docs if not there		
 ' simon was here: no docmods
 '		If mkdocs
-'			If Confirm( "Documentation not found.\n\nWould you like to rebuild documentation now?") ) And CloseAll( False ) DocMods
+'			If Confirm( "Documentation not found.~n~nWould you like to rebuild documentation now?") ) And CloseAll( False ) DocMods
 '		EndIf
 	End Method
 

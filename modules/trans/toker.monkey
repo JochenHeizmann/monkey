@@ -128,7 +128,7 @@ Class Toker
 			Wend
 		Else If str="~q"
 			_tokeType=TOKE_STRINGLIT
-			While TSTR()<>"~q"
+			While TSTR() And TSTR()<>"~q"
 				_tokePos+=1
 			Wend
 			If _tokePos<_source.Length _tokePos+=1 Else _tokeType=TOKE_STRINGLITEX

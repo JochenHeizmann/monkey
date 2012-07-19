@@ -35,7 +35,7 @@ Function SyntaxErr()
 End
 
 Function InternalErr()
-	Local t$=_errInfo+" : Error : Internal error"
+	Local t$=_errInfo+" : Error : Internal error."
 	Print t
 	Error t
 End

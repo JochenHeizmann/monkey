@@ -1,0 +1,635 @@
+#Module mojo.input
+
+The input module allows programs to check for user input from a wide variety of devices such keyboards, mice, joysticks and touchsceens.
+
+The input module uses a 'polling' input model, meaning that your program must continually check (or 'poll') the state of input devices. Polling is usually performed during the @OnUpdate phase of your program.
+
+The following constants are for use with @KeyDown and @KeyHit: 
+{{
+KEY_BACKSPACE
+KEY_TAB
+KEY_ENTER
+KEY_ESCAPE
+KEY_SPACE
+KEY_SHIFT
+KEY_CONTROL
+KEY_PAGEUP
+KEY_PAGEDOWN
+KEY_END
+KEY_HOME
+KEY_LEFT
+KEY_UP
+KEY_RIGHT
+KEY_DOWN
+KEY_INSERT
+KEY_DELETE
+KEY_F1
+KEY_F2
+KEY_F3
+KEY_F4
+KEY_F5
+KEY_F6
+KEY_F7
+KEY_F8
+KEY_F9
+KEY_F10
+KEY_F11
+KEY_F12
+KEY_0
+KEY_1
+KEY_2
+KEY_3
+KEY_4
+KEY_5
+KEY_6
+KEY_7
+KEY_8
+KEY_9
+KEY_A
+KEY_B
+KEY_C
+KEY_D
+KEY_E
+KEY_F
+KEY_G
+KEY_H
+KEY_I
+KEY_J
+KEY_K
+KEY_L
+KEY_M
+KEY_N
+KEY_O
+KEY_P
+KEY_Q
+KEY_R
+KEY_S
+KEY_T
+KEY_U
+KEY_V
+KEY_W
+KEY_X
+KEY_Y
+KEY_Z
+KEY_TILDE
+KEY_MINUS
+KEY_EQUALS
+KEY_OPENBRACKET
+KEY_CLOSEBRACKET
+KEY_BACKSLASH
+KEY_SEMICOLON
+KEY_QUOTES
+KEY_COMMA
+KEY_PERIOD
+KEY_SLASH
+}}
+
+As a convenience, the commands @KeyDown and @KeyHit can also be used to test non-keyboard devices using these additional constants: 
+{{
+KEY_LMB			'Left mouse button
+KEY_RMB			'Right mouse button
+KEY_MMB			'Middle mouse button
+
+KEY_JOY0_A		'A button on joystick 0
+KEY_JOY0_B		'B button on joystick 0
+KEY_JOY0_X		'X button on joystick 0
+KEY_JOY0_Y		'Y button on joystick 0
+KEY_JOY0_LEFT	'left button on joystick 0
+KEY_JOY0_UP		'up button on joystick 0
+KEY_JOY0_RIGHT	'right button on joystick 0
+KEY_JOY0_DOWN	'down button on joystick 0
+
+KEY_TOUCH0		'First touch - note: 32 touch codes supported. KEY_TOUCHn=KEY_TOUCH0+n, where n>=0 and n<32
+}}
+
+The following constants are for use with @MouseDown and @MouseHit: 
+{{
+MOUSE_LEFT
+MOUSE_RIGHT
+MOUSE_MIDDLE
+}}
+
+The following constants are for use with @JoyDown and @JoyHit: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+The following constants are for use with @GetChar: 
+{{
+CHAR_TAB
+CHAR_BACKSPACE
+CHAR_ENTER
+CHAR_ESCAPE
+CHAR_PAGEUP
+CHAR_PAGEDOWN
+CHAR_END
+CHAR_HOME
+CHAR_LEFT
+CHAR_UP
+CHAR_RIGHT
+CHAR_DOWN
+CHAR_INSERT
+CHAR_DELETE
+}}
+
+
+#Function KeyDown
+
+Syntax::
+
+Function @KeyDown( @key )
+
+Parameters::
+
+@key - keycode of the key to check.
+
+Description::
+
+Returns true if the specified key is currently held down, otherwise false.
+
+Note that any on/off style 'buttons' on any device can be read using the @KeyDown and @KeyHit commands. For example, to read the state of the left mouse button you can use @KeyDown( KEY_LMB ) in addition to @MouseDown( MOUSE_LEFT ).
+
+Example::
+{{
+Import mojo
+
+Class MyApp Extends App
+
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText "Hold down some keys",0,0
+		Local y=14
+		For Local i=1 To 255
+			If KeyDown( i )
+				DrawText "Key "+i+" is down.",0,y
+				y+=14
+			Endif
+		Next
+	End
+End
+
+Function Main()
+	New MyApp
+End
+}}
+
+See also::
+
+@KeyHit
+
+
+#Function KeyHit
+
+Syntax::
+
+Function @KeyHit( @key )
+
+Parameters::
+
+@key - keycode of the key to check.
+
+Description::
+
+Returns the number of times the specified key has been hit since the last OnUpdate.
+
+Note that any on/off style 'buttons' on any device can be read using the @KeyDown and @KeyHit commands. For example, to read the state of the left mouse button you can use @KeyDown( KEY_LMB ) in addition to @MouseDown( MOUSE_LEFT ).
+
+Example::
+{{
+Import mojo
+
+Class MyApp Extends App
+
+	Field lineY
+			
+	Method OnCreate()
+		lineY=DeviceHeight()/2
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+
+		Local hit=KeyHit( KEY_LMB )	'Uses KeyHit to check the left mouse button.  You could also use MouseHit( MOUSE_LEFT )
+		
+		If hit And MouseY()<lineY
+			Print "You clicked above the line."
+		Else If hit And MouseY()>=lineY
+			Print "You clicked on or below the line."
+		End
+	End
+	
+	Method OnRender()
+		Cls
+		DrawLine 0,lineY,DeviceWidth(),lineY
+	End
+End
+
+Function Main()
+	New MyApp
+End
+}}
+See also::
+
+@KeyDown
+
+
+#Function GetChar
+
+Syntax::
+
+Function @GetChar()
+
+Description::
+
+Returns the character code of the next character in the keyboard character queue, or 0 if no more characters are available.
+
+The keyboard queue contains characters codes as opposed to the key codes used by KeyDown and KeyUp.
+
+Character codes differ from key codes in that they are generally printable and may be modified by the shift, control and alt keys. Character codes also 'repeat' at a rate determined by the OS.
+
+The mapping from key codes to character codes is controlled by the underlying OS, but in practice will generally map to ASCII codes.
+
+The input module also provides special character code mappings for a number of unprintable keys: 
+{{
+CHAR_TAB
+CHAR_BACKSPACE
+CHAR_ENTER
+CHAR_ESCAPE
+CHAR_PAGEUP
+CHAR_PAGEDOWN
+CHAR_END
+CHAR_HOME
+CHAR_LEFT
+CHAR_UP
+CHAR_RIGHT
+CHAR_DOWN
+CHAR_INSERT
+CHAR_DELETE
+}}
+
+Example::
+{{
+Import mojo
+
+Class MyApp Extends App
+
+	Field text$="Type something:"
+
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		Local char=GetChar()
+		If char>=32
+			text+=String.FromChar( char )
+		Endif
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText text,0,0
+	End
+End
+
+Function Main()
+	New MyApp
+End
+}}
+
+#Function MouseX
+
+Syntax::
+
+Function @MouseX#()
+
+Description::
+
+Returns the x coordinate of the mouse pointer.
+
+On devices with a touch screen but no mouse, @MouseX will instead return @TouchX( 0 ).
+
+Example::
+{{
+Import mojo
+
+Class MyApp Extends App
+
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText "MouseX="+MouseX+", MouseY="+MouseY,0,0
+		DrawCircle MouseX,MouseY,10
+	End
+End
+
+Function Main()
+	New MyApp
+End
+}}
+
+See also::
+
+@MouseY
+
+
+#Function MouseY
+
+Syntax::
+
+Function @MouseY#()
+
+Description::
+
+Returns the y coordinate of the mouse pointer.
+
+On devices with a touch screen but no mouse, @MouseY will instead return @TouchY( 0 ).
+
+See also::
+
+@MouseX
+
+
+#Function MouseDown
+
+Syntax::
+
+Function @MouseDown( @button=MOUSE_LEFT )
+
+Parameters::
+
+@button - mouse button to check: @MOUSE_LEFT, @MOUSE_RIGHT or @MOUSE_MIDDLE
+
+Description::
+
+Returns true if the specified mouse button is currently held down, otherwise false.
+
+
+#Function MouseHit
+
+Syntax::
+
+Function @MouseHit( @button=MOUSE_LEFT )
+
+Parameters::
+
+@button - mouse button to check: @MOUSE_LEFT, @MOUSE_RIGHT or @MOUSE_MIDDLE
+
+Description::
+
+Returns the number of times the specified mouse button has been pressed since the last OnUpdate.
+
+
+#Function JoyDown
+
+Syntax::
+
+Function @JoyDown( @button )
+
+Parameters::
+
+@button - joystick button to test.
+
+Description::
+
+Return true if the specified joystick button is currently held down.
+
+@button should be one of the following: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+
+#Function JoyHit
+
+Syntax::
+
+Function @JoyHit( @button )
+
+Parameters::
+
+@button - joystick button to test.
+
+Description::
+
+Return the number of times the specified joystick button has been pressed since the last OnUpdate.
+
+@button should be one of the following: 
+{{
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+}}
+
+
+#Function TouchX
+
+Syntax::
+
+Function @TouchX#( @index=0 )
+
+Description::
+
+Returns the x coordinate of the finger on a touch screen device.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+On devices with a mouse but no touch screen, @TouchX( 0 ) will instead return @MouseX.
+
+See also::
+
+@TouchY, @TouchDown, @TouchHit
+
+
+#Function TouchY
+
+Syntax::
+
+Function @TouchY#( @index=0 )
+
+Description::
+
+Returns the y coordinate of the finger on a touch screen device.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+On devices with a mouse but no touch screen, @TouchY( 0 ) will instead return @MouseY.
+
+See also::
+
+@TouchX, @TouchDown, @TouchHit
+
+
+#Function TouchDown
+
+Syntax::
+
+Function @TouchDown( @index=0 )
+
+Parameters::
+
+@index - finger index in the range 0 to 31.
+
+Description::
+
+Returns true if the finger specified by @index is currently touching the touchscreen, otherwise false.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+If a finger is touching, you can get its x and y coordinates using the @TouchX and @TouchY commands.
+
+On devices with a mouse but no touch screen, @TouchDown( 0 ) will instead return @MouseDown( MOUSE_LEFT ).
+
+Example::
+{{
+Import mojo
+
+Class MyApp Extends App
+
+	Field touching
+	
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		touching=0
+		For Local i=0 Until 32
+			If TouchDown( i ) touching+=1
+		Next
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText touching,0,0
+	End
+End
+
+Function Main()
+	New MyApp
+End
+}}
+
+See also::
+
+@TouchX, @TouchY, @TouchHit
+
+
+#Function TouchHit
+
+Syntax::
+
+Function @TouchHit( @index=0 )
+
+Parameters::
+
+@index - finger index in the range 0 to 31.
+
+Description::
+
+Returns the number of times the specified finger has made contact with the touchscreen since the last OnUpdate.
+
+Note that @index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+
+If a finger is touching, you can get its x and y coordinates using the @TouchX and @TouchY commands.
+
+On devices with a mouse but no touch screen, @TouchHit( 0 ) will instead return @MouseHit( MOUSE_LEFT ).
+
+See also::
+
+@TouchX, @TouchY, @TouchHit
+
+
+#Function AccelX
+
+Syntax::
+
+Function @AccelX#()
+
+Description::
+
+Returns the x compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+
+The value returned is in the range -1 to 1 inclusive.
+
+If the device has no accelerometer, 0 is returned.
+
+Accelerometer functionality is currently only available on the Android and iOS targets.
+
+
+#Function AccelY
+
+Syntax::
+
+Function @AccelY#()
+
+Description::
+
+Returns the y compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+
+The value returned is in the range -1 to 1 inclusive.
+
+If the device has no accelerometer, 0 is returned.
+
+Accelerometer functionality is currently only available on the Android and iOS targets.
+
+
+#Function AccelZ
+
+Syntax::
+
+Function @AccelZ#()
+
+Description::
+
+Returns the z compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+
+The value returned is in the range -1 to 1 inclusive.
+
+If the device has no accelerometer, 0 is returned.
+
+Accelerometer functionality is currently only available on the Android and iOS targets.

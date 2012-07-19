@@ -1,0 +1,305 @@
+
+#Module monkey.math
+
+The math module contains function and constants useful for performing math.
+
+#Const PI
+
+Syntax::
+
+Const @PI#=3.14159265
+
+Description::
+
+The ratio of any circle's circumference to its diameter.
+
+
+#Const TWOPI
+
+Syntax::
+
+Const @TWOPI#=6.28318531
+
+Description::
+
+@PI times 2.
+
+#Const HALFPI
+
+Syntax::
+
+Const @HALFPI#=1.57079633
+
+Description::
+
+@PI times a half.
+
+
+#Function Sin
+
+Syntax::
+
+Function @Sin#( @x# )
+
+Parameters::
+
+@x - angle in degrees.
+
+Description::
+
+Returns the sine of @x, expressed in degrees.
+
+
+#Function Cos
+
+Syntax::
+
+Function @Cos#( @x# )
+
+Parameters::
+
+@x - angle in degrees.
+
+Description::
+
+Returns the cosine of @x, expressed in degrees.
+
+
+#Function Tan
+
+Syntax::
+
+Function @Tan#( @x# )
+
+Parameters::
+
+@x - angle in degrees.
+
+Description::
+
+Returns the tangent of @x, expressed in degrees.
+
+
+#Function ASin
+
+Syntax::
+
+Function @ASin#( @x# )
+
+Parameters::
+
+@x - floating point value in the range -1 to 1 (inclusive).
+
+Description::
+
+Returns the arc sine of @x, expressed in degrees.
+
+
+#Function ACos
+
+Syntax::
+
+Function @ACos#( @x# )
+
+Parameters::
+
+@x - floating point value in the range -1 to 1 (inclusive).
+
+Description::
+
+Returns the arc cosine of @x, expressed in degrees.
+
+
+#Function ATan
+
+Syntax::
+
+Function @ATan#( @x# )
+
+Parameters::
+
+@x - floatint point value.
+
+Description::
+
+Returns the arc tangent of @x, expressed in degrees.
+
+
+#Function ATan2
+
+Syntax::
+
+Function @ATan2#( @x#, @y# )
+
+Parameters::
+
+@x, @y - float point values.
+
+Description::
+
+Returns the arc tangent of @x / @y, expressed in degrees.
+
+The function uses the signs of @x and @y to compute the correct quadrant for the result.
+
+
+#Function Pow
+
+Syntax::
+
+Function @Pow#( @x#, @y# )
+
+Parameters::
+
+@x, @y - float point values.
+
+Description::
+
+Returns @x to the power of @y.
+
+
+#Function Sqrt
+
+Syntax::
+
+Function @Sqrt#( @x# )
+
+Parameters::
+
+@x - floatint point value.
+
+Description::
+
+Returns the square root of @x.
+
+
+#Function Floor
+
+Syntax::
+
+Function @Floor#( @x# )
+
+Parameters::
+
+@x - floatint point value.
+
+Description::
+
+Returns the largest integral value that is not greater than @x.
+
+
+#Function Ceil
+
+Syntax::
+
+Function @Ceil#( @x# )
+
+Parameters::
+
+@x - floatint point value.
+
+Description::
+
+Returns the smallest integral value that is not less than @x.
+
+
+#Function Sgn
+
+Syntax::
+
+Function @Sgn( @x )
+
+Function @Sgn#( @x# )
+
+Parameters::
+
+@x - input value.
+
+Description::
+
+Returns -1 if @x is negative, +1 if @x is greater than zero or 0 if @x is equal to zero.
+
+
+#Function Abs
+
+Syntax::
+
+Function @Abs( @x )
+
+Function @Abs#( @x# )
+
+Parameters::
+
+@x - input value.
+
+Description::
+
+Returns the absolute value of @x.
+
+
+#Function Min
+
+Syntax::
+
+Function @Min( @x, @y )
+
+Function @Min#( @x#, @y# )
+
+Parameters::
+
+@x, @y - input values.
+
+Description::
+
+Returns the minimum of @x and @y.
+
+#Function Max
+
+Syntax::
+
+Function @Max( @x, @y )
+
+Function @Max#( @x#, @y# )
+
+Parameters::
+
+@x, @y - input values.
+
+Description::
+
+Returns the maximum of @x and @y.
+
+
+#Function Clamp
+
+Syntax::
+
+Function @Clamp( @x, @min, @max )
+
+Function @Clamp#( @x#, @min#, @max# )
+
+Parameters::
+
+@x - value to clamp
+
+@min - minimum returnable value
+
+@max - maximum returnable value
+
+Description::
+
+Clamps @x to the range @min through @max inclusive.
+
+
+#Function Log
+
+Syntax::
+
+Function @Log( @x# )
+
+Parameters::
+
+@x - floating point value.
+
+Description::
+
+Returns the natural logarithm of @x.

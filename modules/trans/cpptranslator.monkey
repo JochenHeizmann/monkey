@@ -28,7 +28,6 @@ Class CppTranslator Extends Translator
 	
 	Method TransValue$( ty:Type,value$ )
 		If value
-			If IntType( ty ) And value.StartsWith( "$" ) Return "0x"+value[1..]
 			If BoolType( ty ) Return "true"
 			If IntType( ty ) Return value
 			If FloatType( ty ) Return value+"f"
@@ -39,13 +38,13 @@ Class CppTranslator Extends Translator
 			If StringType( ty ) Return "String()"
 			If ArrayType( ty ) Return "Array<"+TransType( ArrayType(ty).elemType )+" >()"
 			If ObjectType( ty ) Return "0"
-		EndIf
+		Endif
 		InternalErr
 	End
 
 	Method TransArgs$( args:Expr[] )
 		Local t$
-		For Local arg:=EachIn args
+		For Local arg:=Eachin args
 			If t t+=","
 			t+=arg.Trans()
 		Next
@@ -81,7 +80,7 @@ Class CppTranslator Extends Translator
 			Return decl.scope.munged+"::"+decl.munged
 		Else If ModuleDecl( decl.scope )
 			Return decl.munged
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -98,7 +97,7 @@ Class CppTranslator Extends Translator
 		If decl.IsMethod()
 			If lhs Return TransSubExpr( lhs )+"->"+decl.munged+TransArgs( args )
 			Return decl.munged+TransArgs( args )
-		EndIf
+		Endif
 		Return TransStatic( decl )+TransArgs( args )
 	End
 	
@@ -155,7 +154,7 @@ Class CppTranslator Extends Translator
 			If IntType( src ) Return "String"+Bra( texpr )
 			If FloatType( src ) Return "String"+Bra( texpr )
 			If StringType( src ) Return texpr
-		EndIf
+		Endif
 		
 		'upcast
 		If src.ExtendsType( dst )
@@ -163,13 +162,13 @@ Class CppTranslator Extends Translator
 				Return "(("+TransType(dst)+")"+texpr+")"
 			Endif
 			Return texpr
-		EndIf
+		Endif
 
 		'downcast		
 		If dst.ExtendsType( src )
 			Return "dynamic_cast<"+dst.GetClass().actual.munged+"*>"+Bra( "("+src.GetClass().actual.munged+"*)"+texpr )
 '			Return "dynamic_cast<"+dst.GetClass().actual.munged+"*>"+Bra( texpr )
-		EndIf
+		Endif
 		
 		InternalErr
 	End
@@ -214,7 +213,7 @@ Class CppTranslator Extends Translator
 		MungDecl tmp
 		
 		Local t$
-		For Local elem:=EachIn expr.exprs
+		For Local elem:=Eachin expr.exprs
 			If t t+=","
 			t+=elem.Trans()
 		Next
@@ -322,7 +321,7 @@ Class CppTranslator Extends Translator
 		PushMungScope
 
 		Local args$
-		For Local arg:=EachIn decl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransLocalType( arg.ty )+" "+arg.munged
@@ -341,7 +340,7 @@ Class CppTranslator Extends Translator
 		PushMungScope
 		
 		Local args$
-		For Local arg:=EachIn decl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			mungScope.Insert arg.munged,arg
 			If args args+=","
 			args+=TransLocalType( arg.ty )+" "+arg.munged
@@ -367,31 +366,31 @@ Class CppTranslator Extends Translator
 		Emit "public:"
 
 		'fields
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
 			If fdecl
 				Emit TransType( fdecl.ty )+" "+fdecl.munged+";"
 				Continue
-			EndIf
+			Endif
 		Next
 
 		'fields ctor		
 		Emit classid+"();"
 		
 		'methods		
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 		
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncProto fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit "static "+TransType( gdecl.ty )+" "+gdecl.munged+";"
 				Continue
-			EndIf
+			Endif
 		Next
 
 		'gc_mark
@@ -414,7 +413,7 @@ Class CppTranslator Extends Translator
 		
 		'fields ctor		
 		Emit classid+"::"+classid+"(){"
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
 			If Not fdecl Continue
 			Emit fdecl.munged+"="+fdecl.init.Trans()+";"
@@ -422,19 +421,19 @@ Class CppTranslator Extends Translator
 		Emit "}"
 
 		'methods		
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 		
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit TransType( gdecl.ty )+" "+classid+"::"+gdecl.munged+";"
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		'gc_mark
@@ -455,7 +454,7 @@ Class CppTranslator Extends Translator
 		app.mainFunc.munged="bb_Main"
 		
 		'Munging
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 		
 			MungDecl decl
 
@@ -468,7 +467,7 @@ Class CppTranslator Extends Translator
 			
 			MungOverrides cdecl
 			
-			For Local decl:=EachIn cdecl.Semanted
+			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
 			Next
 			
@@ -476,47 +475,47 @@ Class CppTranslator Extends Translator
 		Next
 		
 		'Prototypes/header!
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 		
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit "extern "+TransType( gdecl.ty )+" "+gdecl.munged+";"	'forward reference...
 				Continue
-			EndIf
+			Endif
 		
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncProto fdecl
 				Continue
-			EndIf
+			Endif
 		
 			Local cdecl:=ClassDecl( decl )
 			If cdecl
 				EmitClassProto cdecl
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		'declarations!
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit TransType( gdecl.ty )+" "+gdecl.munged+";"
 				Continue
-			EndIf
+			Endif
 			
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 
 			Local cdecl:=ClassDecl( decl )
 			If cdecl
 				EmitClassDecl cdecl
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		Emit "int bb_Init(){"

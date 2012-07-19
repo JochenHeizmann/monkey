@@ -42,7 +42,7 @@ Class Map<K,V>
 			Else
 				node.value=value
 				Return
-			EndIf
+			Endif
 		Wend
 		
 		node=New Node<K,V>( key,value,RED,parent )
@@ -131,13 +131,14 @@ Private
 				node=node.left
 			Else
 				Return node
-			EndIf
+			Endif
 		Wend
 		Return node
 	End
 	
 	Method RemoveNode( node:Node<K,V> )
 		Local splice:Node<K,V>,child:Node<K,V>
+		
 		If Not node.left
 			splice=node
 			child=node.right
@@ -152,20 +153,25 @@ Private
 			child=splice.left
 			node.key=splice.key
 			node.value=splice.value
-		EndIf
+		Endif
+		
 		Local parent:=splice.parent
+		
 		If child
 			child.parent=parent
-		EndIf
+		Endif
+		
 		If Not parent
 			root=child
 			Return
-		EndIf
+		Endif
+		
 		If splice=parent.left
 			parent.left=child
 		Else
 			parent.right=child
-		EndIf
+		Endif
+		
 		If splice.color=BLACK DeleteFixup child,parent
 	End
 	
@@ -182,11 +188,11 @@ Private
 					If node=node.parent.right
 						node=node.parent
 						RotateLeft node
-					EndIf
+					Endif
 					node.parent.color=BLACK
 					node.parent.parent.color=RED
 					RotateRight node.parent.parent
-				EndIf
+				Endif
 			Else
 				Local uncle:=node.parent.parent.left
 				If uncle And uncle.color=RED
@@ -198,12 +204,12 @@ Private
 					If node=node.parent.left
 						node=node.parent
 						RotateRight node
-					EndIf
+					Endif
 					node.parent.color=BLACK
 					node.parent.parent.color=RED
 					RotateLeft node.parent.parent
-				EndIf
-			EndIf
+				Endif
+			Endif
 		Wend
 		root.color=BLACK
 	End
@@ -213,17 +219,17 @@ Private
 		node.right=child.left
 		If child.left
 			child.left.parent=node
-		EndIf
+		Endif
 		child.parent=node.parent
 		If node.parent
 			If node=node.parent.left
 				node.parent.left=child
 			Else
 				node.parent.right=child
-			EndIf
+			Endif
 		Else
 			root=child
-		EndIf
+		Endif
 		child.left=node
 		node.parent=child
 	End
@@ -233,37 +239,42 @@ Private
 		node.left=child.right
 		If child.right
 			child.right.parent=node
-		EndIf
+		Endif
 		child.parent=node.parent
 		If node.parent
 			If node=node.parent.right
 				node.parent.right=child
 			Else
 				node.parent.left=child
-			EndIf
+			Endif
 		Else
 			root=child
-		EndIf
+		Endif
 		child.right=node
 		node.parent=child
 	End
 	
 	Method DeleteFixup( node:Node<K,V>,parent:Node<K,V> )
-		While node And node<>root And node.color=BLACK
+	
+		While node<>root And (Not node Or node.color=BLACK )
+
 			If node=parent.left
+			
 				Local sib:=parent.right
+				
 				If sib.color=RED
 					sib.color=BLACK
 					parent.color=RED
 					RotateLeft parent
 					sib=parent.right
-				EndIf
-				If sib.left.color=BLACK And sib.right.color=BLACK
+				Endif
+				
+				If (Not sib.left Or sib.left.color=BLACK) And (Not sib.right Or sib.right.color=BLACK)
 					sib.color=RED
 					node=parent
 					parent=parent.parent
 				Else
-					If sib.right.color=BLACK
+					If Not sib.right Or sib.right.color=BLACK
 						sib.left.color=BLACK
 						sib.color=RED
 						RotateRight sib
@@ -274,33 +285,35 @@ Private
 					sib.right.color=BLACK
 					RotateLeft parent
 					node=root
-				EndIf
+				Endif
 			Else	
 				Local sib:=parent.left
+				
 				If sib.color=RED
 					sib.color=BLACK
 					parent.color=RED
 					RotateRight parent
 					sib=parent.left
-				EndIf
-				If sib.right.color=BLACK And sib.left.color=BLACK
+				Endif
+				
+				If (Not sib.right Or sib.right.color=BLACK) And (Not sib.left Or sib.left.color=BLACK)
 					sib.color=RED
 					node=parent
 					parent=parent.parent
 				Else
-					If sib.left.color=BLACK
+					If Not sib.left Or sib.left.color=BLACK
 						sib.right.color=BLACK
 						sib.color=RED
 						RotateLeft sib
 						sib=parent.left
-					EndIf
+					Endif
 					sib.color=parent.color
 					parent.color=BLACK
 					sib.left.color=BLACK
 					RotateRight parent
 					node=root
-				EndIf
-			EndIf
+				Endif
+			Endif
 		Wend
 		If node node.color=BLACK
 	End
@@ -361,7 +374,7 @@ Class Node<K,V>
 				node=node.right
 			Wend
 			Return node
-		EndIf
+		Endif
 		node=Self
 		Local parent:Node=Self.parent
 		While parent And node=parent.left

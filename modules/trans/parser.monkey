@@ -261,7 +261,6 @@ Class FuncCallExpr Extends Expr
 	Method New( expr:Expr,args:Expr[] )
 		Self.expr=expr
 		Self.args=args
-		
 	End
 	
 	Method Semant:Expr()
@@ -538,7 +537,15 @@ Class Parser
 				expr=New IdentExpr( ParseIdent() )
 			Case TOKE_INTLIT
 				Local t$=_toke
-				If _toke.StartsWith( "$" )
+				#rem 'moved to ConstExpr ctor
+				If _toke.StartsWith( "%" )
+					Local val=0
+					For Local i=1 Until t.Length
+						Local ch=_toke[i]
+						val=val Shl 1 | (ch-48)
+					Next
+					t=String( val )
+				Else If _toke.StartsWith( "$" )
 					Local val=0
 					t=t.ToUpper()
 					For Local i=1 Until t.Length
@@ -551,6 +558,7 @@ Class Parser
 					Next
 					t=String( val )
 				Endif
+				#end
 				expr=New ConstExpr( Type.intType,t )
 				NextToke
 			Case TOKE_FLOATLIT
