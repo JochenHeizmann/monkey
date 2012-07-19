@@ -48,9 +48,9 @@ Class Toker
 		_line=1
 		_source=source
 		_length=_source.Length
+		_toke=""
 		_tokeType=TOKE_EOF
 		_tokePos=0
-		_toke=""
 	End
 	
 	Method New( toker:Toker )
@@ -58,9 +58,9 @@ Class Toker
 		_line=toker._line
 		_source=toker._source
 		_length=_source.Length
+		_toke=toker._toke
 		_tokeType=toker._tokeType
 		_tokePos=toker._tokePos
-		_toke=toker._toke
 	End
 	
 	Method Path$()

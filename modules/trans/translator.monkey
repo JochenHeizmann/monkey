@@ -45,8 +45,8 @@ Class Translator
 				If fdecl.argDecls.Length=tdecl.argDecls.Length
 					Local match=True
 					For Local i=0 Until fdecl.argDecls.Length
-						Local ty:=ArgDecl( fdecl.argDecls[i].actual ).ty
-						Local ty2:=ArgDecl( tdecl.argDecls[i].actual ).ty
+						Local ty:=fdecl.argDecls[i].type
+						Local ty2:=tdecl.argDecls[i].type
 						If ty.EqualsType( ty2 ) Continue
 						match=False
 						Exit
@@ -76,7 +76,7 @@ Class Translator
 		If fdecl And fdecl.IsMethod() Return MungFuncDecl( fdecl )
 		
 		Local id$=decl.ident,munged$
-		
+
 		'this lot just makes output a bit more readable...
 		Select ENV_LANG
 		Case "js"
@@ -229,7 +229,7 @@ Class Translator
 	End
 
 	Method CreateLocal$( expr:Expr )
-		Local tmp:=New LocalDecl( "",expr.exprType,expr )
+		Local tmp:=New LocalDecl( "",0,expr.exprType,expr )
 		MungDecl tmp
 		Emit TransLocalDecl( tmp.munged,expr )+";"
 		Return tmp.munged
@@ -294,12 +294,12 @@ Class Translator
 		Return expr.expr.Trans()
 	End
 	
-	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		Return expr
-	End
+'	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+'		Return expr
+'	End
 	
 	Method TransVarExpr$( expr:VarExpr )
-		Local decl:=VarDecl( expr.decl.actual )
+		Local decl:=VarDecl( expr.decl )
 		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,Null,[] )
 		
@@ -313,7 +313,7 @@ Class Translator
 	End
 	
 	Method TransMemberVarExpr$( expr:MemberVarExpr )
-		Local decl:=VarDecl( expr.decl.actual )
+		Local decl:=VarDecl( expr.decl )
 		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr.expr,[] )
 		
@@ -323,7 +323,7 @@ Class Translator
 	End
 	
 	Method TransInvokeExpr$( expr:InvokeExpr )
-		Local decl:=FuncDecl( expr.decl.actual ),t$
+		Local decl:=FuncDecl( expr.decl ),t$
 		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,Null,expr.args )
 		
@@ -333,7 +333,7 @@ Class Translator
 	End
 	
 	Method TransInvokeMemberExpr$( expr:InvokeMemberExpr )
-		Local decl:=FuncDecl( expr.decl.actual ),t$
+		Local decl:=FuncDecl( expr.decl ),t$
 
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr.expr,expr.args )
 		
@@ -343,7 +343,7 @@ Class Translator
 	End
 	
 	Method TransInvokeSuperExpr$( expr:InvokeSuperExpr )
-		Local decl:=FuncDecl( expr.funcDecl.actual ),t$
+		Local decl:=FuncDecl( expr.funcDecl ),t$
 
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr,[] )
 		

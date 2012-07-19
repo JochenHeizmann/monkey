@@ -1023,6 +1023,18 @@ void Error( String err ){
 	throw err.ToCString<char>();
 }
 
+int Compare( int x,int y ){
+	return x-y;
+}
+
+int Compare( Float x,Float y ){
+	return x<y ? -1 : x>y;
+}
+
+int Compare( String x,String y ){
+	return x.Compare( y );
+}
+
 int bbInit();
 int bbMain();
 
@@ -1044,6 +1056,7 @@ int seh_call( int(*f)() ){
 	__try{
 		return f();
 	}__except( (p=FilterException(GetExceptionCode()))!=0 ){
+		puts( p );
 		throw p;
 	}
 }

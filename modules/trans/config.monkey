@@ -39,13 +39,12 @@ End
 
 Function Err( err$ )
 	Print _errInfo+" : Error : "+err
-	'Print _errInfo+" "+err
 	ExitApp -1
 End
 
-Function InternalErr()
-	Print _errInfo+" : Error : Internal error."
-	Error _errInfo+" : Error : Internal error."
+Function InternalErr( err$="Internal error" )
+	Print _errInfo+" : "+err
+	Error _errInfo+" : "+err
 End
 
 Function Asc( str$ )

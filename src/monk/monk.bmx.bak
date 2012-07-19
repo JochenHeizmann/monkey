@@ -5299,6 +5299,8 @@ EndRem
 			Return False
 		EndTry
 				
+'		SaveText txt,file		
+		
 		path=host.FullPath$(file)
 		dirty=True
 		SetDirty False

@@ -15,7 +15,7 @@ Class JavaTranslator Extends Translator
 		If FloatType( ty ) Return "float"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return TransType( ArrayType( ty ).elemType )+"[]"
-		If ObjectType( ty ) Return ty.GetClass().actual.munged
+		If ObjectType( ty ) Return ty.GetClass().munged
 		InternalErr
 	End
 	
@@ -48,7 +48,7 @@ Class JavaTranslator Extends Translator
 		Local id$=decl.munged
 
 		Local vdecl:=ValDecl( decl )
-		If vdecl Return TransType( vdecl.ty )+" "+id
+		If vdecl Return TransType( vdecl.type )+" "+id
 		
 		InternalErr
 	End
@@ -95,14 +95,6 @@ Class JavaTranslator Extends Translator
 		InternalErr
 	End
 	
-	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		If ty.ActualType().EqualsType( src.ActualType() ) Return expr
-		
-		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
-
-		Return "(("+TransType(ty)+")"+Bra(expr)+")"
-	End
-	
 	Method TransGlobal$( decl:GlobalDecl )
 		Return TransStatic( decl )
 	End
@@ -131,8 +123,8 @@ Class JavaTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		Local t$="(new "+expr.classDecl.actual.munged+"())"
-		If expr.ctor t+="."+expr.ctor.actual.munged+TransArgs( expr.args )
+		Local t$="(new "+expr.classDecl.munged+"())"
+		If expr.ctor t+="."+expr.ctor.munged+TransArgs( expr.args )
 		Return t
 	End
 	
@@ -187,7 +179,7 @@ Class JavaTranslator Extends Translator
 		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
 		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Local tmp:=New LocalDecl( "",src,Null )
+			Local tmp:=New LocalDecl( "",0,src,Null )
 			MungDecl tmp
 			Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
 			Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
@@ -314,29 +306,14 @@ Class JavaTranslator Extends Translator
 	Method EmitFuncDecl( decl:FuncDecl )
 		PushMungScope
 		
-		'Find decl we override
-		Local odecl:=decl
-		While odecl.overrides
-			odecl=odecl.overrides
-		Wend
-
-		'Generate 'args' string and arg casts
 		Local args$
-		Local argCasts:=New StringStack
-		For Local i=0 Until decl.argDecls.Length
-			Local arg:=decl.argDecls[i]
-			Local oarg:=odecl.argDecls[i]
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
-			args+=TransType( oarg.ty )+" "+arg.munged
-			If arg.ty.EqualsType( oarg.ty ) Continue
-			Local t$=arg.munged
-			arg.munged=""
-			MungDecl arg
-			argCasts.Push TransDecl( arg )+"="+Bra(TransType(arg.ty))+Bra(t)+";"
+			args+=TransType( arg.type )+" "+arg.munged
 		Next
 		
-		Local t$="public "+TransType( odecl.retType )+" "+decl.munged+Bra( args )
+		Local t$="public "+TransType( decl.retType )+" "+decl.munged+Bra( args )
 		
 		If decl.ClassScope() And decl.ClassScope().IsInterface()
 			Emit t+";"
@@ -346,9 +323,6 @@ Class JavaTranslator Extends Translator
 			Local q$
 			If decl.IsStatic() q+="static "
 			Emit q+t+"{"
-			For Local t$=Eachin argCasts
-				Emit t
-			Next
 			EmitBlock decl
 			Emit "}"
 		Endif
@@ -358,19 +332,15 @@ Class JavaTranslator Extends Translator
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
 	
-		If classDecl.IsTemplateInst()
-			InternalErr
-		Endif
-	
-		Local classid$=classDecl.actual.munged
-		Local superid$=classDecl.superClass.actual.munged
+		Local classid$=classDecl.munged
+		Local superid$=classDecl.superClass.munged
 
 		If classDecl.IsInterface() 
 
 			Local bases$
 			For Local iface:=Eachin classDecl.implments
 				If bases bases+="," Else bases=" extends "
-				bases+=iface.actual.munged
+				bases+=iface.munged
 			Next
 
 			Emit "interface "+classid+bases+"{"
@@ -387,7 +357,7 @@ Class JavaTranslator Extends Translator
 		Local bases$
 		For Local iface:=Eachin classDecl.implments
 			If bases bases+="," Else bases=" implements "
-			bases+=iface.actual.munged
+			bases+=iface.munged
 		Next
 		
 		Local q$

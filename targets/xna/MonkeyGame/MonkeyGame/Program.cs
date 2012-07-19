@@ -58,6 +58,14 @@ public class MonkeyData{
 		return null;
 	}
 	
+	public static Song LoadSong( String path,ContentManager content ){
+		try{
+			return content.Load<Song>( "Content/"+path );
+		}catch( Exception ){
+		}
+		return null;
+	}
+	
 };
 
 //${TRANSCODE_BEGIN}

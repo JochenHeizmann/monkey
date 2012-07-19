@@ -34,6 +34,9 @@ Class XnaTarget Extends Target
 				If dir path=dir+"/"+file
 				'Print "Processing:"+path
 				
+				'build action
+				Local action$="Compile"
+				
 				Select FileType( "data/"+path )
 				Case FILETYPE_FILE
 					Local ps$
@@ -48,17 +51,23 @@ Class XnaTarget Extends Target
 						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
 					Case "mp3"
 						ps+="      <Importer>Mp3Importer</Importer>~n"
-						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
+						ps+="      <Processor>SongProcessor</Processor>~n"
 					Case "wma"
 						ps+="      <Importer>WmaImporter</Importer>~n"
-						ps+="      <Processor>SoundEffectProcessor</Processor>~n"					
+						ps+="      <Processor>SongProcessor</Processor>~n"
+'					Case "mp3"
+'						ps+="      <Importer>Mp3Importer</Importer>~n"
+'						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
+'					Case "wma"
+'						ps+="      <Importer>WmaImporter</Importer>~n"
+'						ps+="      <Processor>SoundEffectProcessor</Processor>~n"					
 					End
 					If ps
 						t+="  <ItemGroup>~r~n"
-						t+="    <Compile Include=~q"+path+"~q>~r~n"
+						t+="    <"+action+" Include=~q"+path+"~q>~r~n"
 						t+="      <Name>"+file+"</Name>~r~n"
 						t+=ps
-						t+="    </Compile>~r~n"
+						t+="	</"+action+">~r~n"
 						t+="  </ItemGroup>~r~n"
 						CopyFile "data/"+path,"MonkeyGame/MonkeyGameContent/"+path
 					Endif

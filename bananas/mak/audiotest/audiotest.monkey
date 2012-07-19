@@ -30,11 +30,12 @@ Class MyApp Extends App
 		'There are rumours of problems with WAV sounds so let's use OGG.
 		fmt="ogg"
 #Elseif TARGET="xna"
-		'XNA supports WAV, MP3
+		'XNA supports WAV, MP3, WMA
 		'Probably OK to use mp3 here, as audio is converted by XNA so you're not actually 
 		'redistributing/decoding mp3s so probably don't need a license. But that's a lot
 		'of 'probablys'...
 		fmt="wav"
+		mfmt="wma"
 #Elseif TARGET="ios"
 		'iOS supports WAV, MP3, M4A
 		fmt="m4a"

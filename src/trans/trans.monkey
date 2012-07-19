@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.21"
+Const VERSION$="1.22"
 
 Global CONFIG_FILE$
 
@@ -91,7 +91,8 @@ Function LoadConfig()
 		If JDK_PATH path+=";"+JDK_PATH+"/bin"
 		If ANT_PATH path+=";"+ANT_PATH+"/bin"
 		If FLEX_PATH path+=";"+FLEX_PATH+"/bin"
-		If MINGW_PATH path+=";"+MINGW_PATH+"/bin"
+'		If MINGW_PATH path+=";"+MINGW_PATH+"/bin"
+		If MINGW_PATH path=MINGW_PATH+"/bin;"+path
 
 		SetEnv "PATH",path
 		

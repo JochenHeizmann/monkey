@@ -30,20 +30,23 @@ Function PopEnv()
 End Function
 
 Class FuncDeclList Extends List<FuncDecl>
+
 End
 
 Class Decl
 	Field ident$
+	Field attrs
 	Field munged$
 	Field errInfo$
-	Field actual:Decl
 	Field scope:ScopeDecl
-	Field attrs
 	
 	Method New()
 		errInfo=_errInfo
-		actual=Self
 	End
+	
+	Method OnCopy:Decl() Abstract
+	
+	Method OnSemant() Abstract
 	
 	Method ToString$()
 		If ClassDecl( scope ) Return scope.ToString()+"."+ident
@@ -101,15 +104,18 @@ Class Decl
 		Endif
 	End
 	
+	Method Copy:Decl()
+		Local t:=OnCopy()
+		t.munged=munged
+		t.errInfo=errInfo
+		Return t
+	End
+
 	Method Semant()
 		If IsSemanted() Return
 		
 		If IsSemanting() Err "Cyclic declaration of '"+ident+"'."
 		
-		If actual<>Self
-			actual.Semant
-		Endif
-
 		PushErr errInfo
 		
 		If scope
@@ -146,47 +152,30 @@ Class Decl
 		
 		PopErr
 	End
-	
-	Method InitInstance:Decl( decl:Decl )
-		decl.ident=ident
-		decl.munged=munged
-		decl.errInfo=errInfo
-		decl.actual=actual
-		decl.scope=Null
-		decl.attrs=attrs & ~(DECL_SEMANTED|DECL_SEMANTING)
-		Return decl
-	End
-	
-	Method GenInstance:Decl()
-		InternalErr
-	End
-	
-	Method OnSemant() Abstract
 
 End
 
 Class ValDecl Extends Decl
-	'pre-semant
-	Field declTy:Type
-	Field declInit:Expr
-	'post-semant
-	Field ty:Type
+
+	Field type:Type
 	Field init:Expr
 	
 	Method ToString$()
 		Local t$=Super.ToString()
-		If ty Return t+":"+ty.ToString()
-		If declTy Return t+":"+declTy.ToString()
-		Return t+":?"
+		Return t+":"+type.ToString()
+	End
+
+	Method CopyInit:Expr()
+		If init Return init.Copy()
 	End
 	
 	Method OnSemant()
-		If declTy
-			ty=declTy.Semant()
-			If declInit init=declInit.Copy().Semant(ty)
-		Else If declInit
-			init=declInit.Copy().Semant()
-			ty=init.exprType
+		If type
+			type=type.Semant()
+			If init init=init.Semant( type )
+		Else If init
+			init=init.Semant()
+			type=init.exprType
 		Else
 			InternalErr
 		Endif
@@ -197,20 +186,16 @@ End
 Class ConstDecl Extends ValDecl
 	Field value$
 	
-	Method New( ident$,ty:Type,init:Expr,attrs )
+	Method New( ident$,attrs,type:Type,init:Expr )
 		Self.ident=ident
 		Self.munged=ident
-		Self.declTy=ty
-		Self.declInit=init
 		Self.attrs=attrs
+		Self.type=type
+		Self.init=init
 	End
 	
-	Method GenInstance:Decl()
-		Local inst:=New ConstDecl
-		InitInstance inst
-		inst.declTy=declTy
-		inst.declInit=declInit
-		Return inst
+	Method OnCopy:Decl()
+		Return New ConstDecl( ident,attrs,type,CopyInit() )
 	End
 	
 	Method OnSemant()
@@ -226,11 +211,15 @@ End
 
 Class LocalDecl Extends VarDecl
 
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+	Method New( ident$,attrs,type:Type,init:Expr )
 		Self.ident=ident
-		Self.declTy=ty
-		Self.declInit=init
 		Self.attrs=attrs
+		Self.type=type
+		Self.init=init
+	End
+	
+	Method OnCopy:Decl()
+		Return New LocalDecl( ident,attrs,type,CopyInit() )
 	End
 	
 	Method ToString$()
@@ -241,72 +230,57 @@ End
 
 Class ArgDecl Extends LocalDecl
 	
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+	Method New( ident$,attrs,type:Type,init:Expr )
 		Self.ident=ident
-		Self.declTy=ty
-		Self.declInit=init
 		Self.attrs=attrs
+		Self.type=type
+		Self.init=init
 	End
 	
-	Method GenInstance:Decl()
-		Local inst:=New ArgDecl
-		InitInstance inst
-		inst.declTy=declTy
-		inst.declInit=declInit
-		Return inst
+	Method OnCopy:Decl()
+		Return New ArgDecl( ident,attrs,type,CopyInit() )
 	End
 	
 	Method ToString$()
 		Return Super.ToString()
 	End
-
 	
 End
 
 Class GlobalDecl Extends VarDecl
 	
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+	Method New( ident$,attrs,type:Type,init:Expr )
 		Self.ident=ident
-		Self.declTy=ty
-		Self.declInit=init
 		Self.attrs=attrs
+		Self.type=type
+		Self.init=init
 	End
-
+	
+	Method OnCopy:Decl()
+		Return New GlobalDecl( ident,attrs,type,CopyInit() )
+	End
+	
 	Method ToString$()
 		Return "Global "+Super.ToString()
 	End
 
-	Method GenInstance:Decl()
-'		PushErr errInfo
-'		Err "Global variables cannot be used inside generic classes."
-		Local inst:=New GlobalDecl
-		InitInstance inst
-		inst.declTy=declTy
-		inst.declInit=declInit
-		Return inst
-	End
-	
 End
 
 Class FieldDecl Extends VarDecl
 
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+	Method New( ident$,attrs,type:Type,init:Expr )
 		Self.ident=ident
-		Self.declTy=ty
-		Self.declInit=init
 		Self.attrs=attrs
-	End
-
-	Method ToString$()
-		Return "Field "+Super.ToString()
+		Self.type=type
+		Self.init=init
 	End
 	
-	Method GenInstance:Decl()
-		Local inst:=New FieldDecl
-		InitInstance inst
-		inst.declTy=declTy
-		inst.declInit=declInit
-		Return inst
+	Method OnCopy:Decl()
+		Return New FieldDecl( ident,attrs,type,CopyInit() )
+	End
+	
+	Method ToString$()
+		Return "Field "+Super.ToString()
 	End
 	
 End
@@ -315,10 +289,14 @@ Class AliasDecl Extends Decl
 
 	Field decl:Object
 	
-	Method New( ident$,decl:Object,attrs=0 )
+	Method New( ident$,attrs,decl:Object )
 		Self.ident=ident
-		Self.decl=decl
 		Self.attrs=attrs
+		Self.decl=decl
+	End
+	
+	Method OnCopy:Decl()
+		Return New AliasDecl( ident,attrs,decl )
 	End
 	
 	Method OnSemant()
@@ -332,10 +310,13 @@ Private
 
 	Field decls:=New List<Decl>
 	Field semanted:=New List<Decl>
-
 	Field declsMap:=New StringMap<Object>
 
 Public
+
+	Method OnCopy:Decl()
+		InternalErr
+	End
 
 	Method Decls:List<Decl>()
 		Return decls
@@ -434,47 +415,56 @@ Public
 	End
 	
 	Method FindDecl:Object( ident$ )
-		Local decl:Object=GetDecl( ident )
+		Local decl:=GetDecl( ident )
 		If decl Return decl
 		If scope Return scope.FindDecl( ident )
 	End
 	
 	Method FindValDecl:ValDecl( ident$ )
-		Local decl:ValDecl=ValDecl( FindDecl( ident ) )
+		Local decl:=ValDecl( FindDecl( ident ) )
 		If Not decl Return
 		decl.AssertAccess
 		decl.Semant
 		Return decl
+	End
+	
+	Method FindType:Type( ident$,args:Type[] )
+		Local decl:=GetDecl( ident )
+		If decl
+			Local type:=Type( decl )
+			If type
+				If args.Length Err "Wrong number of type arguments"
+				Return type
+			Endif
+			Local cdecl:=ClassDecl( decl )
+			If cdecl
+				cdecl.AssertAccess
+				cdecl=cdecl.GenClassInstance( args )
+				cdecl.Semant
+				Return cdecl.objectType
+			Endif
+		Endif
+		If scope Return scope.FindType( ident,args )
 	End
 	
 	Method FindScopeDecl:ScopeDecl( ident$ )
 		Local decl:=ScopeDecl( FindDecl( ident ) )
 		If Not decl Return
+		Local cdecl:=ClassDecl( decl )
+		If cdecl And cdecl.args Return
 		decl.AssertAccess
 		decl.Semant
 		Return decl
-	End
-	
-	Method FindClassDecl:ClassDecl( ident$,args:ClassDecl[] )
-		Local decl:=ClassDecl( GetDecl( ident ) )
-		If Not decl
-			If scope Return scope.FindClassDecl( ident,args )
-			Return
-		Endif
-		decl.AssertAccess
-		decl.Semant
-		Return decl.GenClassInstance( args )
 	End
 	
 	Method FindModuleDecl:ModuleDecl( ident$ )
-		Local decl:ModuleDecl=ModuleDecl( GetDecl( ident ) )
-		If Not decl
-			If scope Return scope.FindModuleDecl( ident )
-			Return
+		Local decl:=ModuleDecl( GetDecl( ident ) )
+		If decl
+			decl.AssertAccess
+			decl.Semant
+			Return decl
 		Endif
-		decl.AssertAccess
-		decl.Semant
-		Return decl
+		If scope Return scope.FindModuleDecl( ident )
 	End
 	
 	Method FindFuncDecl:FuncDecl( ident$,argExprs:Expr[],explicit=False )
@@ -502,7 +492,7 @@ Public
 
 				If i<argExprs.Length And argExprs[i]
 				
-					Local declTy:Type=argDecls[i].ty
+					Local declTy:Type=argDecls[i].type
 					Local exprTy:Type=argExprs[i].exprType
 					
 					If exprTy.EqualsType( declTy ) Continue
@@ -580,12 +570,26 @@ Class BlockDecl Extends ScopeDecl
 		stmts.AddLast stmt
 	End
 	
+	Method OnCopy:Decl()
+		Local t:=New BlockDecl
+		For Local stmt:=Eachin stmts
+			t.AddStmt stmt.Copy( t )
+		Next
+		Return t
+	End
+	
 	Method OnSemant()
 		PushEnv Self
 		For Local stmt:Stmt=Eachin stmts
 			stmt.Semant
 		Next
 		PopEnv
+	End
+	
+	Method CopyBlock:BlockDecl( scope:ScopeDecl )
+		Local t:=BlockDecl( Copy() )
+		t.scope=scope
+		Return t
 	End
 	
 End
@@ -600,95 +604,47 @@ Const FUNC_CALLSCTOR=8
 Class FuncDecl Extends BlockDecl
 
 	Field retType:Type
-	Field retTypeExpr:Type
 	Field argDecls:ArgDecl[]
 
 	Field overrides:FuncDecl
 	
-	Method New( ident$,ty:Type,argDecls:ArgDecl[],attrs )
+	Method New( ident$,attrs,retType:Type,argDecls:ArgDecl[] )
 		Self.ident=ident
-		Self.retTypeExpr=ty
-		Self.argDecls=argDecls
 		Self.attrs=attrs
+		Self.retType=retType
+		Self.argDecls=argDecls
 	End
 	
-	Method GenInstance:Decl()
-		Local inst:=New FuncDecl
-		InitInstance inst
-		inst.retTypeExpr=retTypeExpr
-		inst.argDecls=argDecls[..]
-		For Local i=0 Until argDecls.Length
-			inst.argDecls[i]=ArgDecl( argDecls[i].GenInstance() )
+	Method OnCopy:Decl()
+		Local args:=argDecls[..]
+		For Local i=0 Until args.Length
+			args[i]=ArgDecl( args[i].Copy() )
 		Next
-		Return inst
-	End
-	
-	Method ToString$()
-		Local t$
-		For Local decl:ArgDecl=Eachin argDecls
-			If t t+=","
-			t+=decl.ToString()
+		Local t:=New FuncDecl( ident,attrs,retType,args )
+		For Local stmt:=Eachin stmts
+			t.AddStmt stmt.Copy( t )
 		Next
-		Local q$
-		If IsCtor()
-			q="Method "+Super.ToString()
-		Else
-			If IsMethod() q="Method " Else q="Function "
-			q+=Super.ToString()+":"
-			If retType
-				q+=retType.ToString()
-			Else If retTypeExpr 
-				q+=retTypeExpr.ToString()
-			Else
-				q+="?"
-			Endif
-		Endif
-		Return q+"("+t+")"
+		Return  t
 	End
 	
-	Method IsCtor()
-		Return (attrs & FUNC_CTOR)<>0
-	End
-
-	Method IsMethod()
-		Return (attrs & FUNC_METHOD)<>0
-	End
-	
-	Method IsStatic()
-		Return (attrs & (FUNC_METHOD|FUNC_CTOR))=0
-	End
-	
-	Method IsProperty()
-		Return (attrs & FUNC_PROPERTY)<>0
-	End
-	
-	Method EqualsArgs( decl:FuncDecl )
-		If argDecls.Length<>decl.argDecls.Length Return False
-		For Local i=0 Until argDecls.Length
-			If Not argDecls[i].ty.EqualsType( decl.argDecls[i].ty ) Return False
-		Next
-		Return True
-	End
-
-	Method EqualsFunc( decl:FuncDecl )
-		Return retType.EqualsType( decl.retType ) And EqualsArgs( decl )
-	End
-
 	Method OnSemant()
 
+		'get cdecl, sclasss
+		Local cdecl:=ClassScope(),sclass:ClassDecl
+		If cdecl sclass=ClassDecl( cdecl.superClass )
+		
 		'semant ret type
-		retType=retTypeExpr.Semant()
-		If ArrayType( retType ) And Not retType.EqualsType( retType.ActualType() )
-'			Err "Return type cannot be an array of generic objects."
+		If IsCtor()
+			retType=cdecl.objectType
+		Else
+			retType=retType.Semant()
 		Endif
 		
 		'semant args
-		For Local arg:ArgDecl=Eachin argDecls
+		For Local arg:=Eachin argDecls
 			InsertDecl arg
 			arg.Semant
 		Next
-		
-		If actual<>Self Return
 		
 		'check for duplicate decl
 		For Local decl:=Eachin scope.SemantedFuncs( ident )
@@ -696,10 +652,6 @@ Class FuncDecl Extends BlockDecl
 				Err "Duplicate declaration "+ToString()
 			Endif
 		Next
-		
-		'get cdecl, sclasss
-		Local cdecl:=ClassScope(),sclass:ClassDecl
-		If cdecl sclass=ClassDecl( cdecl.superClass )
 		
 		'prefix call to super ctor if necessary
 		If IsCtor() And Not (attrs & FUNC_CALLSCTOR)
@@ -717,7 +669,7 @@ Class FuncDecl Extends BlockDecl
 					found=True
 					decl.Semant
 					If EqualsFunc( decl ) 
-						overrides=FuncDecl( decl.actual )
+						overrides=FuncDecl( decl )
 						If overrides.munged
 							If munged And munged<>overrides.munged
 								InternalErr
@@ -739,120 +691,157 @@ Class FuncDecl Extends BlockDecl
 		Super.OnSemant()
 	End
 	
+	Method ToString$()
+		Local t$
+		For Local decl:ArgDecl=Eachin argDecls
+			If t t+=","
+			t+=decl.ToString()
+		Next
+		Local q$
+		If IsCtor()
+			q="Method "+Super.ToString()
+		Else
+			If IsMethod() q="Method " Else q="Function "
+			q+=Super.ToString()+":"
+			q+=retType.ToString()
+		Endif
+		Return q+"("+t+")"
+	End
+	
+	Method IsCtor?()
+		Return (attrs & FUNC_CTOR)<>0
+	End
+
+	Method IsMethod?()
+		Return (attrs & FUNC_METHOD)<>0
+	End
+	
+	Method IsStatic?()
+		Return (attrs & (FUNC_METHOD|FUNC_CTOR))=0
+	End
+	
+	Method IsProperty?()
+		Return (attrs & FUNC_PROPERTY)<>0
+	End
+	
+	Method EqualsArgs?( decl:FuncDecl )
+		If argDecls.Length<>decl.argDecls.Length Return False
+		For Local i=0 Until argDecls.Length
+			If Not argDecls[i].type.EqualsType( decl.argDecls[i].type ) Return False
+		Next
+		Return True
+	End
+
+	Method EqualsFunc?( decl:FuncDecl )
+		Return retType.EqualsType( decl.retType ) And EqualsArgs( decl )
+	End
+	
+
 End
 
 Const CLASS_INTERFACE=1
-Const CLASS_TEMPLATEARG=2
-Const CLASS_TEMPLATEINST=4
-Const CLASS_INSTANCED=8
-Const CLASS_EXTENDSOBJECT=16
+Const CLASS_INSTANCED=2
+Const CLASS_EXTENDSOBJECT=4
 
 Class ClassDecl Extends ScopeDecl
 
-	Field args:ClassDecl[]
+	Field args$[]
 	Field superTy:IdentType
 	Field impltys:IdentType[]
-
+	
 	Field superClass:ClassDecl
 	
 	Field implments:ClassDecl[]			'interfaces immediately implemented
 	Field implmentsAll:ClassDecl[]		'all interfaces implemented
 	
-	Field instanceof:ClassDecl			'for instances
 	Field instances:List<ClassDecl>		'for actual (non-arg, non-instance)
+	Field instanceof:ClassDecl			'for instances
+	Field instArgs:Type[]
 	
-	Global nullObjectClass:=New ClassDecl( "{NULL}",[],Null,[],DECL_ABSTRACT|DECL_EXTERN )
+	Field objectType:ObjectType			'"canned" objectType
 	
-	Method New( ident$,args:ClassDecl[],superTy:IdentType,impls:IdentType[],attrs )
+	Global nullObjectClass:=New ClassDecl( "{NULL}",DECL_ABSTRACT|DECL_EXTERN,[],Null,[] )
+	
+	Method New( ident$,attrs,args$[],superTy:IdentType,impls:IdentType[] )
 		Self.ident=ident
+		Self.attrs=attrs
 		Self.args=args
 		Self.superTy=superTy
 		Self.impltys=impls
-		Self.attrs=attrs
-		If args
-			instances=New List<ClassDecl>
-			instances.AddLast Self
-		Endif
+		Self.objectType=New ObjectType( Self )
+		If args instances=New List<ClassDecl>
+	End
+	
+	Method OnCopy:Decl()
+		InternalErr
 	End
 	
 	Method ToString$()
 		Local t$
 		For Local i=0 Until args.Length
 			If i t+=","
-			t+=args[i].ToString()
+			t+=args[i]
 		Next
 		If t t="<"+t+">"
 		Return ident+t
 	End
 	
-	Method GenClassInstance:ClassDecl( instArgs:ClassDecl[] )
-		If Not IsSemanted() InternalErr
+	Method GenClassInstance:ClassDecl( instArgs:Type[] )
+
+		If instanceof InternalErr
 		
 		'no args
 		If Not instArgs
 			If Not args Return Self
-			If instanceof Return Self
 			For Local inst:=Eachin instances
 				If _env.ClassScope()=inst Return inst
 			Next
 		Endif
 		
-		'If Not instanceof And Not instArgs Return Self
-		
 		'check number of args
-		If instanceof Or args.Length<>instArgs.Length
-			Err "Wrong number of class arguments for "+ToString()
+		If args.Length<>instArgs.Length
+			Err "Wrong number of type arguments for class "+ToString()
 		Endif
 		
 		'look for existing instance
 		For Local inst:=Eachin instances
 			Local equal=True
 			For Local i=0 Until args.Length
-				If inst.args[i]=instArgs[i] Continue
-				equal=False
-				Exit
+				If Not inst.instArgs[i].EqualsType( instArgs[i] )
+					equal=False
+					Exit
+				Endif
 			Next
 			If equal Return inst
 		Next
 		
-		Local inst:ClassDecl=New ClassDecl
+		Local inst:=New ClassDecl( ident,attrs,[],superTy,impltys )
 
-		InitInstance inst
-
+		inst.attrs&=~DECL_SEMANTED
+		inst.munged=munged
+		inst.errInfo=errInfo
 		inst.scope=scope
-		inst.attrs|=CLASS_TEMPLATEINST
-		inst.args=instArgs
-		inst.superTy=superTy
 		inst.instanceof=Self
+		inst.instArgs=instArgs
 		instances.AddLast inst
 		
 		For Local i=0 Until args.Length
-			inst.InsertDecl New AliasDecl( args[i].ident,instArgs[i] )
+			inst.InsertDecl New AliasDecl( args[i],0,instArgs[i] )
 		Next
 		
 		For Local decl:Decl=Eachin decls
-			If ClassDecl( decl ) Continue
-			inst.InsertDecl decl.GenInstance()
+			inst.InsertDecl decl.Copy()
 		Next
 
-		'inst.Semant
 		'A bit cheeky...
-		inst.OnSemant
-		inst.attrs|=DECL_SEMANTED
+'		inst.OnSemant
+'		inst.attrs|=DECL_SEMANTED
 		
 		Return inst
 	End
 
 	Method IsInterface()
 		Return (attrs & CLASS_INTERFACE)<>0
-	End
-	
-	Method IsTemplateArg()
-		Return (attrs & CLASS_TEMPLATEARG)<>0
-	End
-	
-	Method IsTemplateInst()
-		Return (attrs & CLASS_TEMPLATEINST)<>0
 	End
 	
 	Method IsInstanced()
@@ -924,10 +913,6 @@ Class ClassDecl Extends ScopeDecl
 	Method ExtendsClass( cdecl:ClassDecl )
 		If Self=nullObjectClass Return True
 
-		If cdecl.IsTemplateArg()
-			cdecl=Type.objectType.FindClass()
-		Endif
-		
 		Local tdecl:=Self
 		While tdecl
 			If tdecl=cdecl Return True
@@ -943,21 +928,14 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	Method OnSemant()
-
-		'Print "Semanting "+ToString()
-		
+	
+		If args Return
+	
 		PushEnv Self
 
-		If Not IsTemplateInst()
-			For Local i=0 Until args.Length
-				InsertDecl args[i]
-				args[i].Semant
-			Next
-		Endif
-		
 		'Semant superclass		
 		If superTy
-			superClass=superTy.FindClass()
+			superClass=superTy.SemantClass()
 			If superClass.IsInterface() Err superClass.ToString()+" is an interface, not a class."
 			If superClass.ExtendsObject() attrs|=CLASS_EXTENDSOBJECT
 		Else
@@ -968,7 +946,7 @@ Class ClassDecl Extends ScopeDecl
 		Local impls:=New ClassDecl[impltys.Length]
 		Local implsall:=New Stack<ClassDecl>
 		For Local i=0 Until impltys.Length
-			Local cdecl:=impltys[i].FindClass()
+			Local cdecl:=impltys[i].SemantClass()
 			If Not cdecl.IsInterface()
 				Err cdecl.ToString()+" is a class, not an interface."
 			Endif
@@ -1004,15 +982,6 @@ Class ClassDecl Extends ScopeDecl
 		
 		PopEnv
 		
-		If IsTemplateArg()
-			actual=Type.objectType.FindClass()
-			Return
-		Endif
-		
-		If IsTemplateInst()
-			Return
-		Endif
-		
 		'Are we abstract?
 		If Not IsAbstract()
 			For Local decl:Decl=Eachin decls
@@ -1037,7 +1006,8 @@ Class ClassDecl Extends ScopeDecl
 				Exit
 			Next
 			If Not fdecl
-				fdecl=New FuncDecl( "new",New ObjectType( Self ),[],FUNC_CTOR )
+'				fdecl=New FuncDecl( "new",FUNC_CTOR,New ObjectType( Self ),[] )
+				fdecl=New FuncDecl( "new",FUNC_CTOR,objectType,[] )
 				fdecl.AddStmt New ReturnStmt( Null )
 				InsertDecl fdecl
 			Endif
@@ -1071,7 +1041,7 @@ Class ClassDecl Extends ScopeDecl
 					Else
 						unsem.AddLast decl2
 						If decl2.IsExtern() live=True
-						If decl2.actual.IsSemanted() live=True
+						If decl2.IsSemanted() live=True
 					Endif
 				Next
 				sclass=sclass.superClass
@@ -1087,7 +1057,7 @@ Class ClassDecl Extends ScopeDecl
 							Else
 								unsem.AddLast decl2
 								If decl2.IsExtern() live=True
-								If decl2.actual.IsSemanted() live=True
+								If decl2.IsSemanted() live=True
 							Endif
 						Next
 					Next
@@ -1197,11 +1167,11 @@ Class ModuleDecl Extends ScopeDecl
 		Return "Module "+munged
 	End
 	
-	Method New( ident$,munged$,filepath$,attrs )
+	Method New( ident$,attrs,munged$,filepath$ )
 		Self.ident=ident
+		Self.attrs=attrs
 		Self.munged=munged
 		Self.filepath=filepath
-		Self.attrs=attrs
 	End
 	
 	Method IsStrict()

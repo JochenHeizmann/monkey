@@ -4,37 +4,39 @@
 ' Placed into the public domain 24/02/2011.
 ' No warranty implied; use at your own risk.
 
-Private
-
-Import boxes
-
-Class Head<T> Extends Node<T>
-
-	Method ThisNode:Node<T>()
-		Return Null
-	End
-End
-
-Public
-
 Class List<T>
+
+	Method New()
+	End
+	
+	Method New( data:T[] )
+		For Local t:=Eachin data
+			AddLast t
+		Next
+	End
+	
+	Method ToArray:T[]()
+		Local arr:T[Count()],i
+		For Local t:=Eachin Self
+			arr[i]=t
+			i+=1
+		Next
+		Return arr
+	End
 
 	Method Equals?( lhs:T,rhs:T )
 		Return lhs=rhs
 	End
 	
-	Method Compare( lhs:T,rhs:T )
+	Method Compare( lhs:T,rhs:T )	'This method should be implemented by subclasses for Sort to work
 		Error "Unable to compare items"
 	End
 	
 	Method Clear()
-		_head=New Node<T>()
+		_head._succ=_head
+		_head._pred=_head
 	End
 
-	Method IsEmpty?()
-		Return _head._succ=_head
-	End
-	
 	Method Count()
 		Local n,node:=_head._succ
 		While node<>_head
@@ -42,6 +44,10 @@ Class List<T>
 			n+=1
 		Wend
 		Return n
+	End
+	
+	Method IsEmpty?()
+		Return _head._succ=_head
 	End
 	
 	Method Contains?( value:T )
@@ -183,20 +189,12 @@ Class List<T>
 
 Private
 
-	Field _head:=New Node<T>
+	Field _head:Node<T>=New HeadNode<T>
 	
 End
 
 Class Node<T>
 
-	'create a _head node
-	Method New()
-		_succ=Self
-		_pred=Self
-		_data=_sentinal
-	End
-
-	'create a link node
 	Method New( succ:Node,pred:Node,data:T )
 		_succ=succ
 		_pred=pred
@@ -223,14 +221,14 @@ Class Node<T>
 #If CONFIG="debug"
 		If Not _succ Error "Illegal operation on removed node"
 #Endif
-		If _succ._data<>_sentinal Return _succ
+		Return _succ.GetNode()
 	End
 
 	Method PrevNode:Node()
 #If CONFIG="debug"
 		If Not _succ Error "Illegal operation on removed node"
 #Endif
-		If _pred._data<>_sentinal Return _pred
+		Return _pred.GetNode()
 	End
 
 Private
@@ -238,10 +236,29 @@ Private
 	Field _succ:Node
 	Field _pred:Node
 	Field _data:T
-
-	Global _sentinal:=New Object
+	
+	Method GetNode:Node<T>()
+		Return Self
+	End
 
 End
+
+Private
+
+Class HeadNode<T> Extends Node<T>
+
+	Method New()
+		_succ=Self
+		_pred=Self
+	End
+
+	Method GetNode:Node<T>()
+		Return Null
+	End
+	
+End
+
+Public
 
 Class Enumerator<T>
 
@@ -306,6 +323,51 @@ Private
 	Field _curr:Node<T>
 
 End
+
+'Helper versions
+
+Class IntList Extends List<Int>
+
+	Method Equals?( lhs,rhs )
+		Return lhs=rhs
+	End
+	
+	Method Compare( lhs,rhs )
+		Return lhs-rhs
+	End
+
+End
+
+Class FloatList Extends List<Float>
+
+	Method Equals?( lhs#,rhs# )
+		Return lhs=rhs
+	End
+	
+	Method Compare( lhs#,rhs# )
+		If lhs<rhs Return -1
+		Return lhs>rhs
+	End
+	
+End
+
+Class StringList Extends List<String>
+	
+	Method Join$( separator$ )
+		Return separator.Join( ToArray() )
+	End
+	
+	Method Equals?( lhs$,rhs$ )
+		Return lhs=rhs
+	End
+
+	Method Compare( lhs$,rhs$ )
+		Return lhs.Compare( rhs )
+	End
+
+End
+
+#rem
 
 '***** Box object versions *****
 
@@ -381,3 +443,4 @@ Class StringList Extends List<StringObject>
 	End
 
 End
+#end

@@ -26,6 +26,11 @@ Class IntObject
 	Method ToString:String()
 	   Return value
 	End
+	
+	Method Compare( with:IntObject )
+		Return value-with.value
+	End
+
 End
 
 Class FloatObject
@@ -50,6 +55,12 @@ Class FloatObject
 	Method ToString:String()
 	   Return value
 	End
+	
+	Method Compare( with:FloatObject )
+		If value<with.value Return -1
+		Return value>with.value		
+	End
+	
 End
 
 Class StringObject
@@ -70,4 +81,9 @@ Class StringObject
 	Method ToString:String()
 		Return value
 	End
+	
+	Method Compare( with:StringObject )
+		Return value.Compare( with.value )
+	End
+
 End

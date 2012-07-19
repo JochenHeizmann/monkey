@@ -6,14 +6,6 @@
 
 Import trans
 
-Extern
-
-Function gc_markex()
-
-Function gc_collectex()
-
-Public
-
 Global FILE_EXT$="monkey"
 
 Class ScopeExpr Extends Expr
@@ -32,12 +24,13 @@ Class ScopeExpr Extends Expr
 	End
 		
 	Method Semant:Expr()
-		Err "Syntax error."
+		InternalErr
 	End
-
+	
 	Method SemantScope:ScopeDecl()
 		Return scope
 	End
+
 End
 
 Class ForEachinStmt Extends Stmt
@@ -57,13 +50,17 @@ Class ForEachinStmt Extends Stmt
 		Self.block=block
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New ForEachinStmt( varid,varty,varlocal,expr.Copy(),block.CopyBlock( scope ) )
+	End
+	
 	Method OnSemant()
 		expr=expr.Semant()
 		
 		If ArrayType( expr.exprType ) Or StringType( expr.exprType )
 		
-			Local exprTmp:LocalDecl=New LocalDecl( "",Null,expr )
-			Local indexTmp:LocalDecl=New LocalDecl( "",Null,New ConstExpr( Type.intType,"0" ) )
+			Local exprTmp:LocalDecl=New LocalDecl( "",0,Null,expr )
+			Local indexTmp:LocalDecl=New LocalDecl( "",0,Null,New ConstExpr( Type.intType,"0" ) )
 
 			Local lenExpr:Expr=New IdentExpr( "Length",New VarExpr( exprTmp ) )
 
@@ -75,7 +72,7 @@ Class ForEachinStmt Extends Stmt
 			block.stmts.AddFirst New AssignStmt( "=",New VarExpr( indexTmp ),addExpr )
 			
 			If varlocal
-				Local varTmp:LocalDecl=New LocalDecl( varid,varty,indexExpr )
+				Local varTmp:LocalDecl=New LocalDecl( varid,0,varty,indexExpr )
 				block.stmts.AddFirst New DeclStmt( varTmp )
 			Else
 				block.stmts.AddFirst New AssignStmt( "=",New IdentExpr( varid ),indexExpr )
@@ -91,13 +88,13 @@ Class ForEachinStmt Extends Stmt
 		Else If ObjectType( expr.exprType )
 		
 			Local enumerInit:Expr=New FuncCallExpr( New IdentExpr( "ObjectEnumerator",expr ),[] )
-			Local enumerTmp:LocalDecl=New LocalDecl( "",Null,enumerInit )
+			Local enumerTmp:LocalDecl=New LocalDecl( "",0,Null,enumerInit )
 
 			Local hasNextExpr:Expr=New FuncCallExpr( New IdentExpr( "HasNext",New VarExpr( enumerTmp ) ),[] )
 			Local nextObjExpr:Expr=New FuncCallExpr( New IdentExpr( "NextObject",New VarExpr( enumerTmp ) ),[] )
 
 			If varlocal
-				Local varTmp:LocalDecl=New LocalDecl( varid,varty,nextObjExpr )
+				Local varTmp:LocalDecl=New LocalDecl( varid,0,varty,nextObjExpr )
 				block.stmts.AddFirst New DeclStmt( varTmp )
 			Else
 				block.stmts.AddFirst New AssignStmt( "=",New IdentExpr( varid ),nextObjExpr )
@@ -124,9 +121,47 @@ Class ForEachinStmt Extends Stmt
 
 End
 
+Class IdentTypeExpr Extends Expr
+	Field cdecl:ClassDecl
+	
+	Method New( type:Type )
+		Self.exprType=type
+	End
+	
+	Method Copy:Expr()
+		Return New IdentTypeExpr( exprType )
+	End
+
+	Method _Semant()
+		If cdecl Return
+		exprType=exprType.Semant()
+		cdecl=exprType.GetClass()
+		If Not cdecl InternalErr
+	End
+		
+	Method Semant:Expr()
+		_Semant
+		Err "Expression can't be used in this way"
+	End
+	
+	Method SemantFunc:Expr( args:Expr[] )
+		_Semant
+		If args.Length=1 And args[0] Return args[0].Cast( cdecl.objectType,CAST_EXPLICIT )
+		Err "Illegal number of arguments for type conversion"
+	End
+	
+	Method SemantScope:ScopeDecl()
+		_Semant
+		Return cdecl
+	End	
+
+End
+
 Class IdentExpr Extends Expr
 	Field ident$
 	Field expr:Expr
+	Field scope:ScopeDecl
+	Field static?
 
 	Method New( ident$,expr:Expr=Null )
 		Self.ident=ident
@@ -143,68 +178,64 @@ Class IdentExpr Extends Expr
 		Return t+")"
 	End
 	
-	Method IdentScope:ScopeDecl()
-		If Not expr Return _env
-		
-		Local scope:ScopeDecl=expr.SemantScope()
-		If scope
-			expr=Null
+	Method _Semant()
+	
+		If scope Return
+
+		If expr
+			scope=expr.SemantScope()
+			If scope
+				static=True
+			Else
+				expr=expr.Semant()
+				scope=expr.exprType.GetClass()
+				If Not scope Err "Expression has no scope"
+			Endif
 		Else
-			expr=expr.Semant()
-			scope=expr.exprType.GetClass()
-			If Not scope Err "Expression has no scope."
+			scope=_env
+			static=_env.FuncScope()=Null Or _env.FuncScope().IsStatic()
 		Endif
-		Return scope
+		
 	End
 	
-	Method IdentErr( scope:ScopeDecl )
-		If scope
-			Local close$
-			For Local decl:=Eachin scope.Decls
-				If ident.ToLower()=decl.ident.ToLower()
-					close=decl.ident
-				Endif
-			Next
-			If close
-				Err "Identifier '"+ident+"' not found - perhaps you meant '"+close+"'?"
+	Method IdentErr()
+		Local close$
+		For Local decl:=Eachin scope.Decls
+			If ident.ToLower()=decl.ident.ToLower()
+				close=decl.ident
 			Endif
-		Endif
+		Next
+		If close Err "Identifier '"+ident+"' not found - perhaps you meant '"+close+"'?"
 		Err "Identifier '"+ident+"' not found."
 	End
 	
-	Method IdentNotFound()
-	End
-	
-	Method IsVar()
-		InternalErr
-	End
-	
 	Method Semant:Expr()
+	
 		Return SemantSet( "",Null )
+
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
-	
-		Local scope:ScopeDecl=IdentScope()
-	
+
+		_Semant
+		
 		Local vdecl:ValDecl=scope.FindValDecl( ident )
 		If vdecl
-		
 			If ConstDecl( vdecl )
 				If rhs Err "Constant '"+ident+"' cannot be modified."
-				Return New ConstExpr( vdecl.ty,ConstDecl( vdecl ).value ).Semant()
+				Return New ConstExpr( vdecl.type,ConstDecl( vdecl ).value ).Semant()
 			Else If FieldDecl( vdecl )
+				If static Err "Field '"+ident+"' cannot be accessed from here."
 				If expr Return New MemberVarExpr( expr,VarDecl( vdecl ) ).Semant()
-				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
+'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
 			Endif
-			
 			Return New VarExpr( VarDecl( vdecl ) ).Semant()
 		Endif
 		
 		If op And op<>"="
 
 			Local fdecl:FuncDecl=scope.FindFuncDecl( ident,[] )
-			If Not fdecl IdentErr scope
+			If Not fdecl IdentErr
 
 			If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
 			
@@ -213,7 +244,7 @@ Class IdentExpr Extends Expr
 			If fdecl.IsStatic() Or (scope=_env And Not _env.FuncScope().IsStatic())
 				lhs=New InvokeExpr( fdecl,[] )
 			Else If expr
-				Local tmp:=New LocalDecl( "",Null,expr )
+				Local tmp:=New LocalDecl( "",0,Null,expr )
 				lhs=New InvokeMemberExpr( New VarExpr( tmp ),fdecl,[] )
 				lhs=New StmtExpr( New DeclStmt( tmp ),lhs )
 			Else
@@ -234,47 +265,51 @@ Class IdentExpr Extends Expr
 		If rhs args=[rhs]
 		
 		Local fdecl:FuncDecl=scope.FindFuncDecl( ident,args )
-		If Not fdecl IdentErr scope
-
-		If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
-		
-		If Not fdecl.IsStatic()
-			If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-			If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
-		Endif
-
-		Return New InvokeExpr( fdecl,args ).Semant()
-	End
-
-	Method SemantFunc:Expr( args:Expr[] )
-	
-		Local scope:ScopeDecl=IdentScope()
-		Local fdecl:FuncDecl=scope.FindFuncDecl( ident,args )
-	
 		If fdecl
+		
+			If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
+			
 			If Not fdecl.IsStatic()
+				If static Err "Method '"+ident+"' cannot be accessed from here."
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
+	'			If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
 		
-		If args.Length=1 And args[0] And ObjectType( args[0].exprType )
-			Local cdecl:ClassDecl=ClassDecl( scope.FindScopeDecl( ident ) )
-			If cdecl Return args[0].Cast( New ObjectType(cdecl),CAST_EXPLICIT )
+		IdentErr
+	End
+
+	Method SemantFunc:Expr( args:Expr[] )
+	
+		_Semant
+	
+		Local fdecl:FuncDecl=scope.FindFuncDecl( ident,args )
+		If fdecl
+			If Not fdecl.IsStatic()
+				If static Err "Method '"+ident+"' cannot be accessed from here."
+				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
+'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
+			Endif
+			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
 		
-		IdentErr scope
-
-		Return Null
+		Local type:=scope.FindType( ident,[] )
+		If type
+			If args.Length=1 And args[0] Return args[0].Cast( type,CAST_EXPLICIT )
+			Err "Illegal number of arguments for type conversion"
+		Endif
+		
+		IdentErr
 	End
 	
 	Method SemantScope:ScopeDecl()
-		If Not expr Return _env.FindScopeDecl( ident )
-		Local scope:ScopeDecl=expr.SemantScope()
-		If scope Return scope.FindScopeDecl( ident )
-	End
+
+		_Semant
 		
+		Return scope.FindScopeDecl( ident )
+
+	End
 End
 
 Class FuncCallExpr Extends Expr
@@ -311,7 +346,6 @@ Class Parser
 	Field _toker:Toker
 	Field _toke$
 	Field _tokeType
-	Field _tokerStack:=New List<Toker>
 	
 	Field _block:BlockDecl
 	Field _blockStack:=New List<BlockDecl>
@@ -399,7 +433,7 @@ Class Parser
 	Method ParseIdent$()
 		Select _toke
 		Case "@" NextToke
-		Case "string","array","object"
+		Case "string","object","array"
 		Default	
 			If _tokeType<>TOKE_IDENT Err "Syntax error - expecting identifier."
 		End
@@ -408,14 +442,32 @@ Class Parser
 		Return id
 	End
 	
+	Method CParsePrimitiveType:Type()
+		If CParse( "void" ) Return Type.voidType
+		If CParse( "bool" ) Return Type.boolType
+		If CParse( "int" ) Return Type.intType
+		If CParse( "float" ) Return Type.floatType
+		If CParse( "string" ) Return Type.stringType
+		If CParse( "object" ) Return Type.objectType
+	End	
+	
+	Method ParseType:Type()
+		Local ty:=CParsePrimitiveType()
+		If ty Return ty
+		Return ParseIdentType()
+	End
+	
 	Method ParseIdentType:IdentType()
 		Local id$=ParseIdent()
 		If CParse( "." ) id+="."+ParseIdent()
-		Local args:IdentType[]
+		Local args:Type[]
 		If CParse( "<" )
 			Local nargs
 			Repeat
-				Local arg:IdentType=ParseIdentType()
+				Local arg:=ParseType()
+				While CParse( "[]" )
+					arg=arg.ArrayOf()
+				Wend
 				If args.Length=nargs args=args.Resize( nargs+10 )
 				args[nargs]=arg
 				nargs+=1
@@ -426,14 +478,31 @@ Class Parser
 		Return New IdentType( id,args )
 	End
 	
-	Method ParseNewType:Type()
-		If CParse( "void" ) Return Type.voidType
-		If CParse( "bool" ) Return Type.boolType
-		If CParse( "int" ) Return Type.intType
-		If CParse( "float" ) Return Type.floatType
-		If CParse( "string" ) Return Type.stringType
-		If CParse( "object" ) Return Type.objectType
-		Return ParseIdentType()
+	Method CParseIdentType:IdentType()
+		If _tokeType<>TOKE_IDENT Return
+		Local id:=ParseIdent()
+		If CParse( "." )
+			If _tokeType<>TOKE_IDENT Return
+			id+="."+ParseIdent()
+		End
+		If Not CParse( "<" ) Return
+		Local args:Type[],nargs
+		Repeat
+			Local arg:Type=CParsePrimitiveType()
+			If Not arg 
+				arg=CParseIdentType()
+				If Not arg Return
+			Endif
+			While CParse( "[]" )
+				arg=arg.ArrayOf()
+			Wend
+			If args.Length=nargs args=args.Resize( nargs+10 )
+			args[nargs]=arg
+			nargs+=1
+		Until Not CParse(",")
+		If Not CParse( ">" ) Return
+		args=args[..nargs]
+		Return New IdentType( id,args )
 	End
 	
 	Method ParseDeclType:Type()
@@ -453,13 +522,13 @@ Class Parser
 			ty=Type.stringType
 		Case ":"
 			NextToke
-			ty=ParseNewType()
+			ty=ParseType()
 		Default
 			If _module.IsStrict() Err "Illegal type expression."
 			ty=Type.intType
 		End Select
 		While CParse( "[]" )
-			ty=New ArrayType( ty )
+			ty=ty.ArrayOf()
 		Wend
 		Return ty
 	End
@@ -558,12 +627,12 @@ Class Parser
 			expr=New ScopeExpr( _module )
 		Case "new"
 			NextToke
-			Local ty:Type=ParseNewType()
+			Local ty:Type=ParseType()
 			If CParse( "[" )
 				Local len:=ParseExpr()
 				Parse "]"
 				While CParse( "[]" )
-					ty=New ArrayType( ty)
+					ty=ty.ArrayOf()
 				Wend
 				expr=New NewArrayExpr( ty,len )
 			Else
@@ -578,9 +647,9 @@ Class Parser
 		Case "false"
 			NextToke
 			expr=New ConstExpr( Type.boolType,"" )
-		Case "bool","int","float","string","array","object"
+		Case "bool","int","float","string","object"
 			Local id$=_toke
-			Local ty:Type=ParseNewType()
+			Local ty:Type=ParseType()
 			If CParse( "(" )
 				expr=ParseExpr()
 				Parse ")"
@@ -609,7 +678,19 @@ Class Parser
 		Default
 			Select _tokeType
 			Case TOKE_IDENT
-				expr=New IdentExpr( ParseIdent() )
+
+				Local toker:=New Toker( _toker )
+				
+				Local ty:=CParseIdentType()
+				If ty
+					expr=New IdentTypeExpr( ty )
+				Else
+					_toker=toker
+					_toke=_toker.Toke()
+					_tokeType=_toker.TokeType()
+					expr=New IdentExpr( ParseIdent() )
+				Endif
+
 			Case TOKE_INTLIT
 				expr=New ConstExpr( Type.intType,_toke )
 				NextToke
@@ -970,15 +1051,14 @@ Class Parser
 		Local init:Stmt,expr:Expr,incr:Stmt
 		
 		If varlocal
-			Local indexVar:LocalDecl=New LocalDecl( varid,varty,from,0 )
+			Local indexVar:LocalDecl=New LocalDecl( varid,0,varty,from )
 			init=New DeclStmt( indexVar )
-			expr=New BinaryCompareExpr( op,New VarExpr( indexVar ),term )
-			incr=New AssignStmt( "=",New VarExpr( indexVar ),New BinaryMathExpr( "+",New VarExpr( indexVar ),stp ) )
 		Else
 			init=New AssignStmt( "=",New IdentExpr( varid ),from )
-			expr=New BinaryCompareExpr( op,New IdentExpr( varid ),term )
-			incr=New AssignStmt( "=",New IdentExpr( varid ),New BinaryMathExpr( "+",New IdentExpr( varid ),stp ) )
 		Endif
+
+		expr=New BinaryCompareExpr( op,New IdentExpr( varid ),term )
+		incr=New AssignStmt( "=",New IdentExpr( varid ),New BinaryMathExpr( "+",New IdentExpr( varid ),stp ) )
 		
 		Local block:BlockDecl=New BlockDecl( _block )
 		
@@ -1021,7 +1101,7 @@ Class Parser
 		
 		Local block:BlockDecl=_block
 
-		Local tmpVar:LocalDecl=New LocalDecl( "",Null,ParseExpr() )
+		Local tmpVar:LocalDecl=New LocalDecl( "tmp",0,Null,ParseExpr() )
 
 		block.AddStmt New DeclStmt( tmpVar )
 		
@@ -1034,7 +1114,7 @@ Class Parser
 				NextToke
 				Local comp:Expr
 				Repeat
-					Local expr:Expr=New VarExpr( tmpVar )
+					Local expr:Expr=New IdentExpr( "tmp" )
 					expr=New BinaryCompareExpr( "=",expr,ParseExpr() )
 					If comp
 						comp=New BinaryLogicExpr( "or",comp,expr )
@@ -1157,10 +1237,10 @@ Class Parser
 				Local len:=ParseExpr()
 				Parse "]"
 				While CParse( "[]" )
-					ty=New ArrayType(ty)
+					ty=ty.ArrayOf()
 				Wend
 				init=New NewArrayExpr( ty,len )
-				ty=New ArrayType( ty )
+				ty=ty.ArrayOf()
 			Else If toke<>"const"
 				init=New ConstExpr( ty,"" )
 			Else
@@ -1171,10 +1251,10 @@ Class Parser
 		Local decl:ValDecl
 		
 		Select toke
-		Case "global" decl=New GlobalDecl( id,ty,init,attrs )
-		Case "field"  decl=New FieldDecl( id,ty,init,attrs )
-		Case "const"  decl=New ConstDecl( id,ty,init,attrs )
-		Case "local"  decl=New LocalDecl( id,ty,init,attrs )
+		Case "global" decl=New GlobalDecl( id,attrs,ty,init )
+		Case "field"  decl=New FieldDecl( id,attrs,ty,init )
+		Case "const"  decl=New ConstDecl( id,attrs,ty,init )
+		Case "local"  decl=New LocalDecl( id,attrs,ty,init )
 		End Select
 		
 		If decl.IsExtern() 
@@ -1245,7 +1325,7 @@ Class Parser
 				Local ty:Type=ParseDeclType()
 				Local init:Expr
 				If CParse( "=" ) init=ParseExpr()
-				Local arg:ArgDecl=New ArgDecl( id,ty,init )
+				Local arg:ArgDecl=New ArgDecl( id,0,ty,init )
 				If args.Length=nargs args=args.Resize( nargs+10 )
 				args[nargs]=arg
 				nargs+=1
@@ -1272,7 +1352,7 @@ Class Parser
 			Endif
 		Forever
 		
-		Local funcDecl:FuncDecl=New FuncDecl( id,ty,args,attrs )
+		Local funcDecl:FuncDecl=New FuncDecl( id,attrs,ty,args )
 		
 		If funcDecl.IsExtern()
 			funcDecl.munged=funcDecl.ident
@@ -1280,7 +1360,7 @@ Class Parser
 				funcDecl.munged=ParseStringLit()
 				'Array $resize hack!
 				If funcDecl.munged="$resize"
-					funcDecl.retTypeExpr=Type.emptyArrayType
+					funcDecl.retType=Type.emptyArrayType
 				Endif
 				
 			Endif
@@ -1307,7 +1387,7 @@ Class Parser
 		If toke Parse toke
 		
 		Local id$=ParseIdent()
-		Local args:ClassDecl[]
+		Local args$[]
 		Local superTy:IdentType
 		Local imps:IdentType[]
 		
@@ -1325,15 +1405,11 @@ Class Parser
 				Err "Interfaces cannot be generic."
 			Endif
 			
-			If attrs & CLASS_TEMPLATEARG
-				Err "Class parameters cannot be generic."
-			Endif
-			
 			Local nargs
 			Repeat
-				Local decl:ClassDecl=ParseClassDecl( "",CLASS_TEMPLATEARG )
+				Local arg:=ParseIdent()
 				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=decl
+				args[nargs]=arg
 				nargs+=1
 			Until Not CParse(",")
 			args=args[..nargs]
@@ -1343,10 +1419,6 @@ Class Parser
 		
 		If CParse( "extends" )
 		
-			If attrs & CLASS_TEMPLATEARG
-				Err "Extends cannot be used with class parameters."
-			Endif
-			
 			If CParse( "null" )
 			
 				If attrs & CLASS_INTERFACE
@@ -1386,10 +1458,6 @@ Class Parser
 				Err "Implements cannot be used with interfaces."
 			Endif
 			
-			If attrs & CLASS_TEMPLATEARG
-				Err "Implements cannot be used with class parameters."
-			Endif
-			
 			Local nimps
 			Repeat
 				If imps.Length=nimps imps=imps.Resize( nimps+10 )
@@ -1420,15 +1488,13 @@ Class Parser
 			Endif
 		Forever
 
-		Local classDecl:ClassDecl=New ClassDecl( id,args,superTy,imps,attrs )
+		Local classDecl:ClassDecl=New ClassDecl( id,attrs,args,superTy,imps )
 		
 		If classDecl.IsExtern()
 			classDecl.munged=classDecl.ident
 			If CParse( "=" ) classDecl.munged=ParseStringLit()
 		Endif
 		
-		If classDecl.IsTemplateArg() Return classDecl
-
 		Local decl_attrs=(attrs & DECL_EXTERN)
 		
 		Local method_attrs=decl_attrs|FUNC_METHOD
@@ -1453,7 +1519,7 @@ Class Parser
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
 			Case "method"
 				Local decl:=ParseFuncDecl( _toke,method_attrs )
-				If decl.IsCtor() decl.retTypeExpr=New ObjectType( classDecl )
+'				If decl.IsCtor() decl.retType=classDecl.objectType
 				classDecl.InsertDecl decl
 			Case "function"
 				If (attrs & CLASS_INTERFACE) And _toke<>"const"
@@ -1548,7 +1614,7 @@ Class Parser
 		
 		If Not (attrs & DECL_PRIVATE) _module.pubImported.Insert mdecl.filepath,mdecl
 		
-		_module.InsertDecl New AliasDecl( mdecl.ident,mdecl,attrs )
+		_module.InsertDecl New AliasDecl( mdecl.ident,attrs,mdecl )
 
 	End
 	
@@ -1580,7 +1646,7 @@ Class Parser
 
 		ValidateModIdent ident
 		
-		_module=New ModuleDecl( ident,munged,path,mattrs )
+		_module=New ModuleDecl( ident,mattrs,munged,path )
 		
 		_module.imported.Insert path,_module
 
@@ -1632,7 +1698,7 @@ Class Parser
 					
 					_env=Null	'/naughty
 
-					_module.InsertDecl New AliasDecl( ident,decl,attrs )
+					_module.InsertDecl New AliasDecl( ident,attrs,decl )
 					
 				Until Not CParse(",")
 			Default
@@ -1839,10 +1905,10 @@ Function Eval$( source$,ty:Type )
 
 	Local env:=New ScopeDecl
 	
-	env.InsertDecl New ConstDecl( "HOST",Type.stringType,New ConstExpr( Type.stringType,ENV_HOST ),0 )
-	env.InsertDecl New ConstDecl( "LANG",Type.stringType,New ConstExpr( Type.stringType,ENV_LANG ),0 )
-	env.InsertDecl New ConstDecl( "TARGET",Type.stringType,New ConstExpr( Type.stringType,ENV_TARGET ),0 )
-	env.InsertDecl New ConstDecl( "CONFIG",Type.stringType,New ConstExpr( Type.stringType,ENV_CONFIG ),0 )
+	env.InsertDecl New ConstDecl( "HOST",0,Type.stringType,New ConstExpr( Type.stringType,ENV_HOST ) )
+	env.InsertDecl New ConstDecl( "LANG",0,Type.stringType,New ConstExpr( Type.stringType,ENV_LANG ) )
+	env.InsertDecl New ConstDecl( "TARGET",0,Type.stringType,New ConstExpr( Type.stringType,ENV_TARGET ) )
+	env.InsertDecl New ConstDecl( "CONFIG",0,Type.stringType,New ConstExpr( Type.stringType,ENV_CONFIG ) )
 	
 	PushEnv env
 	

@@ -4,12 +4,6 @@
 ' Placed into the public domain 24/02/2011.
 ' No warranty implied; use at your own risk.
 
-Private
-
-Import boxes
-
-Public
-
 Class Map<K,V>
 
 	'This method MUST be implemented by subclasses of Map...
@@ -496,6 +490,35 @@ Private
 	
 End
 
+'Helper versions...
+
+Class IntMap<V> Extends Map<Int,V>
+
+	Method Compare( lhs,rhs )
+		Return lhs-rhs
+	End
+
+End
+
+Class FloatMap<V> Extends Map<Float,V>
+
+	Method Compare( lhs#,rhs# )
+		If lhs<rhs Return -1
+		Return lhs>rhs
+	End
+	
+End
+
+Class StringMap<V> Extends Map<String,V>
+
+	Method Compare( lhs$,rhs$ )
+		Return lhs.Compare( rhs )
+	End
+
+End
+
+#rem
+
 '***** Box object versions *****
 
 Class IntMap<V> Extends Map<IntObject,V>
@@ -522,3 +545,5 @@ Class StringMap<V> Extends Map<StringObject,V>
 	End
 
 End
+
+#end

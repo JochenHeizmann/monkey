@@ -13,14 +13,22 @@ Class Stmt
 		errInfo=_errInfo
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl ) Abstract
+	
+	Method OnSemant() Abstract
+
+	Method Copy:Stmt( scope:ScopeDecl )
+		Local t:=OnCopy( scope )
+		t.errInfo=errInfo
+		Return t
+	End
+	
 	Method Semant()
 		PushErr errInfo
 		OnSemant
 		PopErr
 	End
 	
-	Method OnSemant() Abstract
-
 	Method Trans$() Abstract
 
 End
@@ -33,7 +41,11 @@ Class DeclStmt Extends Stmt
 	End
 	
 	Method New( id$,ty:Type,init:Expr )
-		Self.decl=New LocalDecl( id,ty,init,0 )	
+		Self.decl=New LocalDecl( id,0,ty,init )	
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New DeclStmt( decl.Copy() )
 	End
 	
 	Method OnSemant()
@@ -59,6 +71,10 @@ Class AssignStmt Extends Stmt
 		Self.rhs=rhs
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New AssignStmt( op,lhs.Copy(),rhs.Copy() )
+	End
+	
 	Method FixSideEffects()
 	
 		'Ok, this is ugly stuff...but we need to be able to expand
@@ -68,7 +84,7 @@ Class AssignStmt Extends Stmt
 		Local e1:=MemberVarExpr( lhs )
 		If e1
 			If e1.expr.SideEffects()
-				tmp1=New LocalDecl( "",e1.expr.exprType,e1.expr )
+				tmp1=New LocalDecl( "",0,e1.expr.exprType,e1.expr )
 				lhs=New MemberVarExpr( New VarExpr(tmp1),e1.decl ).Semant()
 			Endif
 		Endif
@@ -79,11 +95,11 @@ Class AssignStmt Extends Stmt
 			Local index:=e2.index
 			If expr.SideEffects() Or index.SideEffects()
 				If expr.SideEffects()
-					tmp1=New LocalDecl( "",expr.exprType,expr )
+					tmp1=New LocalDecl( "",0,expr.exprType,expr )
 					expr=New VarExpr( tmp1 )
 				Endif
 				If index.SideEffects()
-					tmp2=New LocalDecl( "",index.exprType,index )
+					tmp2=New LocalDecl( "",0,index.exprType,index )
 					index=New VarExpr( tmp2 )
 				Endif
 				lhs=New IndexExpr( expr,index ).Semant()
@@ -154,6 +170,10 @@ Class ExprStmt Extends Stmt
 		Self.expr=expr
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New ExprStmt( expr.Copy() )
+	End
+	
 	Method OnSemant()
 		expr=expr.Semant()
 		If Not expr InternalErr
@@ -169,6 +189,11 @@ Class ReturnStmt Extends Stmt
 
 	Method New( expr:Expr )
 		Self.expr=expr
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		If expr Return New ReturnStmt( expr.Copy() )
+		Return New ReturnStmt( Null )
 	End
 	
 	Method OnSemant()
@@ -192,6 +217,10 @@ End
 
 Class BreakStmt Extends Stmt
 
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New BreakStmt
+	End
+	
 	Method OnSemant()
 		If Not _loopnest Err "Exit statement must appear inside a loop."
 	End
@@ -204,6 +233,10 @@ End
 
 Class ContinueStmt Extends Stmt
 
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New ContinueStmt
+	End
+	
 	Method OnSemant()
 		If Not _loopnest Err "Continue statement must appear inside a loop."
 	End
@@ -223,6 +256,10 @@ Class IfStmt Extends Stmt
 		Self.expr=expr
 		Self.thenBlock=thenBlock
 		Self.elseBlock=elseBlock
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New IfStmt( expr.Copy(),thenBlock.CopyBlock( scope ),elseBlock.CopyBlock( scope ) )
 	End
 	
 	Method OnSemant()
@@ -245,6 +282,10 @@ Class WhileStmt Extends Stmt
 		Self.block=block
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New WhileStmt( expr.Copy(),block.CopyBlock( scope ) )
+	End
+	
 	Method OnSemant()
 		expr=expr.Semant( Type.boolType,CAST_EXPLICIT )
 		_loopnest+=1
@@ -264,7 +305,10 @@ Class RepeatStmt Extends Stmt
 	Method New( block:BlockDecl,expr:Expr )
 		Self.block=block
 		Self.expr=expr
-		
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New RepeatStmt( block.CopyBlock( scope ),expr.Copy() )
 	End
 	
 	Method OnSemant()
@@ -292,12 +336,16 @@ Class ForStmt Extends Stmt
 		Self.block=block
 	End
 	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New ForStmt( init.Copy( scope ),expr.Copy(),incr.Copy( scope ),block.CopyBlock( scope ) )
+	End
+	
 	Method OnSemant()
 
 		PushEnv block
+
 		init.Semant
-		PopEnv
-		
+
 		expr=expr.Semant()
 		
 		_loopnest+=1
@@ -305,6 +353,8 @@ Class ForStmt Extends Stmt
 		_loopnest-=1
 
 		incr.Semant
+		
+		PopEnv
 		
 		'dodgy as hell! Reverse comparison for backward loops!
 		Local assop:AssignStmt=AssignStmt( incr )

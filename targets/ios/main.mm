@@ -103,13 +103,14 @@
 
 @implementation MonkeyWindow
 
+/*
 -(void)sendEvent:(UIEvent*)event{
 	[super sendEvent:event];
 	MonkeyAppDelegate *delegate=(MonkeyAppDelegate*)[[UIApplication sharedApplication] delegate];
 	[delegate onEvent:event];
 }
+*/
 
-/*
 -(void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event{
 	MonkeyAppDelegate *delegate=(MonkeyAppDelegate*)[[UIApplication sharedApplication] delegate];
 	[delegate onEvent:event];
@@ -129,7 +130,6 @@
 	MonkeyAppDelegate *delegate=(MonkeyAppDelegate*)[[UIApplication sharedApplication] delegate];
 	[delegate onEvent:event];
 }
-*/
 
 @end
 

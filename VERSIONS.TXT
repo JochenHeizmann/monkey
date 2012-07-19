@@ -1,6 +1,48 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V49 *****
+
+Modules:
+
+mojo.graphics - Changed XNA PlayMusic to use MediaPlayer.
+
+
+Monk (0.35)
+
+Applied MaxIDE tab width & SaveText fixes and recompiled with new MaxGUI.
+
+
+Trans (1.22)
+
+Fixed object cast bug with new generics.
+
+XNA target changed to treat WAV files as sounds, MP3 and WMA files as music.
+
+Generics system majorly overhauled, now uses 'reification' instead of 'type erasure'.
+
+
+***** V48 *****
+
+Modules:
+
+mojo - Changed touch handling to only process touches for view.
+
+
+
+Targets:
+
+ios - Changed touch detection to touchesBegan, touchesEnded etc. for better compatibility with game center etc. Enabled multi-touch in UIView via xib!
+
+
+
+***** V47 *****
+
+Modules:
+
+monkey.lang - added autoscrolling Print to js target.
+
+
 ***** V46 *****
 
 Modules:

@@ -15,7 +15,7 @@ Class AsTranslator Extends Translator
 		If FloatType( ty ) Return "Number"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return "Array"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.actual.munged
+		If ObjectType( ty ) Return ObjectType( ty ).classDecl.munged
 		InternalErr
 	End
 	
@@ -36,7 +36,7 @@ Class AsTranslator Extends Translator
 	End
 
 	Method TransValDecl$( decl:ValDecl )
-		Return decl.munged+":"+TransType( decl.ty )
+		Return decl.munged+":"+TransType( decl.type )
 	End
 	
 	Method TransArgs$( args:Expr[] )
@@ -81,14 +81,6 @@ Class AsTranslator Extends Translator
 		InternalErr
 	End
 
-	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		If ty.ActualType().EqualsType( src.ActualType() ) Return expr
-		
-		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
-
-		Return Bra( expr+" as "+TransType(ty) )
-	End
-
 	Method TransGlobal$( decl:GlobalDecl )
 		Return TransStatic( decl )
 	End
@@ -125,8 +117,8 @@ Class AsTranslator Extends Translator
 	End
 
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		Local t$="(new "+expr.classDecl.actual.munged+")"
-		If expr.ctor t+="."+expr.ctor.actual.munged+TransArgs( expr.args )
+		Local t$="(new "+expr.classDecl.munged+")"
+		If expr.ctor t+="."+expr.ctor.munged+TransArgs( expr.args )
 		Return t
 	End
 	
@@ -315,36 +307,14 @@ Class AsTranslator Extends Translator
 	Method EmitFuncDecl( decl:FuncDecl )
 		PushMungScope
 
-		'Find decl we override
-		Local odecl:=decl
-		While odecl.overrides
-			odecl=odecl.overrides
-		Wend
-
-		'Generate 'args' string and arg casts
-		Local args$
-		Local argCasts:=New StringStack
-		For Local i=0 Until decl.argDecls.Length
-			Local arg:=decl.argDecls[i]
-			Local oarg:=odecl.argDecls[i]
-			MungDecl arg
-			If args args+=","
-			args+=arg.munged+":"+TransType( oarg.ty )
-			If arg.ty.EqualsType( oarg.ty ) Continue
-			Local t$=arg.munged
-			arg.munged=""
-			MungDecl arg
-			argCasts.Push "var "+arg.munged+":"+TransType(arg.ty)+"="+t+" as "+TransType(arg.ty)+";"
-		Next
-#rem
 		Local args$
 		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransValDecl( arg )
 		Next
-#end
-		Local t$="function "+decl.munged+Bra( args )+":"+TransType( odecl.retType )
+
+		Local t$="function "+decl.munged+Bra( args )+":"+TransType( decl.retType )
 		
 		Local cdecl:=decl.ClassScope()
 		If cdecl And cdecl.IsInterface()
@@ -365,9 +335,6 @@ Class AsTranslator Extends Translator
 					Emit "return "+TransValue( decl.retType,"" )+";"
 				Endif
 			Else
-				For Local t$=Eachin argCasts
-					Emit t
-				Next
 				EmitBlock decl
 			Endif
 			Emit "}"
@@ -378,19 +345,15 @@ Class AsTranslator Extends Translator
 
 	Method EmitClassDecl( classDecl:ClassDecl )
 	
-		If classDecl.IsTemplateInst()
-			InternalErr
-		Endif
-	
-		Local classid$=classDecl.actual.munged
-		Local superid$=classDecl.superClass.actual.munged
+		Local classid$=classDecl.munged
+		Local superid$=classDecl.superClass.munged
 
 		If classDecl.IsInterface() 
 
 			Local bases$
 			For Local iface:=Eachin classDecl.implments
 				If bases bases+="," Else bases=" extends "
-				bases+=iface.actual.munged
+				bases+=iface.munged
 			Next
 
 			Emit "interface "+classid+bases+"{"
@@ -407,7 +370,7 @@ Class AsTranslator Extends Translator
 		Local bases$
 		For Local iface:=Eachin classDecl.implments
 			If bases bases+="," Else bases=" implements "
-			bases+=iface.actual.munged
+			bases+=iface.munged
 		Next
 		
 		Emit "class "+classid+" extends "+superid+bases+"{"

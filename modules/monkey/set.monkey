@@ -7,7 +7,6 @@
 Private
 
 Import map
-Import boxes
 
 Public
 
@@ -46,9 +45,32 @@ Class Set<T>
 	End
 	
 Private
+
 	Field map:Map<T,Object>
 
 End
+
+'Helper versions...
+
+Class IntSet Extends Set<Int>
+	Method New()
+		Super.New( New IntMap<Object> )
+	End
+End
+
+Class FloatSet Extends Set<Float>
+	Method New()
+		Super.New( New FloatMap<Object> )
+	End
+End
+
+Class StringSet Extends Set<String>
+	Method New()
+		Super.New( New StringMap<Object> )
+	End
+End
+
+#rem
 
 Class IntSet Extends Set<IntObject>
 	Method New()
@@ -67,3 +89,5 @@ Class StringSet Extends Set<StringObject>
 		Super.New( New StringMap<Object> )
 	End
 End
+
+#end

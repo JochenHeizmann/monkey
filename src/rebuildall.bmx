@@ -2,13 +2,10 @@
 Strict
 
 'rebuild options
-Const Rebuild_Trans=True
-
-Const Rebuild_Mserver=False
-
-Const Rebuild_Monk=False
-
-Const Rebuild_Makemeta=False
+Const Rebuild_Trans=	True
+Const Rebuild_Monk=		False
+Const Rebuild_Mserver=	False
+Const Rebuild_Makemeta=	False
 
 ?Win32
 
@@ -16,7 +13,7 @@ Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
 Const trans2$=trans
-'Const trans2$="..\bin\trans_winnt_45c.exe"
+'Const trans2$="..\bin\trans_winnt_v49a.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
 Const makemeta$="..\bin\makemeta_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
@@ -65,7 +62,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 	Else
-		system trans2+" -clean -target=stdcpp -config=debug trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 
 		Delay 100
 		
@@ -89,6 +86,10 @@ EndIf
 
 If Rebuild_Monk And FileType( "monk/monk.bmx" )=FILETYPE_FILE
 	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -t gui -a -r -o ../monk monk/monk.bmx"
+?MacOS
+	system "cp monk/info.plist ../monk.app/Contents"
+	system "cp monk/monk.icns ../monk.app/Contents/Resources"
+?
 	Print "monk built OK!"
 EndIf
 

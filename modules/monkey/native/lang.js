@@ -35,6 +35,7 @@ function stackTrace(){
 function print( str ){
 	if( game_console ){
 		game_console.value+=str+"\n";
+		game_console.scrollTop = game_console.scrollHeight - game_console.clientHeight;
 	}
 	if( window.console!=undefined ){
 		window.console.log( str );

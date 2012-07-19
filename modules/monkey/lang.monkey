@@ -9,6 +9,7 @@ Import "native/lang.${LANG}"
 Extern
 
 Function Print( message$ )="$print"
+
 Function Error( message$ )="$error"
 
 Class @String Extends Null="String"
@@ -45,9 +46,5 @@ Class @Array Extends Null="Array"
 End
 
 Class @Object Extends Null="Object"
-
-'	Method Equals?( obj:Object )
-	
-'	Method Compare( obj:Object )
 
 End

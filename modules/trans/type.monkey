@@ -8,10 +8,6 @@ Import trans
 
 Class Type
 
-	Method ActualType:Type()
-		Return Self
-	End
-
 	Method EqualsType( ty:Type )
 		Return False
 	End
@@ -31,6 +27,11 @@ Class Type
 	Method ToString$()
 		Return "??Type??"
 	End
+
+	Method ArrayOf:ArrayType()
+		If Not arrayOf arrayOf=New ArrayType( Self )
+		Return arrayOf
+	End
 	
 	Global voidType:=New VoidType
 	Global boolType:=New BoolType
@@ -40,6 +41,10 @@ Class Type
 	Global emptyArrayType:ArrayType=New ArrayType( voidType )
 	Global objectType:IdentType=New IdentType( "monkey.object",[] )
 	Global nullObjectType:=New IdentType( "",[] )
+	
+	Private
+	
+	Field arrayOf:ArrayType
 
 End
 
@@ -52,6 +57,7 @@ Class VoidType Extends Type
 	Method ToString$()
 		Return "Void"
 	End
+
 End
 
 Class BoolType Extends Type
@@ -62,6 +68,10 @@ Class BoolType Extends Type
 	
 	Method ExtendsType( ty:Type )
 		Return IntType( ty )<>Null Or BoolType( ty )<>Null
+	End
+	
+	Method GetClass:ClassDecl()
+		Return ClassDecl( _env.FindDecl( "bool" ) )
 	End
 	
 	Method ToString$()
@@ -89,6 +99,10 @@ Class IntType Extends NumericType
 		Return NumericType( ty )<>Null Or StringType( ty )<>Null
 	End
 	
+	Method GetClass:ClassDecl()
+		Return ClassDecl( _env.FindDecl( "int" ) )
+	End
+	
 	Method ToString$()
 		Return "Int"
 	End
@@ -107,6 +121,10 @@ Class FloatType Extends NumericType
 			Return ctor And ctor.IsCtor()
 		Endif	
 		Return NumericType( ty )<>Null Or StringType( ty )<>Null
+	End
+	
+	Method GetClass:ClassDecl()
+		Return ClassDecl( _env.FindDecl( "float" ) )
 	End
 	
 	Method ToString$()
@@ -131,7 +149,7 @@ Class StringType Extends Type
 	End
 	
 	Method GetClass:ClassDecl()
-		Return _env.FindClassDecl( "string",[] )
+		Return ClassDecl( _env.FindDecl( "string" ) )
 	End
 	
 	Method ToString$()
@@ -146,12 +164,6 @@ Class ArrayType Extends Type
 		Self.elemType=elemType
 	End
 	
-	Method ActualType:Type()
-		Local ty:=elemType.ActualType()
-		If ty=elemType Return Self
-		Return New ArrayType( ty )
-	End
-		
 	Method EqualsType( ty:Type )
 		Local arrayType:ArrayType=ArrayType( ty )
 		Return arrayType And elemType.EqualsType( arrayType.elemType )
@@ -169,12 +181,13 @@ Class ArrayType Extends Type
 	End
 	
 	Method GetClass:ClassDecl()
-		Return _env.FindClassDecl( "array",[] )
+		Return ClassDecl( _env.FindDecl( "array" ) )	'_env.FindClassDecl( "array",[] )
 	End
 	
 	Method ToString$()
 		Return elemType.ToString()+"[]"
 	End
+	
 End
 
 Class ObjectType Extends Type
@@ -182,11 +195,6 @@ Class ObjectType Extends Type
 	
 	Method New( classDecl:ClassDecl )
 		Self.classDecl=classDecl
-	End
-	
-	Method ActualType:Type()
-		If classDecl.actual=classDecl Return Self
-		Return New ObjectType( ClassDecl(classDecl.actual) )
 	End
 	
 	Method EqualsType( ty:Type )
@@ -224,15 +232,11 @@ End
 
 Class IdentType Extends Type
 	Field ident$
-	Field args:IdentType[]
+	Field args:Type[]
 	
-	Method New( ident$,args:IdentType[] )
+	Method New( ident$,args:Type[] )
 		Self.ident=ident
 		Self.args=args
-	End
-	
-	Method ActualType:Type()
-		InternalErr
 	End
 	
 	Method EqualsType( ty:Type )
@@ -244,35 +248,36 @@ Class IdentType Extends Type
 	End
 	
 	Method Semant:Type()
-		If ident Return New ObjectType( FindClass() )
-		Return New ObjectType( ClassDecl.nullObjectClass )
-	End
+		If Not ident Return ClassDecl.nullObjectClass.objectType
 	
-	Method FindClass:ClassDecl()
-	
-		Local argClasses:ClassDecl[args.Length]
-
+		Local targs:Type[args.Length]
 		For Local i=0 Until args.Length
-			argClasses[i]=args[i].FindClass()
+			targs[i]=args[i].Semant()
 		Next
 		
-		Local clsid$
-		Local cdecl:ClassDecl
+		Local tyid$,type:Type
 		Local i=ident.Find( "." )
+		
 		If i=-1
-			clsid=ident
-			cdecl=_env.FindClassDecl( clsid,argClasses )
+			tyid=ident
+			type=_env.FindType( tyid,targs )
 		Else
 			Local modid$=ident[..i]
 			Local mdecl:ModuleDecl=_env.FindModuleDecl( modid )
 			If Not mdecl Err "Module '"+modid+"' not found"
-			clsid=ident[i+1..]
-			cdecl=mdecl.FindClassDecl( clsid,argClasses )
+			tyid=ident[i+1..]
+			type=mdecl.FindType( tyid,targs )
 		Endif
-		If Not cdecl Err "Class '"+clsid+"' not found"
-		Return cdecl
+		If Not type Err "Type '"+tyid+"' not found"
+		Return type
 	End
-	
+
+	Method SemantClass:ClassDecl()
+		Local type:=ObjectType( Semant() )
+		If Not type Err "Type is not a class"
+		Return type.classDecl
+	End
+
 	Method ToString$()
 		Local t$
 		For Local arg:=Eachin args
@@ -282,4 +287,5 @@ Class IdentType Extends Type
 		If t Return "$"+ident+"<"+t.Replace("$","")+">"
 		Return "$"+ident
 	End
+	
 End

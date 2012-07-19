@@ -4,13 +4,23 @@
 ' Placed into the public domain 24/02/2011.
 ' No warranty implied; use at your own risk.
 
-Private
-
-Import boxes
-
-Public
-
 Class Stack<T>
+
+	Method New()
+	End
+	
+	Method New( data:T[] )
+		Self.data=data[..]
+		Self.length=data.Length
+	End
+
+	Method ToArray:T[]()
+		Local t:T[length]
+		For Local i=0 Until length
+			t[i]=data[i]
+		Next
+		Return t
+	End
 
 	Method Equals?( lhs:T,rhs:T )
 		Return lhs=rhs
@@ -178,6 +188,51 @@ Private
 
 End
 
+'Helper versions
+
+Class IntStack Extends Stack<Int>
+
+	Method Equals?( lhs,rhs )
+		Return lhs=rhs
+	End
+	
+	Method Compare( lhs,rhs )
+		Return lhs-rhs
+	End
+
+End
+
+Class FloatStack Extends Stack<Float>
+	
+	Method Equals?( lhs#,rhs# )
+		Return lhs=rhs
+	End
+	
+	Method Compare( lhs#,rhs# )
+		If lhs<rhs Return -1
+		Return lhs>rhs
+	End
+	
+End
+
+Class StringStack Extends Stack<String>
+	
+	Method Join$( separator$ )
+		Return separator.Join( ToArray() )
+	End
+	
+	Method Equals?( lhs$,rhs$ )
+		Return lhs=rhs
+	End
+
+	Method Compare( lhs$,rhs$ )
+		Return lhs.Compare( rhs )
+	End
+
+End
+
+#rem
+
 '***** Box object versions *****
 
 Class IntStack Extends Stack<IntObject>
@@ -252,3 +307,5 @@ Class StringStack Extends Stack<StringObject>
 	End
 
 End
+
+#end

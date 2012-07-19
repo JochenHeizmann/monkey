@@ -85,7 +85,7 @@ Class Expr
 		
 		For Local i=0 Until args.Length
 			If args[i]
-				args[i]=args[i].Cast( funcDecl.argDecls[i].ty )
+				args[i]=args[i].Cast( funcDecl.argDecls[i].type )
 			Else If funcDecl.argDecls[i].init
 				args[i]=funcDecl.argDecls[i].init	
 			Else
@@ -226,10 +226,6 @@ Class VarExpr Extends Expr
 		Self.decl=decl
 	End
 	
-	Method Copy:Expr()
-		Return Self
-	End
-	
 	Method ToString$()
 		Return "VarExpr("+decl.ToString()+")"
 	End
@@ -240,8 +236,8 @@ Class VarExpr Extends Expr
 	
 	Method Semant:Expr()
 		If exprType Return Self
-		If Not decl.IsSemanted() InternalErr
-		exprType=decl.ty
+		If Not decl.IsSemanted() Err "Internal error - decl not semanted: "+decl.ident
+		exprType=decl.type
 		Return Self
 	End
 	
@@ -251,7 +247,7 @@ Class VarExpr Extends Expr
 	
 	Method Trans$()
 		Semant
-		Return _trans.TransTemplateCast( exprType,VarDecl(decl.actual).ty,_trans.TransVarExpr( Self ) )
+		Return _trans.TransVarExpr( Self )
 	End
 	
 	Method TransVar$()
@@ -270,10 +266,6 @@ Class MemberVarExpr Extends Expr
 		Self.decl=decl
 	End
 	
-	Method Copy:Expr()
-		Return Self
-	End
-	
 	Method ToString$()
 		Return "MemberVarExpr("+expr.ToString()+","+decl.ToString()+")"
 	End
@@ -285,7 +277,7 @@ Class MemberVarExpr Extends Expr
 	Method Semant:Expr()
 		If exprType Return Self
 		If Not decl.IsSemanted() InternalErr
-		exprType=decl.ty
+		exprType=decl.type
 		Return Self
 	End
 	
@@ -294,7 +286,7 @@ Class MemberVarExpr Extends Expr
 	End
 	
 	Method Trans$()
-		Return _trans.TransTemplateCast( exprType,VarDecl(decl.actual).ty,_trans.TransMemberVarExpr( Self ) )
+		Return _trans.TransMemberVarExpr( Self )
 	End
 	
 	Method TransVar$()
@@ -310,10 +302,6 @@ Class InvokeExpr Extends Expr
 	Method New( decl:FuncDecl,args:Expr[] )
 		Self.decl=decl
 		Self.args=args
-	End
-	
-	Method Copy:Expr()
-		Return Self
 	End
 	
 	Method ToString$()
@@ -332,7 +320,8 @@ Class InvokeExpr Extends Expr
 	End
 	
 	Method Trans$()
-		Return _trans.TransTemplateCast( exprType,FuncDecl(decl.actual).retType,_trans.TransInvokeExpr( Self ) )
+'		Return _trans.TransTemplateCast( exprType,FuncDecl(decl.actual).retType,_trans.TransInvokeExpr( Self ) )
+		Return _trans.TransInvokeExpr( Self )
 	End
 	
 	Method TransStmt$()
@@ -351,10 +340,6 @@ Class InvokeMemberExpr Extends Expr
 		Self.expr=expr
 		Self.decl=decl
 		Self.args=args
-	End
-	
-	Method Copy:Expr()
-		Return Self
 	End
 	
 	Method ToString$()
@@ -383,8 +368,7 @@ Class InvokeMemberExpr Extends Expr
 	Method Trans$()
 		'Array $resize hack!
 		If isResize Return _trans.TransInvokeMemberExpr( Self )
-		
-		Return _trans.TransTemplateCast( exprType,FuncDecl(decl.actual).retType,_trans.TransInvokeMemberExpr( Self ) )
+		Return _trans.TransInvokeMemberExpr( Self )
 	End
 	
 	Method TransStmt$()
@@ -423,7 +407,6 @@ Class NewObjectExpr Extends Expr
 		
 		If classDecl.IsInterface() Err "Cannot create instance of an interface."
 		If classDecl.IsAbstract() Err "Cannot create instance of an abstract class."
-		If classDecl.IsTemplateArg() Err "Cannot create instance of a generic argument."
 		If classDecl.args And Not classDecl.instanceof Err "Cannot create instance of a generic class."
 
 		If classDecl.IsExtern()
@@ -463,7 +446,8 @@ Class NewArrayExpr Extends Expr
 		If exprType Return Self
 		
 		ty=ty.Semant()
-		exprType=New ArrayType( ty )
+'		exprType=New ArrayType( ty )
+		exprType=ty.ArrayOf()
 		expr=expr.Semant( Type.intType )
 		Return Self
 	End
@@ -533,7 +517,8 @@ Class SelfExpr Extends Expr
 		If exprType Return Self
 	
 		If _env.FuncScope().IsStatic() Err "Illegal use of Self within static scope."
-		exprType=New ObjectType( _env.ClassScope() )
+'		exprType=New ObjectType( _env.ClassScope() )
+		exprType=_env.ClassScope().objectType
 		Return Self
 	End
 	
@@ -1058,7 +1043,8 @@ Class ArrayExpr Extends Expr
 			exprs[i]=exprs[i].Cast( ty )
 		Next
 		
-		exprType=New ArrayType( ty )
+'		exprType=New ArrayType( ty )
+		exprType=ty.ArrayOf()
 		Return Self	
 	End
 	

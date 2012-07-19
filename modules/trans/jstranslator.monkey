@@ -52,14 +52,6 @@ Class JsTranslator Extends Translator
 	
 	'***** Declarations *****
 	
-	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		If ty.ActualType().EqualsType( src.ActualType() ) Return expr
-
-		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
-
-		Return expr
-	End
-	
 	Method TransGlobal$( decl:GlobalDecl )
 		Return decl.munged
 	End
@@ -97,9 +89,9 @@ Class JsTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		Local t$="new "+expr.classDecl.actual.munged
+		Local t$="new "+expr.classDecl.munged
 		If expr.ctor
-			t=expr.ctor.actual.munged+".call"+TransArgs(expr.args,t)
+			t=expr.ctor.munged+".call"+TransArgs(expr.args,t)
 		Else
 			t="("+t+")"
 		Endif
@@ -150,9 +142,9 @@ Class JsTranslator Extends Translator
 			Return texpr
 		Else If dst.GetClass().ExtendsClass( src.GetClass() )
 			If dst.GetClass().IsInterface()
-				Return "object_implements"+Bra( texpr+",~q"+dst.GetClass.actual.munged+"~q" )
+				Return "object_implements"+Bra( texpr+",~q"+dst.GetClass.munged+"~q" )
 			Else
-				Return "object_downcast"+Bra( texpr+","+dst.GetClass().actual.munged )
+				Return "object_downcast"+Bra( texpr+","+dst.GetClass().munged )
 			Endif
 		Endif
 
@@ -318,10 +310,6 @@ Class JsTranslator Extends Translator
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
 	
-		If classDecl.IsTemplateInst()
-			InternalErr
-		Endif
-	
 		If classDecl.IsInterface() 
 			Return
 		Endif
@@ -329,7 +317,7 @@ Class JsTranslator Extends Translator
 		'PushEnv classDecl	'WTF?!?
 		
 		Local classid$=classDecl.munged
-		Local superid$=classDecl.superClass.actual.munged
+		Local superid$=classDecl.superClass.munged
 		
 		'JS constructor - initializes fields
 		'
@@ -349,7 +337,7 @@ Class JsTranslator Extends Translator
 		Local iset:=New StringSet
 		While tdecl
 			For Local iface:=Eachin tdecl.implmentsAll
-				Local t$=iface.actual.munged
+				Local t$=iface.munged
 				If iset.Contains( t ) Continue
 				iset.Insert t
 				If impls impls+=","
