@@ -40,6 +40,7 @@ function print( str ){
 	if( window.console!=undefined ){
 		window.console.log( str );
 	}
+	return 0;
 }
 
 function showError( err ){

@@ -48,36 +48,58 @@ Class IosTarget Extends Target
 				Local uuid$="00C69C9A-C9DE-11DF-B3BE-5540E0D72085"
 				
 				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/MonkeyGame.app"
-
-				'fixme!				
-				Local dst$=home+"/Library/Application Support/iPhone Simulator/4.3.2"
-				If FileType( dst )=FILETYPE_NONE
-					dst=home+"/Library/Application Support/iPhone Simulator/4.3"
+				
+				Const p1:="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"
+				Const p2:="/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"
+				
+				'New XCode in /Applications?
+				If FileType( p1 )=FILETYPE_DIR
+				
+					Local dst:=home+"/Library/Application Support/iPhone Simulator/5.1"
+					CreateDir dst
+					dst+="/Applications"
+					CreateDir dst
+					dst+="/"+uuid
+					If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst
+					If Not CreateDir( dst ) Die "Failed to create dir:"+dst
+					
+					'Need to use this 'coz it does the permissions thang
+					'
+					Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
+	
+					're-start emulator
+					'
+					Execute "killall ~qiPhone Simulator~q",False
+					Execute "open ~q"+p1+"~q"
+				
+				'Old XCode in /Developer?
+				Else If FileType( p2 )=FILETYPE_DIR
+				
+					Local dst:=home+"/Library/Application Support/iPhone Simulator/4.3.2"
 					If FileType( dst )=FILETYPE_NONE
-						dst=home+"/Library/Application Support/iPhone Simulator/4.2"
+						dst=home+"/Library/Application Support/iPhone Simulator/4.3"
+						If FileType( dst )=FILETYPE_NONE
+							dst=home+"/Library/Application Support/iPhone Simulator/4.2"
+						Endif
 					Endif
+					
+					CreateDir dst
+					dst+="/Applications"
+					CreateDir dst
+					dst+="/"+uuid
+					If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst
+					If Not CreateDir( dst ) Die "Failed to create dir:"+dst
+					
+					'Need to use this 'coz it does the permissions thang
+					'
+					Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
+	
+					're-start emulator
+					'
+					Execute "killall ~qiPhone Simulator~q",False
+					Execute "open ~q"+p2+"~q"
+				
 				Endif
-				
-				CreateDir dst
-
-				dst+="/Applications"
-
-				CreateDir dst
-
-				dst+="/"+uuid
-
-				If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst
-				
-				If Not CreateDir( dst ) Die "Failed to create dir:"+dst
-				
-				'Need to use this 'coz it does the permissions thang - fix CopyDir!
-				'
-				Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
-
-				're-start emulator
-				'
-				Execute "killall ~qiPhone Simulator~q",False
-				Execute "open ~q/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app~q"
 			Endif
 		Endif
 	End

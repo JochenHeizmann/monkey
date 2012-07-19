@@ -116,7 +116,7 @@ Class MyApp Extends App
  	End
 	
 	Method OnRender()
-
+	
 		rframes+=1
 		Local e=Millisecs-rtime
 		If e>=1000
