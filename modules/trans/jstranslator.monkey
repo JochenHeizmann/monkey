@@ -38,7 +38,7 @@ Class JsTranslator Extends Translator
 		Return "var "+munged+"="+init.Trans()
 	End
 	
-	Method EmitPushErr()
+	Method EmitEnter( func$ )
 		Emit "push_err();"
 	End
 	
@@ -46,7 +46,7 @@ Class JsTranslator Extends Translator
 		Emit "err_info=~q"+info.Replace( "\","/" )+"~q;"
 	End
 	
-	Method EmitPopErr()
+	Method EmitLeave()
 		Emit "pop_err();"
 	End
 	

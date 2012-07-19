@@ -54,19 +54,18 @@ Class AsTranslator Extends Translator
 		Return "var "+munged+":"+TransType( init.exprType )+"="+init.Trans()
 	End
 
-	Method EmitPushErr()
-		Emit "push_err();"
+	Method EmitEnter( func$ )
+		Emit "pushErr();"
 	End
 	
 	Method EmitSetErr( info$ )
-		Emit "err_info=~q"+info.Replace( "\","/" )+"~q;"
+		Emit "_errInfo=~q"+info.Replace( "\","/" )+"~q;"
 	End
 	
-	Method EmitPopErr()
-		Emit "pop_err();"
+	Method EmitLeave()
+		Emit "popErr();"
 	End
-	
-	
+
 	'***** Declarations *****
 
 	Method TransStatic$( decl:Decl )

@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.17"
+Const VERSION$="1.18"
 
 Global CONFIG_FILE$
 
@@ -187,6 +187,8 @@ Function Main()
 					CASED_CONFIG="Debug"
 				Case "release"
 					CASED_CONFIG="Release"
+				Case "profile"
+					CASED_CONFIG="Profile"
 				Default
 					Die "Unrecognized config: "+rhs
 				End
@@ -204,6 +206,10 @@ Function Main()
 	
 	ENV_CONFIG=CASED_CONFIG.ToLower()
 	
+	CONFIG_DEBUG=(ENV_CONFIG="debug")
+	CONFIG_RELEASE=(ENV_CONFIG="release")
+	CONFIG_PROFILE=(ENV_CONFIG="profile")
+
 	If OPT_RUN OPT_BUILD=True
 	If OPT_BUILD OPT_UPDATE=True
 	

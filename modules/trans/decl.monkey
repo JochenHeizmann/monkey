@@ -714,6 +714,9 @@ Class FuncDecl Extends BlockDecl
 			If IsCtor()
 				stmt=New ReturnStmt( Null )
 			Else
+				If ModuleScope().IsStrict()
+					Err "Missing return statement."
+				Endif
 				stmt=New ReturnStmt( New ConstExpr( retType,"" ) )
 			Endif
 			stmt.errInfo=errInfo
@@ -1131,7 +1134,7 @@ Class ClassDecl Extends ScopeDecl
 			'
 			'Check we implement all abstract methods!
 			'
-			If IsInstanced()
+			If Not IsAbstract()	'was IsInstanced() - ie: only 'Newed' classes.
 				Local cdecl:=Self
 				Local impls:=New List<FuncDecl>
 				While cdecl

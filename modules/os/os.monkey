@@ -1,15 +1,4 @@
 
-' Placed into the public domain 29/06/2011.
-' No warranty implied; use at your own risk.
-
-#rem
-
-os module - interface to low level stuff.
-
-Only works on glfw and stdcpp for now!
-
-#end
-
 #if TARGET="stdcpp" Or TARGET="glfw"
 
 Import "native/os.cpp"

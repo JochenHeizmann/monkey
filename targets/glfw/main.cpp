@@ -16,7 +16,7 @@
 #undef LoadString
 
 //For monkey main to set...
-void (*runner)();
+int (*runner)();
 
 //${TRANSCODE_BEGIN}
 void GameMain(){
@@ -42,21 +42,6 @@ unsigned char *loadImage( String path,int *width,int *height,int *depth ){
 
 void unloadImage( unsigned char *data ){
 	stbi_image_free( data );
-}
-
-String loadString( String path ){
-	if( FILE *fp=fopenFile( path,"rb" ) ){
-		int n;
-		String str;
-		unsigned char *buf=(unsigned char*)malloc( 32768 );
-		while( n=fread( buf,1,32768,fp ) ){
-			str=str+String( buf,n );
-		}
-		free( buf );
-		fclose( fp );
-		return str;
-	}
-	return "";
 }
 
 int main( int argc,const char *argv[] ){
@@ -101,9 +86,16 @@ int main( int argc,const char *argv[] ){
 		exit( -1 );
 	}
 	
-	bb_std_main( argc,argv );
+	try{
 	
-	if( runner ) runner();
+		bb_std_main( argc,argv );
+
+		if( runner ) seh_call( runner );
+
+	}catch( const char *err ){
+
+		Print( String("Monkey runtime error: ")+err+"\n"+StackTrace() );
+	}
 	
 	alcDestroyContext( alcContext );
 

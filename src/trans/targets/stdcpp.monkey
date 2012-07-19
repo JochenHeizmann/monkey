@@ -24,6 +24,9 @@ Class StdcppTarget Extends Target
 	
 		Local main$=LoadString( "main.cpp" )
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
+
+		If CONFIG_PROFILE main="#define PROFILE 1~n"+main
+
 		SaveString main,"main.cpp"
 
 		If OPT_BUILD
@@ -33,17 +36,21 @@ Class StdcppTarget Extends Target
 			
 			Select ENV_HOST
 			Case "macos"
-				If CASED_CONFIG="Release"
+				Select ENV_CONFIG
+				Case "release"
 					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -O3 -o "+out+" main.cpp"
-				Else
+				Case "debug"
 					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"
-				Endif
+				End
 			Default
-				If CASED_CONFIG="Release"
+				Select ENV_CONFIG
+				Case "release"
 					Execute "g++ -O3 -o "+out+" main.cpp"
-				Else
+				Case "profile"
+					Execute "g++ -O3 -o "+out+" main.cpp -lwinmm"
+				Case "debug"
 					Execute "g++ -o "+out+" main.cpp"
-				Endif
+				End
 			End
 
 			If OPT_RUN

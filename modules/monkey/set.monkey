@@ -13,6 +13,10 @@ Public
 
 Class Set<T>
 
+	Method New( map:Map<T,Object> )
+		Self.map=map
+	End
+	
 	Method Clear()
 		map.Clear
 	End
@@ -39,11 +43,6 @@ Class Set<T>
 	
 	Method ObjectEnumerator:KeyEnumerator<T,Object>()
 		Return map.Keys().ObjectEnumerator()
-	End
-	
-	
-	Method New( map:Map<T,Object> )
-		Self.map=map
 	End
 	
 Private

@@ -12,6 +12,9 @@ Public
 
 Class Map<K,V>
 
+	'This method MUST be implemented by subclasses of Map...
+	Method Compare( lhs:K,rhs:K ) Abstract
+	
 	Method Clear()
 		root=Null
 	End
@@ -95,9 +98,6 @@ Class Map<K,V>
 		Return Get( key )
 	End
 
-	'This is how key comparisons are currently implemented....
-	Method Compare( lhs:Object,rhs:Object ) Abstract
-	
 Private
 
 	Method FirstNode:Node<K,V>()
@@ -500,33 +500,25 @@ End
 
 Class IntMap<V> Extends Map<IntObject,V>
 
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=IntObject( lhs ).value
-		Local r:=IntObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Compare( lhs:IntObject,rhs:IntObject )
+		Return lhs.value-rhs.value
 	End
 
 End
 
 Class FloatMap<V> Extends Map<FloatObject,V>
 
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=FloatObject( lhs ).value
-		Local r:=FloatObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Compare( lhs:FloatObject,rhs:FloatObject )
+		If lhs.value<rhs.value Return -1
+		Return lhs.value>rhs.value
 	End
 
 End
 
 Class StringMap<V> Extends Map<StringObject,V>
 
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=StringObject( lhs ).value
-		Local r:=StringObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Compare( lhs:StringObject,rhs:StringObject )
+		Return lhs.value.Compare( rhs.value )
 	End
 
 End

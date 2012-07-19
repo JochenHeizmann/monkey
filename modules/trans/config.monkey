@@ -13,6 +13,10 @@ Global ENV_TARGET$
 Global ENV_MODPATH$
 Global ENV_SAFEMODE	'True for safe mode!
 
+Global CONFIG_DEBUG?'=(ENV_CONFIG="debug")
+Global CONFIG_RELEASE?'=(ENV_CONFIG="release")
+Global CONFIG_PROFILE?'=(ENV_CONFIG="profile")
+
 Global _errInfo$
 Global _errStack:=New StringList
 
@@ -80,7 +84,6 @@ Function LangEnquote$( str$ )
 	str=str.Replace( "~n","\n" )
 	str=str.Replace( "~r","\r" )
 	str=str.Replace( "~t","\t" )
-'	str=str.Replace( "~0","\0" )	'Fix me?
 	For Local i=0 Until str.Length
 		If str[i]>=32 And str[i]<128 Continue
 		Local t$,n=str[i]
@@ -93,15 +96,19 @@ Function LangEnquote$( str$ )
 		If Not t t="0"
 		Select ENV_LANG
 		Case "cpp"
-			t="~q~q\x"+t+"~q~q"
-		Default	'js
+			t="~qL~q\x"+t+"~qL~q"
+		Default
 			t="\u"+("0000"+t)[-4..]
 		End
 		str=str[..i]+t+str[i+1..]
 		i+=t.Length-1
 	Next
-	str="~q"+str+"~q"
-	If ENV_LANG="cpp" str="L"+str
+	Select ENV_LANG
+	Case "cpp"
+		str="L~q"+str+"~q"
+	Default
+		str="~q"+str+"~q"
+	End
 	Return str
 End
 

@@ -33,11 +33,12 @@ Class Toker
 	"for;to;step;next;return;"+
 	"interface;implements;inline;alias;"
 
-	Global _symbols$[]=[ "..","[]",":=","*=","/=","+=","-=","|=","&=","~=" ]
+	Global _symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~=" ]
 
 	Field _path$
 	Field _line
 	Field _source$
+	Field _length
 	Field _toke$
 	Field _tokeType
 	Field _tokePos
@@ -46,18 +47,20 @@ Class Toker
 		_path=path
 		_line=1
 		_source=source
-		_toke=""
+		_length=_source.Length
 		_tokeType=TOKE_EOF
 		_tokePos=0
+		_toke=""
 	End
 	
 	Method New( toker:Toker )
 		_path=toker._path
 		_line=toker._line
 		_source=toker._source
-		_toke=toker._toke
+		_length=_source.Length
 		_tokeType=toker._tokeType
 		_tokePos=toker._tokePos
+		_toke=toker._toke
 	End
 	
 	Method Path$()
@@ -69,31 +72,30 @@ Class Toker
 	End
 	
 	Method NextToke$()
+	
+		_toke=""
 
-		If _tokePos=_source.Length
-			_toke=""
+		If _tokePos=_length
 			_tokeType=TOKE_EOF
 			Return _toke
 		Endif
-				
-		Local chr=_source[_tokePos]
-		Local str$=String.FromChar( chr )
 		
-		Local start=_tokePos
+		Local chr:=TCHR()
+		Local str:=TSTR()
+		Local start:=_tokePos
 		_tokePos+=1
-		_toke=""
 		
 		If str="~n"
-			_line+=1
 			_tokeType=TOKE_SYMBOL
+			_line+=1
 		Else If IsSpace( chr )
-			While _tokePos<_source.Length And IsSpace( TCHR() ) And TSTR()<>"~n"
+			_tokeType=TOKE_SPACE
+			While _tokePos<_length And IsSpace( TCHR() ) And TSTR()<>"~n"
 				_tokePos+=1
 			Wend
-			_tokeType=TOKE_SPACE
 		Else If str="_" Or IsAlpha( chr )
 			_tokeType=TOKE_IDENT
-			While _tokePos<_source.Length
+			While _tokePos<_length
 				Local chr=_source[_tokePos]
 				If chr<>Asc("_") And Not IsAlpha( chr ) And Not IsDigit( chr ) Exit
 				_tokePos+=1
@@ -137,19 +139,30 @@ Class Toker
 			Wend
 		Else If str="~q"
 			_tokeType=TOKE_STRINGLIT
-			While TSTR() And TSTR()<>"~q"
+			While _tokePos<_length And TSTR()<>"~q"
 				_tokePos+=1
 			Wend
-			If _tokePos<_source.Length _tokePos+=1 Else _tokeType=TOKE_STRINGLITEX
+			If _tokePos<_length _tokePos+=1 Else _tokeType=TOKE_STRINGLITEX
 		Else If str="'"
 			_tokeType=TOKE_LINECOMMENT
-			While TSTR() And TSTR()<>"~n"
+			While _tokePos<_length And TSTR()<>"~n"
 				_tokePos+=1
 			Wend
-			If _tokePos<_source.Length
+			If _tokePos<_length
 				_tokePos+=1
 				_line+=1
 			Endif
+		Else If str="["
+			_tokeType=TOKE_SYMBOL
+			Local i
+			While _tokePos+i<_length
+				If TSTR(i)="]"
+					_tokePos+=i+1
+					Exit
+				Endif
+				If TSTR(i)="~n" Or Not IsSpace( TCHR(i) ) Exit
+				i+=1
+			Wend
 		Else
 			_tokeType=TOKE_SYMBOL
 			For Local sym$=Eachin _symbols
@@ -162,7 +175,7 @@ Class Toker
 		Endif
 		
 		If Not _toke _toke=_source[start.._tokePos]
-		
+
 		Return _toke
 	End
 	
@@ -183,11 +196,13 @@ Class Toker
 Private
 
 	Method TCHR( i=0 )
-		If _tokePos+i<_source.Length Return _source[_tokePos+i]
+		i+=_tokePos
+		If i<_length Return _source[i]
 	End
 	
 	Method TSTR$( i=0 )
-		If _tokePos+i<_source.Length Return String.FromChar( _source[_tokePos+i] )
+		i+=_tokePos
+		If i<_length Return _source[i..i+1]
 	End
 	
 	

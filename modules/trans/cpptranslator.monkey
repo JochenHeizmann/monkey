@@ -6,6 +6,8 @@
 
 Import trans
 
+Const PROFILE?=True
+
 Class CppTranslator Extends Translator
 
 	Method TransType$( ty:Type )
@@ -74,16 +76,16 @@ Class CppTranslator Extends Translator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitPushErr()
-		Emit "pushErr();"
+	Method EmitEnter( func$ )
+		If CONFIG_DEBUG Emit "pushErr();" Else Emit "profEnter(~q"+func+"~q);"
 	End
 	
 	Method EmitSetErr( info$ )
-		Emit "errInfo=~q"+info.Replace( "\","/" )+"~q;"
+		If CONFIG_DEBUG Emit "errInfo=~q"+info.Replace( "\","/" )+"~q;"
 	End
 	
-	Method EmitPopErr()
-		Emit "popErr();"
+	Method EmitLeave()
+		If CONFIG_DEBUG Emit "popErr();" Else Emit "profLeave();"
 	End
 
 	'***** Declarations *****

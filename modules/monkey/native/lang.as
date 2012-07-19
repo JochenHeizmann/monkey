@@ -6,46 +6,64 @@
 
 //***** ActionScript Runtime *****
 
-var obj_id:int=0;
-var err_info:String="";
-var err_stack:Array=[];
+import flash.display.*;
+import flash.text.*;
 
+//Consts for radians<->degrees conversions
 var D2R:Number=0.017453292519943295;
 var R2D:Number=57.29577951308232;
 
-function push_err():void{
-	err_stack.push( err_info );
+//private
+var _console:TextField;
+var _errInfo:String="";
+var _errStack:Array=[];
+
+function _getConsole():TextField{
+	if( _console ) return _console;
+	_console=new TextField();
+	_console.x=0;
+	_console.y=0;
+	_console.width=game.stage.stageWidth;
+	_console.height=game.stage.stageHeight;
+	_console.background=false;
+	_console.backgroundColor=0xff000000;
+	_console.textColor=0xffffff00;
+	game.stage.addChild( _console );
+	return _console;
 }
 
-function pop_err():void{
-	err_info=err_stack.pop();
+function pushErr():void{
+	_errStack.push( _errInfo );
+}
+
+function popErr():void{
+	_errInfo=_errStack.pop();
 }
 
 function stackTrace():String{
 	var str:String="";
-	push_err();
-	err_stack.reverse();
-	for( var i:int=0;i<err_stack.length;++i ){
-		str+=err_stack[i]+"\n";
+	pushErr();
+	_errStack.reverse();
+	for( var i:int=0;i<_errStack.length;++i ){
+		str+=_errStack[i]+"\n";
 	}
-	err_stack.reverse();
-	pop_err();
+	_errStack.reverse();
+	popErr();
 	return str;
 }
 
 function print( str:String ):void{
-	var c:TextField=game.GetConsole();
-	c.appendText( str+"\n" );
-//	trace( str );	//this causes a funky VerifyError in flash!
+	var console:TextField=_getConsole();
+	if( !console ) return;
+	console.appendText( str+"\n" );
 }
 
-function alert( str:String ):void{
-	var c:TextField=game.GetConsole();
-	c.appendText( str+"\n" );
+function showError( err:String ):void{
+	if( err.length ) print( "Monkey runtime error: "+err+"\n"+stackTrace() );
 }
 
-function error( str:String ):void{
-	throw str;
+function error( err:String ):void{
+	throw err;
 }
 
 function dbg_object( obj:Object ):Object{

@@ -147,89 +147,47 @@ int FileTime( String path ){
 	return st.st_mtime;
 }
 
-enum{ LATIN1,UTF8,UTF16BE,UTF16LE };
-
-//detect unicode BOMs
-static int uniEncoding( unsigned char *&p ){
-	int c=*p++;
-	int d=*p++;
-	if( c==0xfe && d==0xff ) return UTF16BE;
-	if( c==0xff && d==0xfe ) return UTF16LE;
-	int e=*p++;
-	if( c==0xef && d==0xbb && e==0xbf ) return UTF8;
-	p-=3;
-	return LATIN1;
-}
-
-static Char nextUniChar( unsigned char *&p,int encoding ){
-	int c=*p++,d,e;
-	switch( encoding ){
-	case LATIN1:
-		return c;
-	case UTF8:
-		if( c<128 ) return c;
-		d=*p++;if( c<224 ) return (c-192)*64+(d-128);
-		e=*p++;if( c<240 ) return (c-224)*4096+(d-128)*64+(e-128);
-		return 0;	//ERROR!
-	case UTF16BE:
-		return (c<<8)|*p++;
-	case UTF16LE:
-		return *p++|c;
-	}
-}
-
 String LoadString( String path ){
-
 	if( FILE *fp=fopen( OS_STR(path),OS_STR("rb") ) ){
-	
 		std::vector<unsigned char> buf;
-		
 		int sz=0;
 		for(;;){
-			buf.resize( sz+1024 );
-			int n=fread( &buf[sz],1,1024,fp );
+			buf.resize( sz+4096 );
+			int n=fread( &buf[sz],1,4096,fp );
 			sz+=n;
-			if( n!=1024 ) break;
-		}
-		buf.resize( sz );
-		
-		buf.push_back( 0 );
-		buf.push_back( 0 );
-		buf.push_back( 0 );
-		
-		unsigned char *p=&buf[0];
-		int encoding=uniEncoding( p );
-		
-		if( encoding==LATIN1 ) return String( p,sz );
-		
-		std::vector<Char> chars;
-		
-		while( p<&buf[sz] ){
-			chars.push_back( nextUniChar( p,encoding ) );
-		}
-		
-		return String( &chars[0],chars.size() );
-	/*
-		String str;
-		unsigned char buf[1024];
-		while( int n=fread( buf,1,1024,fp ) ){
-			str=str+String( buf,n );
+			if( n!=4096 ) break;
 		}
 		fclose( fp );
-		return str;
-	*/
-	}else{
-		printf( "FOPEN 'rb' for LoadString '%s' failed\n",C_STR( path ) );
-		fflush( stdout );
+		return String::Load( &buf[0],sz );
 	}
-	return T("");
+	printf( "FOPEN 'rb' for LoadString '%s' failed\n",C_STR( path ) );fflush( stdout );
+	return "";
 }
 	
-int SaveString( String val,String path ){
+int SaveString( String str,String path ){
 	if( FILE *fp=fopen( OS_STR(path),OS_STR("wb") ) ){
-		int n=fwrite( val.ToCString<unsigned char>(),1,val.Length(),fp );
+		bool uni=false;
+		for( int i=0;i<str.Length();++i ){
+			if( str[i]>=0xfe ){
+				uni=true;
+				break;
+			}
+		}
+		int rc=-2;
+		if( uni ){
+			unsigned short bom=0xfeff;
+			if( fwrite( &bom,2,1,fp )==1 ){
+				if( fwrite( str.Data(),2,str.Length(),fp )==str.Length() ){
+					rc=0;
+				}
+			}
+		}else{
+			if( fwrite( str.ToCString<unsigned char>(),1,str.Length(),fp )==str.Length() ){
+				rc=0;
+			}
+		}
 		fclose( fp );
-		return n==val.Length() ? 0 : -2;
+		return rc;
 	}else{
 		printf( "FOPEN 'wb' for SaveString '%s' failed\n",C_STR( path ) );
 		fflush( stdout );

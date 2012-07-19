@@ -110,7 +110,9 @@ Class ForEachinStmt Extends Stmt
 			block.AddStmt whileStmt
 
 		Else
-			InternalErr
+		
+			Err "Expression cannot be used with For Each."
+
 		Endif
 		
 		block.Semant
@@ -309,7 +311,6 @@ Class Parser
 	Field _toker:Toker
 	Field _toke$
 	Field _tokeType
-	Field _tokeSpace
 	Field _tokerStack:=New List<Toker>
 	
 	Field _block:BlockDecl
@@ -320,9 +321,7 @@ Class Parser
 	Field _module:ModuleDecl
 		
 	Method SetErr()
-		If _toker.Path
-			_errInfo=_toker.Path+"<"+_toker.Line()+">"
-		Endif
+		If _toker.Path _errInfo=_toker.Path+"<"+_toker.Line+">"
 	End
 	
 	Method PushBlock( block:BlockDecl )
@@ -347,16 +346,19 @@ Class Parser
 	Method NextToke$()
 		Local toke$=_toke
 		
-		_tokeSpace=False
-		
 		Repeat
 			_toke=_toker.NextToke()
 			_tokeType=_toker.TokeType()
-			If _tokeType<>TOKE_SPACE Exit
-			_tokeSpace=True
-		Forever
+		Until _tokeType<>TOKE_SPACE
 		
-		If _tokeType=TOKE_KEYWORD _toke=_toke.ToLower()
+		Select _tokeType
+		Case TOKE_KEYWORD
+			_toke=_toke.ToLower()
+		Case TOKE_SYMBOL
+			If _toke[0]=Asc("[") And _toke[_toke.Length-1]=Asc("]")
+				_toke="[]"
+			Endif
+		End
 
 		If toke="," SkipEols
 

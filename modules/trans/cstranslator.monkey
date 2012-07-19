@@ -65,7 +65,7 @@ Class CsTranslator Extends Translator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitPushErr()
+	Method EmitEnter( func$ )
 		Emit "bb_std_lang.pushErr();"
 	End
 	
@@ -73,7 +73,7 @@ Class CsTranslator Extends Translator
 		Emit "bb_std_lang.errInfo=~q"+info.Replace( "\","/" )+"~q;"
 	End
 	
-	Method EmitPopErr()
+	Method EmitLeave()
 		Emit "bb_std_lang.popErr();"
 	End
 	

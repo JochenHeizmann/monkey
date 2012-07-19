@@ -9,9 +9,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
 #include <vector>
 #include <typeinfo>
+
+#include <signal.h>
 
 #if _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -22,6 +23,104 @@
 #endif
 
 #define DEBUG_GC 0
+
+//***** Simple profiler *****
+
+#if PROFILE
+
+#include <mmsystem.h>
+#include <map>
+#include <algorithm>
+
+DWORD profTimer;
+CRITICAL_SECTION profLock;
+std::vector<const char*> profStack;
+std::map<const char*,int> profTicksLocal;
+std::map<const char*,int> profTicksTotal;
+
+void profEnter( const char *p ){
+	EnterCriticalSection( &profLock );
+	profStack.push_back( p );
+	LeaveCriticalSection( &profLock );
+}
+
+void profLeave(){
+	EnterCriticalSection( &profLock );
+	profStack.pop_back();
+	LeaveCriticalSection( &profLock );
+}
+
+void CALLBACK profTimerTick( UINT uTimerID,UINT uMsg,DWORD dwUser,DWORD dw1,DWORD dw2 ){
+	EnterCriticalSection( &profLock );
+	if( profStack.size() ){
+		++profTicksLocal[profStack.back()];
+		for( int i=0;i<profStack.size();++i ){
+			++profTicksTotal[ profStack[i] ];
+		}
+	}
+	LeaveCriticalSection( &profLock );
+}
+
+void profStart(){
+	InitializeCriticalSection( &profLock );
+	profTimer=timeSetEvent( 5,0,profTimerTick,0,TIME_PERIODIC|TIME_CALLBACK_FUNCTION );//	|TIME_KILL_SYNCHRONOUS );
+}
+
+struct ProfInfo{
+	int n;
+	const char *p;
+	ProfInfo( int n,const char *p ):n(n),p(p){
+	}
+	bool operator<( const ProfInfo &i )const{
+		return n>i.n;
+	}
+};
+
+void profDump( const std::map<const char*,int> &ticks ){
+	std::vector<ProfInfo> infos;
+	int sum=0;
+	for( std::map<const char*,int>::const_iterator it=ticks.begin();it!=ticks.end();++it ){
+		const char *p=(*it).first;
+		int n=(*it).second;
+		sum+=n;
+		infos.push_back( ProfInfo( n,p ) );
+	}
+	std::sort( infos.begin(),infos.end() );
+	for( int i=0;i<infos.size();++i ){
+		int t=infos[i].n*10000/sum;
+		printf( "%i.%i%% : %s\n",t/100,t%100,infos[i].p );
+	}
+}
+
+void profStop(){
+	timeKillEvent( profTimer );
+
+	EnterCriticalSection( &profLock );
+
+	printf( "\nLocal:\n" );
+	profDump( profTicksLocal );
+
+	printf( "\nTotal:\n" );
+	profDump( profTicksTotal );
+
+	fflush( stdout );
+
+	LeaveCriticalSection( &profLock );
+}
+
+#define P_START profStart();
+#define P_STOP profStop();
+#define P_ENTER(X) profEnter( X );
+#define P_LEAVE profLeave();
+
+#else
+
+#define P_START
+#define P_STOP
+#define P_ENTER(X)
+#define P_LEAVE
+
+#endif
 
 // ***** gc_object *****
 
@@ -41,20 +140,26 @@ int gc_markbit;	//toggling 'marked' bit - 1/0
 std::vector<gc_object*> gc_marked_queue;
 
 void *gc_malloc( int size ){
+//	P_ENTER( "::gc_malloc" )
 	++gc_total;
 #if DEBUG_GC
 	int *p=(int*)malloc( sizeof(int)+size );
-	if( !p ) return 0;
+	if( !p ){
+//		P_LEAVE
+		return 0;
+	}
 	gc_alloced+=size;
 	if( gc_alloced>gc_maxalloced ) gc_maxalloced=gc_alloced;
 	*p++=size;
-	return p;
 #else
-	return malloc( size );
+	void *p=malloc( size );
 #endif
+//	P_LEAVE
+	return p;
 }
 
 void gc_free( void *q ){
+//	P_ENTER( "::gc_free" )
 	--gc_total;
 #if DEBUG_GC
 	int *p=(int*)q-1;
@@ -63,6 +168,7 @@ void gc_free( void *q ){
 #else
 	free( q );
 #endif
+//	P_LEAVE
 }
 
 struct gc_object{
@@ -94,21 +200,23 @@ struct gc_object{
 void gc_mark();
 
 void gc_sweep(){
-
 	gc_object **q=&gc_objs;
 	
 	while( gc_marked!=gc_total ){
 
 		gc_object *p=*q;
-		
+
+#if DEBUG_GC		
 		if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
+#endif
 
 		while( (p->flags & 1)==gc_markbit ){
 
 			q=&p->succ;
 			p=*q;
-			
+#if DEBUG_GC			
 			if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
+#endif
 		}
 		
 		*q=p->succ;
@@ -121,7 +229,7 @@ void gc_sweep(){
 }
 
 void gc_collect(){
-
+//	P_ENTER( "::gc_collect" )
 #if DEBUG_GC
 
 	static int gc_max;
@@ -152,6 +260,8 @@ void gc_collect(){
 	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
 	
 #endif
+
+//	P_LEAVE
 }
 
 void gc_mark( gc_object *p ){
@@ -168,6 +278,7 @@ void gc_mark_q( gc_object *p ){
 	gc_marked_queue.push_back( p );
 }
 
+/*
 static std::vector<gc_object*> gc_exstack;
 
 void gc_markex(){
@@ -219,6 +330,7 @@ void gc_collectex(){
 	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
 #endif
 }
+*/
 
 // ***** Monkey Types *****
 
@@ -348,7 +460,7 @@ public:
 		return Array( p );
 	}
 
-//private:
+private:
 	struct Rep : public gc_object{
 		int length;
 		T data[0];
@@ -440,7 +552,7 @@ public:
 		free( buf );
 	}
 #endif
-	
+
 	~String(){
 		rep->release();
 	}
@@ -706,6 +818,47 @@ public:
 	}
 #endif
 	
+	static String Load( unsigned char *p,int n ){
+	
+		if( n<3 ) return String( p,n );
+		
+		unsigned char *term=p+n;
+		std::vector<Char> chars;
+
+		int c=*p++;
+		int d=*p++;
+		
+		if( c==0xfe && d==0xff ){
+			while( p<term-1 ){
+				int c=*p++;
+				chars.push_back( (c<<8)|*p++ );
+			}
+		}else if( c==0xff && d==0xfe ){
+			while( p<term-1 ){
+				int c=*p++;
+				chars.push_back( (*p++<<8)|c );
+			}
+		}else{
+			int e=*p++;
+			if( c!=0xef || d!=0xbb || e!=0xbf ) return String( p-3,n );
+			while( p<term ){
+				int c=*p++;
+				if( c>=128 && p<term ){
+					int d=*p++;
+					if( c>=224 && p<term ){
+						int e=*p++;
+						if( c>=240 ) break;	//Illegal UTF8!
+						c=(c-224)*4096+(d-128)*64+(e-128);
+					}else{
+						c=(c-192)*64+(d-128);
+					}
+				}
+				chars.push_back( c );
+			}
+		}
+		return String( &chars[0],chars.size() );
+	}
+	
 private:
 	struct Rep{
 		int refs;
@@ -835,38 +988,41 @@ void Print( String t ){
 	fflush( stdout );
 }
 
-void Error( String t ){
-	throw t.ToCString<char>();
-}
-
-void Die( const char *p ){
-	if( !p || !*p ) exit( 0 );
-	Print( String(errInfo)+" : Error : "+p );
-	Print( String(p)+":\n"+StackTrace() );
-	exit( -1 );
+void Error( String err ){
+	throw err.ToCString<char>();
 }
 
 int bbInit();
 int bbMain();
 
 #if _MSC_VER
+
+//Ok, this is butt ugly stuff, but MSVC's SEH seems to be the only
+//way you can catch int divide by zero...let's use it for null objects too...
+//
+const char *FilterException( int type ){
+	switch( type ){
+	case STATUS_ACCESS_VIOLATION:return "Memory access violation";
+	case STATUS_INTEGER_DIVIDE_BY_ZERO:return "Integer divide by zero";
+	}
+	return 0;
+}
+
 int seh_call( int(*f)() ){
+	const char *p;
 	__try{
 		return f();
-	}__except( 1 ){
-		switch( GetExceptionCode() ){
-		case STATUS_ACCESS_VIOLATION:
-			throw "Access violation";
-		case STATUS_ILLEGAL_INSTRUCTION:
-			throw "Illegal instruction";
-		case STATUS_INTEGER_DIVIDE_BY_ZERO:
-			throw "Integer divide by zero";
-		}
-		throw "Unknown SEH exception";
+	}__except( (p=FilterException(GetExceptionCode()))!=0 ){
+		throw p;
 	}
-	return -1;
 }
+
 #else
+
+int seh_call( int(*f)() ){
+	return f();
+}
+
 void sighandler( int sig  ){
 	switch( sig ){
 	case SIGILL:throw "Illegal instruction";
@@ -878,6 +1034,7 @@ void sighandler( int sig  ){
 	}
 	throw "Unknown exception";
 }
+
 #endif
 
 //entry point call by target main()...
@@ -886,7 +1043,7 @@ int bb_std_main( int argc,const char **argv ){
 	
 	::argc=argc;
 	::argv=argv;
-
+	
 #if !_MSC_VER
 	signal( SIGILL,sighandler );
 	signal( SIGFPE,sighandler );
@@ -896,20 +1053,12 @@ int bb_std_main( int argc,const char **argv ){
 	signal( SIGSEGV,sighandler );
 #endif
 
-	try{
+	P_START
 	
-#if _MSC_VER
-		seh_call( bbInit );
-		seh_call( bbMain );
-#else
-		bbInit();
-		bbMain();
-#endif
-
-	}catch( const char *p ){
-
-		Die( p );
-	}
+	seh_call( bbInit );
+	seh_call( bbMain );
+	
+	P_STOP
 	
 	return 0;
 }

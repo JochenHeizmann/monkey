@@ -16,7 +16,7 @@ Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
 Const trans2$=trans
-'Const trans2$="..\bin\trans_winnt_v40.exe"
+'Const trans2$="..\bin\trans_winnt_v45.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
 Const makemeta$="..\bin\makemeta_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
@@ -37,7 +37,7 @@ Const mserver$="../bin/mserver_macos"
 Const QUICKTRANS=True
 
 Const trans$="../bni/trans_linux"
-Const trans2$="../bin/trans_linux_v38"
+'Const trans2$="../bin/trans_linux_v38"
 Const newtrans$="trans/trans.build/stdcpp/main_linux"
 Const makemeta$="../bin/makemeta_linux"
 Const mserver$="../bin/mserver_linux"
@@ -65,7 +65,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 	Else
-		system trans2+" -clean -target=stdcpp -config=debug trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 
 		CopyFile newtrans,trans
 		If FileType( trans )<>FILETYPE_FILE 

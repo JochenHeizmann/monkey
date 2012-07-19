@@ -1,6 +1,45 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+
+***** V45 *****
+
+Modules:
+
+mojo.input - HTML5 target now recognizes LMB, RMB, MMB.
+
+mojo.input - Added EnableKeyboard, DisableKeyboard for SIMPLE virtual keyboard support on iOS and Android ONLY.
+
+monkey.map - modified Map.Compare() method so it takes 'K' (ie: Key) type params instead of plain objects.
+
+mojo.input - changed KEY_BACKSLASH to 220.
+
+mojo.graphics - fixed non-pow2 tex handling on ios and glfw.
+
+
+Trans (1.18)
+
+HTML5 target HTML now disables RMB popup menu for canvas.
+
+Trans now built in release mode (was debug) for faster compiling.
+
+Fixed spaces in [].
+
+Added check for 'Super' calls to abstract methods.
+
+Cleaned up debug mode, you should now get a stack trace for every (Monkey) null object, array index or Error() error in debug mode.
+
+Cleaned up flash target a bit - bitmap creation is now in mojo code, not target code.
+
+Validates abstract methods of non-instanced classes too now - used to only validate instanced (ie: Newed) classes.
+
+Fixed strict mode not complaining about non-void functions without terminating return.
+
+Fixed void->bool conversions causing crash.
+
+Improved unicode handling of os.LoadString, os.SaveString and mojo.app.LoadString.
+
+
 ***** V44 *****
 
 Modules:

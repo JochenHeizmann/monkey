@@ -6,12 +6,11 @@
 
 //***** JavaScript Runtime *****
 
-var obj_id=0;
-var err_info="";
-var err_stack=[];
-
 var D2R=0.017453292519943295;
 var R2D=57.29577951308232;
+
+var err_info="";
+var err_stack=[];
 
 function push_err(){
 	err_stack.push( err_info );
@@ -40,6 +39,10 @@ function print( str ){
 	if( window.console!=undefined ){
 		window.console.log( str );
 	}
+}
+
+function showError( err ){
+	if( err.length ) alert( "Monkey runtime error: "+err+"\n"+stackTrace() );
 }
 
 function error( err ){

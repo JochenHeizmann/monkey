@@ -488,6 +488,9 @@ Class InvokeSuperExpr Extends Expr
 		args=SemantArgs( args )
 		funcDecl=superClass.FindFuncDecl( ident,args )
 		If Not funcDecl Err "Can't find superclass method '"+ident+"'."
+		
+		If funcDecl.IsAbstract() Err "Can't invoke abstract superclass method '"+ident+"'."
+		
 		args=CastArgs( args,funcDecl )
 		exprType=funcDecl.retType
 		Return Self
@@ -584,6 +587,10 @@ Class CastExpr Extends Expr
 			exprType=ty
 
 		Else If BoolType( ty )
+		
+			If VoidType( src )				
+				Err "Cannot convert from Void to Bool."
+			Endif
 
 			If  flags & CAST_EXPLICIT 
 				exprType=ty

@@ -237,13 +237,13 @@ Class Translator
 
 	Method TransLocalDecl$( munged$,init:Expr ) Abstract
 	
-	Method EmitPushErr()
+	Method EmitEnter( func$ )
 	End
 	
 	Method EmitSetErr( errInfo$ )
 	End
 	
-	Method EmitPopErr()
+	Method EmitLeave()
 	End
 	
 	'***** Declarations *****
@@ -398,8 +398,8 @@ Class Translator
 	'returns unreachable status!
 	Method EmitBlock( block:BlockDecl )
 
-		If ENV_CONFIG="debug"
-			If FuncDecl( block ) EmitPushErr
+		If ENV_CONFIG<>"release" And FuncDecl( block )
+			EmitEnter block.scope.ident+"."+block.ident
 		Endif
 		
 		PushEnv block
@@ -413,16 +413,16 @@ Class Translator
 				Exit
 			Endif
 
-			If ENV_CONFIG="debug"
+			If ENV_CONFIG<>"release"
 				Local rs:=ReturnStmt( stmt )
 				If rs
 					If rs.expr
 						EmitSetErr stmt.errInfo
 						Local t_expr:=TransExprNS( rs.expr )
-						EmitPopErr
+						EmitLeave
 						Emit "return "+t_expr+";"
 					Else
-						EmitPopErr
+						EmitLeave
 						Emit "return;"
 					Endif
 					unreachable=True
@@ -441,10 +441,10 @@ Class Translator
 		
 		PopEnv
 		
-		If ENV_CONFIG="debug"
+		If ENV_CONFIG<>"release"
 			Local func:=FuncDecl( block )
 			If func And VoidType( func.retType ) And Not r
-				EmitPopErr
+				EmitLeave
 			Endif
 		Endif
 		

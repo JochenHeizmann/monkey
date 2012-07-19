@@ -24,19 +24,19 @@ window.onload=function( e ){
 	}
 	
 	game_canvas=document.getElementById( "GameCanvas" );
+	
 	game_console=document.getElementById( "GameConsole" );
-	
-	
+
 	try{
+	
 		bbInit();
 		bbMain();
-	}catch( ex ){
-		if( ex ) alert( ex );
-		return;
-	}
+		
+		if( game_runner!=null ) game_runner();
+		
+	}catch( err ){
 	
-	if( game_runner!=null ){
-		game_runner();
+		showError( err );
 	}
 }
 
