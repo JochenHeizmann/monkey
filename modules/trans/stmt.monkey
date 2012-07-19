@@ -120,7 +120,7 @@ End
 Class BreakStmt Extends Stmt
 
 	Method OnSemant()
-		If Not _loopnest Err "Break statement must appear inside a loop."
+		If Not _loopnest Err "Exit statement must appear inside a loop."
 	End
 	
 	Method Trans$()

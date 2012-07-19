@@ -1,6 +1,25 @@
 
 Note: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V31 *****
+
+NOTE! You will need to delete any existing .build/xna builds!
+
+Add some mak samples by yours truly.
+
+Fixed html5 support for negative width/height rects/ovals/imagerects.
+
+Removed unimplemented DrawPoint from mojo.graphics.
+
+Added OnSuspend/OnResume. XNA/iOS/Android only for now. See bananas/mak/suspendtest/suspendtest.monkey
+
+Removed WP7 project from default XNA target project for XP users.
+
+XNA mojo now uses IsolatedStorage for LoadState/SaveState for WP7 compatibility.
+
+Fixed XNA non-clamped textures causing runtime exception with non-POT textures and "Reach". 
+
+
 ***** V30 *****
 
 Rebuilt trans_macos to work on 32 bit Mac CPUs.

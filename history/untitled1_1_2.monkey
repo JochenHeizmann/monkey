@@ -1,0 +1,29 @@
+Import mojo
+
+Class MyApp Extends App
+
+	Field lineY=200
+			
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		Local hit=KeyHit( KEY_LMB )	'Uses KeyHit to check the left mouse button.  You could also use MouseHit( MOUSE_LEFT )
+		
+		If hit And MouseY()<lineY
+			Print "You clicked above the line."
+		Else If hit And MouseY()>=lineY
+			Print "You clicked on or below the line."
+		End
+	End
+	
+	Method OnRender()
+		Cls
+		DrawLine 0,LineY,DeviceWidth(),lineY
+	End
+End
+
+Function Main()
+	New MyApp
+End

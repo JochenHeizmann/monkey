@@ -11,15 +11,14 @@ Import mojo
 
 Global img:Image
 
-
 Class MyApp Extends App
 
-Global t#
-Global tt#
-Global ttx#
-Global rt#
-Global rtt#
-
+	Global t#
+	Global tt#
+	Global ttx#
+	Global rt#
+	Global rtt#
+	
 	Method OnCreate()
 		SetUpdateRate 60
 		img=LoadImage("c.png")
@@ -75,12 +74,11 @@ Global rtt#
 		Translate(0,0)
 		Transform 1,0,0,1,0,0
 		PopMatrix()
-	
+
 		oldx=20
 		SetColor 255,0,0
 		SetAlpha 1
 		For Local y=10 To 480 Step 110
-	
 			For Local x=20 To 640 Step 120
 					DrawLine oldx,y,x,y
 					DrawLine x,oldy,x,y
@@ -92,9 +90,9 @@ Global rtt#
 		Next
 	
 		SetColor 255,255,255
-
+		
 	End Method
-
+	
 End Class
 
 Function Main()
