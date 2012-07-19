@@ -83,10 +83,11 @@ Class AsTranslator Extends Translator
 	End
 
 	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
-			Return Bra( expr+" as "+TransType(ty) )
-		Endif
-		Return expr
+		If ty.ActualType().EqualsType( src.ActualType() ) Return expr
+		
+		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
+
+		Return Bra( expr+" as "+TransType(ty) )
 	End
 
 	Method TransGlobal$( decl:GlobalDecl )

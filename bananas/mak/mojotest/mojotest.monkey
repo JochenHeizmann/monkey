@@ -20,20 +20,18 @@ Class Test Extends App
 	End
 	
 	Method LoadStuff()
-
 		image=LoadImage( "RedbrushAlpha.png",1,Image.MidHandle )
-		
 	End
 	
 	Method OnUpdate()
 
 		'Enable to test image thrashing!
-'#rem		
+#rem		
 #if TARGET<>"html5"
 '		image.Discard	'should work with/without
 		LoadStuff
 #end
-'#end
+#end
 		If KeyDown( KEY_RIGHT )
 			tx+=.0125
 		Else If KeyDown( KEY_LEFT )
@@ -59,14 +57,14 @@ Class Test Extends App
 		Translate tx,ty
 	
 		Cls 0,0,128
-	
+
 		Local sz#=Sin(Millisecs*.1)*32
 		Local sx=32+sz,sy=32,sw=DeviceWidth-(64+sz*2),sh=DeviceHeight-(64+sz)
 		
 		SetScissor sx,sy,sw,sh
 		
 		Cls 255,128,0
-
+		
 		PushMatrix
 		
 		Scale DeviceWidth/640.0,DeviceHeight/480.0

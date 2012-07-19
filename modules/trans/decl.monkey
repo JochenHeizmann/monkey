@@ -214,7 +214,7 @@ Class ConstDecl Extends ValDecl
 	
 	Method OnSemant()
 		Super.OnSemant()
-		value=init.Eval()
+		If Not IsExtern() value=init.Eval()
 	End
 	
 End
@@ -677,6 +677,9 @@ Class FuncDecl Extends BlockDecl
 
 		'semant ret type
 		retType=retTypeExpr.Semant()
+		If ArrayType( retType ) And Not retType.EqualsType( retType.ActualType() )
+'			Err "Return type cannot be an array of generic objects."
+		Endif
 		
 		'semant args
 		For Local arg:ArgDecl=Eachin argDecls

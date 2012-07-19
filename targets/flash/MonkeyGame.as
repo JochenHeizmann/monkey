@@ -92,15 +92,20 @@ internal function loadString( path:String ):String{
 }
 
 internal function mungPath( path:String ):String{
-	var i:int=path.indexOf( "." )
-	if( i!=-1 ) path=path.slice(0,i);
+	var i:int=path.indexOf( "." ),ext:String="";
+	if( i!=-1 ){
+		ext=path.slice(i+1);
+		path=path.slice(0,i);
+	}
 	
-	var bits:Array=path.split( "/" );
 	var munged:String="_";
+	var bits:Array=path.split( "/" );
 	
 	for( i=0;i<bits.length;++i ){
 		munged+=bits[i].length+bits[i];
 	}
+	munged+=ext.length+ext;
+	
 	return munged;
 }
 

@@ -52,6 +52,14 @@ Class JsTranslator Extends Translator
 	
 	'***** Declarations *****
 	
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		If ty.ActualType().EqualsType( src.ActualType() ) Return expr
+
+		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
+
+		Return expr
+	End
+	
 	Method TransGlobal$( decl:GlobalDecl )
 		Return decl.munged
 	End

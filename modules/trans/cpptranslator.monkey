@@ -14,9 +14,14 @@ Class CppTranslator Extends Translator
 		If IntType( ty ) Return "int"
 		If FloatType( ty ) Return "float"
 		If StringType( ty ) Return "String"
-		If ArrayType( ty ) Return "Array<"+TransType( ArrayType(ty).elemType )+" >"
+		If ArrayType( ty ) Return "Array<"+TransRefType( ArrayType(ty).elemType )+" >"
 		If ObjectType( ty ) Return ty.GetClass().actual.munged+"*"
 		InternalErr
+	End
+
+	Method TransRefType$( ty:Type )
+		If ObjectType( ty ) And ty.GetClass().IsInterface() Return "gc_iptr<"+ty.GetClass().actual.munged+" >"
+		Return TransType( ty )
 	End
 
 	Method TransValue$( ty:Type,value$ )
@@ -78,23 +83,32 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
-			If ty.GetClass().IsInterface()
-				Return "dynamic_cast<"+TransType(ty)+">"+Bra(expr)
-			Else
-				Return "static_cast<"+TransType(ty)+">"+Bra(expr)
-			Endif
-		Endif
-		Return expr
+		ty=ty.ActualType()
+		
+		If ty.EqualsType( src.ActualType() ) Return expr
+	
+		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
+
+		If ty.GetClass().IsInterface() Return "dynamic_cast<"+TransType(ty)+" >"+Bra(expr)
+
+		Return "static_cast<"+TransType(ty)+" >"+Bra(expr)
 	End
 	
 	Method TransGlobal$( decl:GlobalDecl )
-		Return TransStatic( decl )
+		Local swiz$
+		If ObjectType( decl.ty )
+			If ObjectType( decl.ty ).classDecl.IsInterface() swiz="._p"
+		Endif
+		Return TransStatic( decl )+swiz
 	End
 	
 	Method TransField$( decl:FieldDecl,lhs:Expr )
-		If lhs Return TransSubExpr( lhs )+"->"+decl.munged
-		Return decl.munged
+		Local swiz$
+		If ObjectType( decl.ty )
+			If ObjectType( decl.ty ).classDecl.IsInterface() swiz="._p"
+		Endif
+		If lhs Return TransSubExpr( lhs )+"->"+decl.munged+swiz
+		Return decl.munged+swiz
 	End
 		
 	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr )
@@ -162,9 +176,9 @@ Class CppTranslator Extends Translator
 		
 		If src.GetClass().ExtendsClass( dst.GetClass() )
 			If Not src.GetClass().IsInterface() Return t
-			Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+			Return "dynamic_cast<"+TransType(dst)+" >"+Bra( t )
 		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+			Return "dynamic_cast<"+TransType(dst)+" >"+Bra( t )
 		Endif
 
 		Err "C++ translator can't convert "+src.ToString()+" to "+dst.ToString()
@@ -334,7 +348,7 @@ Class CppTranslator Extends Translator
 			Local t$=arg.munged
 			arg.munged=""
 			MungDecl arg
-			argCasts.Push TransType( arg.ty )+" "+arg.munged+"=static_cast<"+TransType(arg.ty)+">"+Bra(t)+";"
+			argCasts.Push TransType( arg.ty )+" "+arg.munged+"=static_cast<"+TransType(arg.ty)+" >"+Bra(t)+";"
 		Next
 		
 		Local id$=decl.munged
@@ -411,7 +425,7 @@ Class CppTranslator Extends Translator
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
 			If fdecl
-				Emit TransType( fdecl.ty )+" "+fdecl.munged+";"
+				Emit TransRefType( fdecl.ty )+" "+fdecl.munged+";"
 				Continue
 			Endif
 		Next
@@ -430,7 +444,7 @@ Class CppTranslator Extends Translator
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
-				Emit "static "+TransType( gdecl.ty )+" "+gdecl.munged+";"
+				Emit "static "+TransRefType( gdecl.ty )+" "+gdecl.munged+";"
 				Continue
 			Endif
 		Next
@@ -443,6 +457,10 @@ Class CppTranslator Extends Translator
 	
 	Method EmitMark( id$,ty:Type,queue? )
 		If ObjectType( ty )
+			If id.EndsWith( "._p" ) id=id[..-3]
+'			If ty.GetClass().IsInterface()
+'				id="dynamic_cast<Object*>("+id+")"
+'			Endif
 			If queue
 				Emit "gc_mark_q("+id+");"
 			Else
@@ -491,7 +509,7 @@ Class CppTranslator Extends Translator
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
-				Emit TransType( gdecl.ty )+" "+classid+"::"+gdecl.munged+";"
+				Emit TransRefType( gdecl.ty )+" "+classid+"::"+gdecl.munged+";"
 				Continue
 			Endif
 		Next
@@ -540,7 +558,7 @@ Class CppTranslator Extends Translator
 		
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
-				Emit "extern "+TransType( gdecl.ty )+" "+gdecl.munged+";"	'forward reference...
+				Emit "extern "+TransRefType( gdecl.ty )+" "+gdecl.munged+";"	'forward reference...
 				Continue
 			Endif
 		
@@ -562,7 +580,7 @@ Class CppTranslator Extends Translator
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
-				Emit TransType( gdecl.ty )+" "+gdecl.munged+";"
+				Emit TransRefType( gdecl.ty )+" "+gdecl.munged+";"
 				Continue
 			Endif
 			

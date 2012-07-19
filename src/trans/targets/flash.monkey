@@ -25,8 +25,10 @@ Class FlashTarget Extends Target
 			Local stk:=New StringStack
 			For Local t$=Eachin LoadDir( "data",True )
 				If t.StartsWith( "." ) Continue
-				Select ExtractExt( t ).ToLower()
+				Local ext$=ExtractExt( t )
+				Select ext.ToLower()
 				Case "png","jpg","mp3"
+					'
 					Local munged$="_"
 					For Local q$=Eachin StripExt( t ).Split( "/" )
 						For Local i=0 Until q.Length
@@ -35,6 +37,8 @@ Class FlashTarget Extends Target
 						Next
 						munged+=q.Length+q
 					Next
+					munged+=ext.Length+ext
+					'
 					stk.Push "[Embed(source=~qdata/"+t+"~q)]"
 					stk.Push "public static var "+munged+":Class;"
 				End

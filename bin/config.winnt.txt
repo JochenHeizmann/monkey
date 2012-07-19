@@ -47,6 +47,7 @@ ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
 '
 'Must be set for FLASH target support.
 '
+FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.5"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1.0.16076"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"

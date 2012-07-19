@@ -4,7 +4,7 @@ Strict
 'rebuild options
 Const Rebuild_Trans=True
 
-Const Rebuild_Mserver=True
+Const Rebuild_Mserver=False'True
 
 Const Rebuild_Monk=False'True
 
@@ -16,7 +16,7 @@ Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
 Const trans2$=trans
-'Const trans2$="..\bin\trans_winnt_v38.exe"
+'Const trans2$="..\bin\trans_winnt_v40.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
 Const makemeta$="..\bin\makemeta_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
@@ -27,7 +27,7 @@ Const QUICKTRANS=False
 
 Const trans$="../bin/trans_macos"
 Const trans2$=trans
-'Const trans2$="../bin/trans_macos_v38"
+'Const trans2$="../bin/trans_macos_v40"
 Const newtrans$="trans/trans.build/stdcpp/main_macos"
 Const makemeta$="../bin/makemeta_macos"
 Const mserver$="../bin/mserver_macos"

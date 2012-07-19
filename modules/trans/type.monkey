@@ -8,12 +8,16 @@ Import trans
 
 Class Type
 
-	Method Actual:Type()
+	Method ActualType:Type()
 		Return Self
 	End
 
 	Method EqualsType( ty:Type )
 		Return False
+	End
+	
+	Method EqualsActualType( ty:Type )
+		Return EqualsType( ty )
 	End
 	
 	Method ExtendsType( ty:Type )
@@ -117,10 +121,6 @@ End
 
 Class StringType Extends Type
 
-	Method New()
-		
-	End
-
 	Method EqualsType( ty:Type )
 		Return StringType( ty )<>Null
 	End
@@ -150,6 +150,12 @@ Class ArrayType Extends Type
 		Self.elemType=elemType
 	End
 	
+	Method ActualType:Type()
+		Local ty:=elemType.ActualType()
+		If ty=elemType Return Self
+		Return New ArrayType( ty )
+	End
+		
 	Method EqualsType( ty:Type )
 		Local arrayType:ArrayType=ArrayType( ty )
 		Return arrayType And elemType.EqualsType( arrayType.elemType )
@@ -171,10 +177,7 @@ Class ArrayType Extends Type
 	End
 	
 	Method ToString$()
-		Return "array of "+elemType.ToString()
-'		Return "Array:"+elemType.ToString()
-'		Return "Array"	'elemType.ToString()+"[]"
-'		Return elemType.ToString()+"[]"
+		Return elemType.ToString()+"[]"
 	End
 End
 
@@ -185,14 +188,19 @@ Class ObjectType Extends Type
 		Self.classDecl=classDecl
 	End
 	
-	Method Actual:Type()
+	Method ActualType:Type()
 		If classDecl.actual=classDecl Return Self
-		Return New ObjectType( ClassDecl( classDecl.actual ) )
+		Return New ObjectType( ClassDecl(classDecl.actual) )
 	End
 	
 	Method EqualsType( ty:Type )
 		Local objty:ObjectType=ObjectType( ty )
 		Return objty And classDecl=objty.classDecl
+	End
+	
+	Method EqualsActualType( ty:Type )
+		Local objty:ObjectType=ObjectType( ty )
+		Return objty And classDecl.actual=objty.classDecl.actual
 	End
 	
 	Method ExtendsType( ty:Type )
@@ -230,6 +238,10 @@ Class IdentType Extends Type
 	Method New( ident$,args:IdentType[] )
 		Self.ident=ident
 		Self.args=args
+	End
+	
+	Method ActualType:Type()
+		InternalErr
 	End
 	
 	Method EqualsType( ty:Type )
@@ -276,7 +288,7 @@ Class IdentType Extends Type
 			If t t+=","
 			t+=arg.ToString()
 		Next
-		If t return "$"+ident+"<"+t.Replace("$","")+">"
+		If t Return "$"+ident+"<"+t.Replace("$","")+">"
 		Return "$"+ident
 	End
 End

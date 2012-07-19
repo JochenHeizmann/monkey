@@ -53,7 +53,7 @@ Class List<T>
 		Return New Node<T>( _head,_head._pred,data )
 	End
 
-	'I think this should GO!
+	'Deprecating, use RemoveEach
 	Method Remove( value:T )
 		RemoveEach value
 	End

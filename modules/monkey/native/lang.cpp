@@ -21,9 +21,190 @@
 #endif
 #endif
 
-#define DEBUG_GC 1
+#define DEBUG_GC 0	
 
-//***** Util *****
+// ***** gc_object *****
+
+#if DEBUG_GC
+int gc_alloced;
+int gc_maxalloced;
+#endif
+
+struct gc_object;
+gc_object *gc_objs;
+
+int gc_total;		//total objects allocated
+int gc_marked;	//number of objects marked
+int gc_markbit;	//toggling 'marked' bit - 1/0
+
+//queue some gc_marks to prevent ultra recursive stack thrashing
+std::vector<gc_object*> gc_marked_queue;
+
+void *gc_malloc( int size ){
+	++gc_total;
+#if DEBUG_GC
+	int *p=(int*)malloc( sizeof(int)+size );
+	if( !p ) return 0;
+	gc_alloced+=size;
+	if( gc_alloced>gc_maxalloced ) gc_maxalloced=gc_alloced;
+	*p++=size;
+	return p;
+#else
+	return malloc( size );
+#endif
+}
+
+void gc_free( void *q ){
+	--gc_total;
+#if DEBUG_GC
+	int *p=(int*)q-1;
+	gc_alloced-=*p;
+	free( p );
+#else
+	free( q );
+#endif
+}
+
+struct gc_object{
+
+	gc_object *succ;
+	int flags;
+
+	gc_object(){
+		succ=gc_objs;
+		gc_objs=this;
+		flags=gc_markbit^1;	//starts unmarked
+	}
+
+	virtual ~gc_object(){
+	}
+
+	virtual void mark(){
+	}
+
+	void *operator new( size_t size ){
+		return gc_malloc( size );
+	}
+	
+	void operator delete( void *p ){
+		gc_free( p );
+	}
+};
+
+void gc_mark();
+
+void gc_sweep(){
+
+	gc_object **q=&gc_objs;
+	
+	while( gc_marked!=gc_total ){
+
+		gc_object *p=*q;
+		
+		if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
+
+		while( (p->flags & 1)==gc_markbit ){
+			q=&p->succ;
+			p=*q;
+			
+			if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
+		}
+
+		*q=p->succ;
+		
+		delete p;
+	}
+
+	gc_markbit^=1;
+	gc_marked=0;
+}
+
+void gc_collect(){
+
+#if DEBUG_GC
+
+	static int gc_max;
+	if( gc_maxalloced>gc_max ){
+		gc_max=gc_maxalloced;
+		printf( "gc_max=%i\n",gc_max );fflush( stdout );
+	}
+
+	double time=glfwGetTime();
+
+#endif
+
+	gc_mark();
+	
+	while( !gc_marked_queue.empty() ){
+		gc_object *p=gc_marked_queue.back();
+		gc_marked_queue.pop_back();
+		p->mark();
+	}
+	
+	gc_sweep();
+	
+#if DEBUG_GC
+
+	time=glfwGetTime()-time;
+	int ms=time*1000000;
+	printf( "gc_time=%i, gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",ms,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+	
+#endif
+}
+
+void gc_mark( char t ){
+}
+
+void gc_mark( wchar_t t ){
+}
+
+void gc_mark( int t ){
+}
+
+void gc_mark( float t ){
+}
+
+void gc_mark( gc_object *p ){
+	if( !p || (p->flags & 1)==gc_markbit ) return;
+	p->flags^=1;
+	++gc_marked;
+	p->mark();
+}
+
+void gc_mark_q( gc_object *p ){
+	if( !p || (p->flags & 1)==gc_markbit ) return;
+	p->flags^=1;
+	++gc_marked;
+	gc_marked_queue.push_back( p );
+}
+
+// Some ugly hacks for interfaces in an attempt to keep plain objects speedy...
+//
+struct gc_interface{
+	virtual ~gc_interface(){}
+};
+
+//for fields, elements and globals of type interface
+template<class T> struct gc_iptr{
+	T *_p;
+};
+
+template<class T> void gc_mark( gc_iptr<T> i ){
+	gc_mark( dynamic_cast<gc_object*>(i._p) );
+}
+
+template<class T> void gc_mark_q( gc_iptr<T> i ){
+	gc_mark_q( dynamic_cast<gc_object*>(i._p) );
+}
+
+// ***** Monkey Types *****
+
+typedef wchar_t Char;
+template<class T> class Array;
+class String;
+class Object;
+
+// ***** Array *****
 
 template<class T> T *t_memcpy( T *dst,const T *src,int n ){
 	memcpy( dst,src,n*sizeof(T) );
@@ -46,173 +227,46 @@ template<class T> int t_strlen( const T *p ){
 }
 
 template<class T> T *t_create( int n,T *p ){
-	for( int i=0;i<n;++i ) new(&p[i]) T();
+//	for( int i=0;i<n;++i ) new( &p[i] ) T();
+	t_memset( p,0,n );
 	return p+n;
 }
 
 template<class T> T *t_create( int n,T *p,const T *q ){
-	for( int i=0;i<n;++i ) new(&p[i]) T(q[i]);
+//	for( int i=0;i<n;++i ) new( &p[i] ) T( q[i] );
+	t_memcpy( p,q,n );
 	return p+n;
 }
 
 template<class T> void t_destroy( int n,T *p ){
-	for( int i=0;i<n;++i ) p[i].~T();
+//	for( int i=0;i<n;++i ) p[i].~String();
 }
 
-// ***** gc_object *****
-
-int gc_alloced;
-
-void *gc_malloc( int size ){
-#if DEBUG_GC
-	int *p=(int*)malloc( sizeof(int)+size );
-	if( !p ) return 0;
-	gc_alloced+=size;
-	*p++=size;
-	return p;
-#else
-	return malloc( size );
-#endif
+template<class T> void t_mark( int n,T *p ){
+//	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
-void gc_free( void *q ){
-#if DEBUG_GC
-	int *p=(int*)q-1;
-	gc_alloced-=*p;
-	free( p );
-#else
-	free( q );
-#endif
+template<class T> void t_mark( int n,T **p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
-struct gc_object;
-
-int gc_total;		//total objects allocated
-int gc_marked;		//number of objects marked
-int gc_markbit;		//toggling mark bit - 1/0
-
-gc_object *gc_objs;
-
-struct gc_object{
-	gc_object *succ;
-	int flags;
-
-	gc_object(){
-		succ=gc_objs;
-		gc_objs=this;
-		flags=gc_markbit^1;	//starts unmarked
-		++gc_total;
-	}
-
-	virtual ~gc_object(){
-		--gc_total;
-	}
-
-	virtual void mark(){
-	}
-
-	void *operator new( size_t size ){
-		return gc_malloc( size );
-	}
-};
-
-//queue to use to prevent ultra recursive stack overuse!
-std::vector<gc_object*> gc_marked_queue;
-
-void gc_mark();
-
-void gc_sweep(){
-
-	gc_object **q=&gc_objs;
-	
-	while( gc_marked!=gc_total ){
-
-		gc_object *p=*q;
-
-		while( (p->flags & 1)==gc_markbit ){
-			q=&p->succ;
-			p=*q;
-		}
-
-		*q=p->succ;
-		p->~gc_object();
-		gc_free( p );
-	}
-	gc_markbit^=1;
-	gc_marked=0;
+template<class T> void t_mark( int n,gc_iptr<T> *p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
-void gc_collect(){
-
-	gc_mark();
-	
-	while( !gc_marked_queue.empty() ){
-		gc_object *p=gc_marked_queue.back();
-		gc_marked_queue.pop_back();
-		p->mark();
-	}
-	
-	gc_sweep();
-}
-
-void gc_mark( char t ){
-}
-
-void gc_mark( wchar_t t ){
-}
-
-void gc_mark( int t ){
-}
-
-void gc_mark( float t ){
-}
-
-//This marks an object AND call it's mark routine
-void gc_mark( gc_object *p ){
-	if( !p || (p->flags & 1)==gc_markbit ) return;
-	p->flags^=1;
-	++gc_marked;
-	p->mark();
-}
-
-//This marks an object but queues it's mark routine for later execution.
-void gc_mark_q( gc_object *p ){
-	if( !p || (p->flags & 1)==gc_markbit ) return;
-	p->flags^=1;
-	++gc_marked;
-	gc_marked_queue.push_back( p );
-}
-
-// for interfaces...
+// Hacks for strings...
 //
-struct gc_interface{
-	virtual ~gc_interface(){
-	}
-};
-
-void gc_mark( gc_interface *p ){
-	if( p ) gc_mark( dynamic_cast<gc_object*>( p ) );
-}
-
-void gc_mark_q( gc_interface *p ){
-	if( p ) gc_mark_q( dynamic_cast<gc_object*>( p ) );
-}
-
-// ***** Monkey Types *****
-
-typedef wchar_t Char;
-template<class T> class Array;
-class String;
-class Object;
-
-// ***** Array *****
 
 template<class T> class Array{
 public:
 	Array():rep( Rep::alloc(0) ){
 	}
 
-	Array( const Array &t ):rep( t.rep ){
+	//Note: This is *evil* but allows derived class arrays to be cast to base class arrays for use with generics.
+	//
+	//Not the best solution - the upcast should be in translated code.
+	//
+	template<class R> Array( const Array<R> &t ):rep( (Rep*)t.rep ){
 	}
 
 	Array( int length ):rep( Rep::alloc(length) ){
@@ -285,7 +339,7 @@ public:
 		return Array( p );
 	}
 
-private:
+//private:
 	struct Rep : public gc_object{
 		int length;
 		T data[0];
@@ -294,11 +348,11 @@ private:
 		}
 		
 		~Rep(){
-			for( int i=0;i<length;++i ) data[i].~T();
+			t_destroy( length,data );
 		}
-
+		
 		void mark(){
-			for( int i=0;i<length;++i ) gc_mark( data[i] );
+			t_mark( length,data );
 		}
 
 		static Rep *alloc( int length ){
@@ -638,7 +692,7 @@ private:
 		
 		void release(){
 			if( --refs || !length ) return;
-			gc_free( this );
+			free( this );
 		}
 
 		static Rep *alloc( int length ){
@@ -646,7 +700,7 @@ private:
 				static Rep null(0);
 				return &null;
 			}
-			void *p=gc_malloc( sizeof(Rep)+length*sizeof(Char) );
+			void *p=malloc( sizeof(Rep)+length*sizeof(Char) );
 			return new(p) Rep( length );
 		}
 	};
@@ -657,6 +711,23 @@ private:
 };
 
 void gc_mark( String &t ){
+}
+
+String *t_create( int n,String *p ){
+	for( int i=0;i<n;++i ) new( &p[i] ) String();
+	return p+n;
+}
+
+String *t_create( int n,String *p,const String *q ){
+	for( int i=0;i<n;++i ) new( &p[i] ) String( q[i] );
+	return p+n;
+}
+
+void t_destroy( int n,String *p ){
+	for( int i=0;i<n;++i ) p[i].~String();
+}
+
+void t_mark( int n,String *p ){
 }
 
 String T( const char *p ){
@@ -801,6 +872,8 @@ int bb_std_main( int argc,const char **argv ){
 
 		Die( p );
 	}
+	
+//	gc_collect();
 	
 	return 0;
 }

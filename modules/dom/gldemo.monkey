@@ -80,6 +80,8 @@ Class MyApp Extends EventListener
 		gl.vertexAttribPointer vp,2,gl.FLOAT_,False,0,0
 		CheckGL
 		
+		'Draw!
+		'
 		gl.clearColor 1,1,0,1
 		gl.clear gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT
 		gl.drawArrays gl.TRIANGLES,0,3

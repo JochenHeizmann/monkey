@@ -35,11 +35,16 @@ Class MyApp Extends App
 
 	Field time,frames,fps
 	Field image:Image
+	Field image_trans:Image
+	Field image_solid:Image
 	Field sprites:=New Stack<Sprite>
 
 	Method OnCreate()
 	
-		image=LoadImage( "alien1.png",8,Image.MidHandle )
+		image_trans=LoadImage( "alien1.png",8,Image.MidHandle )
+		image_solid=LoadImage( "alien1_solid.png",8,Image.MidHandle )
+		
+		image=image_trans
 		
 		For Local i=0 Until 10
 			sprites.Push New Sprite
@@ -52,11 +57,21 @@ Class MyApp Extends App
 	
 	Method OnUpdate()
 	
-		If TouchDown(0)
-			If TouchX(0)<DeviceWidth/2
-				If Not sprites.IsEmpty() sprites.Pop
+		If TouchHit(0)
+			If TouchX(0)<DeviceWidth/3
+				For Local i=0 Until 10
+					If Not sprites.IsEmpty() sprites.Pop
+				Next
+			Else If TouchX(0)>DeviceWidth-DeviceWidth/3
+				For Local i=0 Until 10
+					sprites.Push New Sprite
+				Next
 			Else
-				sprites.Push New Sprite
+				If image=image_trans
+					image=image_solid
+				Else
+					image=image_trans
+				Endif
 			Endif
 		Endif
 	
@@ -76,7 +91,7 @@ Class MyApp Extends App
 			time+=e
 		Endif
 	
-		Cls
+		Cls 0,128,255
 		
 		PushMatrix 
 				

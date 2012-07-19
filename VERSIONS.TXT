@@ -1,6 +1,26 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V41 *****
+
+Modules:
+
+android mojo implemented 'fast' IntBuffer vertex buffers - see: http://code.google.com/p/android/issues/detail?id=11078
+
+ios mojo audio now using AVAudioPlayer for music.
+
+
+Trans (1.14):
+
+Flash var name munging for embedded data now takes file extension into account.
+
+Fixed more C++ interface gc issues.
+
+Fixed C++ generic array cast bug.
+
+Fixed '--' in translator output.
+
+
 ***** V40 *****
 
 Modules:
