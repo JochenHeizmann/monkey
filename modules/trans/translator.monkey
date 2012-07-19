@@ -85,7 +85,13 @@ Class Translator
 			Endif
 		End Select
 		
-		If Not munged munged="bb_"+id
+		If Not munged
+			If LocalDecl( decl )
+				munged="bbt_"+id
+			Else
+				munged="bb_"+id
+			Endif
+		Endif
 		
 		If mungScope.Contains( munged )
 			Local t$,i=1

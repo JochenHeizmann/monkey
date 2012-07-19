@@ -4,7 +4,7 @@ Strict
 'rebuild options
 Const Rebuild_Trans=True
 
-Const Rebuild_Mserver=False'True
+Const Rebuild_Mserver=True
 
 Const Rebuild_Monk=False'True
 

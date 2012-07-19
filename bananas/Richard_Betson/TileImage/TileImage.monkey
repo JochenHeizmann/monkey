@@ -51,7 +51,7 @@ Field scale_width#=1.0,scale_hieght#=1.0
 
 		'Cls 0,0,0
 		PushMatrix()
-
+		
 		Translate DeviceWidth * 0.5, DeviceHeight * 0.5 'Thanks BlitzSupport:)
 		Scale scale_width,scale_hieght
 		Translate -DeviceWidth * 0.5, -DeviceHeight * 0.5' ""

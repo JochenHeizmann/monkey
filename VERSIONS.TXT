@@ -1,6 +1,20 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V39b *****
+
+Tools:
+
+Added Difference's info.plist to Mac monk.
+
+Added thread per connection support to mserver.
+
+
+Trans (1.11):
+
+Fixed name munging of local vars.
+
+
 ***** V39 *****
 
 Modules:

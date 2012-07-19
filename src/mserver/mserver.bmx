@@ -10,14 +10,10 @@ Import brl.eventqueue
 Import maxgui.drivers
 
 Global mserverPort=50607
-
 Global localhostIp=HostIp( "localhost" )
 
 Global window:TGadget
 Global textarea:TGadget
-
-Global serverId
-Global serverMap:TMap=New TMap				'maps documentDirs to serverdatas
 
 Global addText:TList=New TList
 Global textMutex:TMutex=CreateMutex()
@@ -80,13 +76,13 @@ Else If AppArgs.length=2
 	
 	Local stream:TSocketStream=CreateSocketStream( client,False )
 	
-	WriteLine stream,"NEW:"+ExtractDir(p)
+	WriteLine stream,"NEW "+HTTPEncode( ExtractDir(p) )
 	
 	Local resp$=ReadLine( stream )
 	
 	CloseSocket client
 	
-	If resp.StartsWith( "OK:" )
+	If resp.StartsWith( "OK " )
 		Local port=Int(resp[3..])
 		OpenURL "http://localhost:"+port+"/"+StripDir(p)
 		exit_ 0
@@ -94,7 +90,7 @@ Else If AppArgs.length=2
 	
 	Error "Failed to create new server."
 Else
-	Error "Usage: mserver [-run file]"
+	Error "Usage: mserver [filePath]"
 EndIf
 
 Function StartGUI()
@@ -103,164 +99,208 @@ Function StartGUI()
 	SetGadgetLayout textarea,EDGE_ALIGNED,EDGE_ALIGNED,EDGE_ALIGNED,EDGE_ALIGNED
 End Function
 
-Type THTTPServerData
-	Field thread:TThread
+Type TServer
+	Field id
 	Field socket:TSocket
 	Field dir$
-	Field id
+	Field thread:TThread
 End Type
 
-Function Parse$( toke$,str$ )
-	str=str.Trim()
-	If str.ToLower().StartsWith( toke ) Return str[toke.Length..]
-End Function
+Type TClient
+	Field id
+	Field socket:TSocket
+	Field server:TServer
+End Type
 
-Function HTTPServerThread:Object( threadData:Object )
-
-	Local data:THTTPServerData=THTTPServerData( threadData )
+Type TToker
+	Field text$
 	
-	Local p$=data.id+"> "
+	Method SetText( text$ )
+		Self.text=text
+	End Method
 	
-	SocketListen data.socket
+	Method CParse( toke$ )
+		text=text.Trim()
+		If text.ToLower().StartsWith( toke )
+			text=text[toke.length..]
+			Return True
+		EndIf
+	End Method
+	
+	Method ParsePath$()
+		text=text.Trim()
+		Local i=text.Find(" ")
+		If i=-1 i=text.length
+		Local p$=text[..i]
+		text=text[i..]
+		Return p
+	End Method
 
-	Print p+"HTTP Server active and listening on port "+SocketLocalPort(data.socket)
+End Type
 
-	Local client:TSocket
-	Local stream:TSocketStream
+Function ClientThread:Object( data:Object )
+
+	Local client:TClient=TClient( data )
+	
+	Local stream:TSocketStream=CreateSocketStream( client.socket,False )
+
+	Local p$=client.server.id+":"+client.id+"> "
+	
+	Local toker:TToker=New TToker
 	
 	Repeat
-
-		If client And Not stream
-			CloseSocket client
-			client=Null
-		EndIf
-
-		If Not client		
-			client=SocketAccept( data.socket,60*1000 )
-			If Not client Continue
-			If SocketRemoteIP( client )<>localhostIp
-				Print p+"***** Warning! *****"
-				Print p+"Connection attempt by non-Local host!"
-				Print p+"Remote IP="+SocketRemoteIP( client )+", RemotePort="+SocketRemotePort( client )
-				Continue
-			EndIf
-			stream=CreateSocketStream( client,False )
-		EndIf
-
+	
 		Local req$=ReadLine( stream )
+		If Not req Exit
 		
 '		Print ""
 '		Print p+req
 		
-		Local range_start=-1,range_end=-1,keep_alive,req_host$
+		Local range_start=-1,range_end=-1,keep_alive,req_host$,err
 		
-		Local hdrs:TList=New TList
 		Repeat
 			Local hdr$=ReadLine( stream )
 			If Not hdr Exit
-			hdrs.AddLast hdr
 			
 '			Print p+hdr
+
+			toker.SetText hdr
 			
-			Local host$=Parse( "host:",hdr )
-			If host
-				req_host=host.Trim()
+			If toker.CParse( "host:" )
+				req_host=toker.text
 				Continue
 			EndIf
 			
-			Local range$=Parse( "range:",hdr )
-			If range
-				Local bytes$=Parse( "bytes=",range )
-				Local bits$[]=bytes.Split( "-" )
-				If bits.length=2
-					range_start=Int( bits[0] )
-					If bits[1] range_end=Int( bits[1] )
+			If toker.CParse( "range:" )
+				If toker.CParse( "bytes=" )
+					Local bits$[]=toker.text.Split( "-" )
+					If bits.length=2
+						range_start=Int( bits[0] )
+						If bits[1] range_end=Int( bits[1] )
+						Continue
+					EndIf
 				EndIf
-				Continue
+				Print p+"***** Error parsing 'range' header ***** : "+hdr
+				err=True
+				Exit
 			EndIf
 			
-			Local conn$=Parse( "connection:",hdr )
-			If conn
-				If conn="keep-alive" keep_alive=True
-				Continue
+			If toker.CParse( "connection:" )
+				If toker.CParse( "keep-alive" )
+					keep_alive=True
+					Continue
+				EndIf
+				Print p+"***** Error parsing 'connection' header ***** : "+hdr
+				err=True
+				Exit
 			EndIf
 		Forever
+		If err Exit
 		
-		Local bits$[]=req.Split( " " )
-		Local cmd$=bits[0].ToLower()
 		
-		If cmd="get" And bits.length>=2 And bits[1].StartsWith("/")
+		Local get$	'file to get
 		
-			Local f$=RealPath( data.dir+bits[1] )
-			
-			If FileType( f )=FILETYPE_FILE
-			
-				If range_start=-1
-			
-					Local data:Byte[]=LoadByteArray(f)
-					
-					Print p+"GET "+f
-				
-					WriteLine stream,"HTTP/1.1 200 OK"
-					WriteLine stream,"Cache-Control: max-age=31556926"
-					WriteLine stream,"Date: "+HTTPNow()	'should really by GMT!
-					WriteLine stream,"Last-Modified: "+HTTPDate( 1,1,2000,"00:00:00" )
-					WriteLine stream,"Content-Length: "+data.length
-					WriteLine stream,"Connection: close"
-					WriteLine stream,""
-					
-					stream.WriteBytes data,data.length
-				Else
-					Local data:Byte[]=LoadByteArray(f)
-					
-					Local length=data.length
-					
-					If range_end=-1 Or range_end>=length
-						range_end=length-1
-					EndIf
-					
-					data=data[range_start..range_end+1]
-					
-					Print p+"GET "+f+" (bytes "+range_start+"-"+range_end+")"
-					
-					WriteLine stream,"HTTP/1.1 206 Partial content"
-					WriteLine stream,"Cache-Control: max-age=31556926"
-					WriteLine stream,"Date: "+HTTPNow()
-					WriteLine stream,"Last-Modified: "+HTTPDate( 1,1,2000,"00:00:00" )
-					WriteLine stream,"Content-Length: "+data.length
-					WriteLine stream,"Content-Range: bytes "+range_start+"-"+range_end+"/"+length
-					WriteLine stream,"Connection: close"
-					WriteLine stream,""
-					
-					stream.WriteBytes data,data.length
+		
+		toker.SetText req
+		If toker.CParse( "get" )
+			Local t$=HTTPDecode(toker.ParsePath())
+			If t
+				get=RealPath( client.server.dir+t )
+				If Not get.StartsWith( client.server.dir+"/" )
+					Print p+"***** Invalid GET path ***** : "+t
+					Exit
 				EndIf
+			EndIf
+		EndIf
+		
+		
+		If get And FileType( get )=FILETYPE_FILE
+		
+			Local data:Byte[]=LoadByteArray( get )
+			Local length=data.length
 			
+			If range_start=-1
+				Print p+"GET "+get
+				WriteLine stream,"HTTP/1.1 200 OK"
 			Else
-				Print p+"404 Not Found: "+f
+				If range_end=-1 Or range_end>=length
+					range_end=length-1
+				EndIf
+				data=data[range_start..range_end+1]
 				
-				Local data$="404 Not Found"
-				
-				WriteLine stream,"HTTP/1.1 404 Not Found"
-				WriteLine stream,"Content-Length: "+data.length
-				WriteLine stream,"Connection: close"
-				WriteLine stream,""
-				stream.WriteBytes data,data.length
+				Print p+"GET "+get+" (bytes "+range_start+"-"+range_end+")"
+				WriteLine stream,"HTTP/1.1 206 Partial content"
 			EndIf
 			
+			WriteLine stream,"Cache-Control: max-age=31556926"
+			WriteLine stream,"Date: "+HTTPNow()	'should really be GMT!
+			WriteLine stream,"Last-Modified: "+HTTPDate( 1,1,2000,"00:00:00" )
+			WriteLine stream,"Content-Length: "+data.length
+			If range_start<>-1 WriteLine stream,"Content-Range: bytes "+range_start+"-"+range_end+"/"+length
+			WriteLine stream,""
+			stream.WriteBytes data,data.length
+		
+		Else If get
+	
+			Print p+"404 Not Found: "+get
+				
+			Local data$="404 Not Found"
+			WriteLine stream,"HTTP/1.1 404 Not Found"
+			WriteLine stream,"Content-Length: "+data.length
+			WriteLine stream,""
+			stream.WriteBytes data,data.length
+		
 		Else
 			Print p+"400 Bad Request: "+req
-			
+
 			Local data$="400 Bad Request"
-			
 			WriteLine stream,"HTTP/1.1 400 Not Found"
 			WriteLine stream,"Content-Length: "+data.length
-			WriteLine stream,"Connection: close"
 			WriteLine stream,""
 			stream.WriteBytes data,data.length
 		EndIf
+
+		If Not keep_alive Exit
 		
-'		If Not keep_alive stream=Null
-		stream=Null
+	Forever
+	
+	Print p+"BYE"
+
+	CloseSocket client.socket
+	
+End Function
+
+Function ServerThread:Object( data:Object )
+
+	Local server:TServer=TServer( data )
+	
+	Local p$=server.id+"> "
+	
+	SocketListen server.socket
+
+	Print p+"HTTP Server active and listening on port "+SocketLocalPort( server.socket )
+	
+	Local clientId
+	
+	Repeat
+	
+		Local socket:TSocket=SocketAccept( server.socket,60*1000 )
+		If Not socket Continue
+		
+		If SocketRemoteIP( socket )<>localhostIp
+			Print p+"***** Warning! *****"
+			Print p+"Connection attempt by non-Local host!"
+			Print p+"Remote IP="+SocketRemoteIP( socket )+", RemotePort="+SocketRemotePort( socket )
+			Continue
+		EndIf
+		
+		Local client:TClient=New TClient
+		clientId:+1
+		client.id=clientId
+		client.socket=socket
+		client.server=server
+		
+		Local thread:TThread=CreateThread( ClientThread,client )
 		
 	Forever
 	
@@ -279,81 +319,93 @@ Function MServer()
 		
 	Print "MServer active and listening on port "+mserverPort
 	
-	Local client:TSocket
+	Local serverId
+	Local serverMap:TMap=New TMap				'maps dirs to servers
+	
+	Local toker:TToker=New TToker
 	
 	Repeat
 	
-		If client
+		While PollEvent()
+			Select EventID()
+			Case EVENT_WINDOWCLOSE
+				exit_ 0
+			End Select
+		Wend
+		
+		LockMutex textMutex
+		For Local t$=EachIn addText
+			AddTextAreaText textArea,t+"~n"
+		Next
+		addtext.Clear
+		UnlockMutex textMutex
+		
+		
+		Local client:TSocket=SocketAccept( server,100 )
+		
+		
+		If client And SocketRemoteIP( client )<>localhostIp
+			Print "***** Warning! *****"
+			Print "Connection attempt by non-Local host!"
+			Print "Remote IP="+SocketRemoteIP( client )+", RemotePort="+SocketRemotePort( client )
 			CloseSocket client
 			client=Null
 		EndIf
+		If Not client Continue
 		
-		While Not client
-		
-			While PeekEvent()
-				Select PollEvent()
-				Case EVENT_WINDOWCLOSE
-					exit_ 0
-				End Select
-			Wend
-			LockMutex textMutex
-			For Local t$=EachIn addText
-				AddTextAreaText textArea,t+"~n"
-			Next
-			addtext.Clear
-			UnlockMutex textMutex
-			
-			client=SocketAccept( server,100 )
-	
-			If client And SocketRemoteIP( client )<>localhostIp
-				Print "***** Warning! *****"
-				Print "Connection attempt by non-Local host!"
-				Print "Remote IP="+SocketRemoteIP( client )+", RemotePort="+SocketRemotePort( client )
-				CloseSocket client
-				client=Null
-			EndIf
-		Wend
 		
 		Local stream:TSocketStream=CreateSocketStream( client,False )
-
 		Local req$=ReadLine( stream )
+
+		toker.SetText req
 		
-		If req.StartsWith( "NEW:" )
-		
-			Local dir$=req[4..]
+		If toker.CParse( "new " )
+
+			Local dir$=HTTPDecode( toker.ParsePath() )
 			
-			Local data:THTTPServerData=THTTPServerData( serverMap.ValueForKey(dir) )
+			Local server:TServer=TServer( serverMap.ValueForKey( dir ) )
 			
-			If Not data
+			If Not server
 				Local socket:TSocket=CreateTCPSocket()
 				If BindSocket( socket,0 )
+					server=New TServer
 					serverId:+1
-					data=New THTTPServerData
-					data.socket=socket
-					data.dir=dir
-					data.id=serverId
-					data.thread=CreateThread( HTTPServerThread,data )
-					serverMap.Insert dir,data
-				Else
-					CloseSocket socket
+					server.id=serverId
+					server.socket=socket
+					server.dir=dir
+					server.thread=CreateThread( ServerThread,server )
+					serverMap.Insert dir,server
 				EndIf
 			EndIf
 			
-			If data
-				WriteLine stream,"OK:"+SocketLocalPort( data.socket )
+			If server
+				WriteLine stream,"OK "+SocketLocalPort( server.socket )
 			Else
 				WriteLine stream,"ERR"
 			EndIf
+		Else
+			WriteLine stream,"ERR"
 		EndIf
 		
-		WriteLine stream,"ERR"
+		CloseSocket client
 		
 	Forever
 
 End Function
 
+Function HTTPEncode$( t$ )
+	t=t.Replace( "%","%25" )
+	t=t.Replace( " ","%20" )
+	Return t
+End Function
+
+Function HTTPDecode$( t$ )
+	t=t.Replace( "%20"," " )
+	t=t.Replace( "%25","%" )
+	Return t
+End Function
+
 'With help from some wedoe code in the bmx code arcs - thanks wedoe!
-'
 Function HTTPDate$( day,mon,year,time$ )
 
 	Local t_day$=day,w_day$,t_mon$
