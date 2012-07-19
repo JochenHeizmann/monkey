@@ -49,7 +49,7 @@ Class AndroidTarget Extends Target
 		'create main source file
 		Local main$=LoadString( "MonkeyGame.java" )
 		main=ReplaceBlock( main,"${PACKAGE_BEGIN}","${PACKAGE_END}","package "+app_package+";" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		SaveString main,jpath
 		
 		If OPT_BUILD

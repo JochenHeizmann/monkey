@@ -21,7 +21,7 @@ Class IosTarget Extends Target
 		CreateDataDir "data",False
 
 		Local main$=LoadString( "main.mm" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		SaveString main,"main.mm"
 		
 		If OPT_BUILD

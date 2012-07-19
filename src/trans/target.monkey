@@ -42,7 +42,8 @@ Class Target
 	Field metaData$		'meta data string created by CreateDataDir
 	Field textFiles$	'text files string create by CreateDataDir
 	
-	Field app:AppDecl	'The app!
+	Field app:AppDecl	'The app
+	Field transCode$	'translated output code
 
 	Method Begin() Abstract
 	
@@ -55,22 +56,35 @@ Class Target
 		targetPath=buildPath+"/"+ENV_TARGET
 	End
 	
+	Method AddTransCode( tcode$ )
+		If transCode.Contains( "${CODE}" )
+			transCode=transCode.Replace( "${CODE}",tcode )
+		Else
+			transCode+=tcode
+		Endif
+	End
+	
 	Method Translate()
 
 		Print "Parsing..."
+	
 		app=parser.ParseApp( srcPath )
 
 		Print "Semanting..."
+		
 		app.Semant
 		
+		Print "Translating..."
+
 		For Local file$=Eachin app.fileImports
 			If ExtractExt( file ).ToLower()=ENV_LANG
-				app.AddTransCode LoadString( file )
+				AddTransCode LoadString( file )
 			Endif
 		Next
 
-		Print "Translating..."
-		app.AddTransCode _trans.TransApp( app )
+		AddTransCode _trans.TransApp( app )
+		
+		transCode=_trans.PostProcess( transCode )
 		
 		Print "Building..."
 	End
@@ -119,7 +133,7 @@ Class Target
 				CopyFile file,dir+"/"+StripDir( file )
 				
 			'audio file formats
-			Case "wav","ogg","aac","m4a","mp4","aif","caf","mp3"
+			Case "wav","ogg","aac","m4a","mp4","aif","caf","mp3","wma"
 
 				CopyFile file,dir+"/"+StripDir( file )
 

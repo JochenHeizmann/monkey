@@ -46,7 +46,7 @@ Class MyApp Extends App
 		
 		image=image_trans
 		
-		For Local i=0 Until 10
+		For Local i=0 Until 100
 			sprites.Push New Sprite
 		Next
 		
@@ -59,11 +59,11 @@ Class MyApp Extends App
 	
 		If TouchHit(0)
 			If TouchX(0)<DeviceWidth/3
-				For Local i=0 Until 10
+				For Local i=0 Until 25
 					If Not sprites.IsEmpty() sprites.Pop
 				Next
 			Else If TouchX(0)>DeviceWidth-DeviceWidth/3
-				For Local i=0 Until 10
+				For Local i=0 Until 25
 					sprites.Push New Sprite
 				Next
 			Else
@@ -98,7 +98,7 @@ Class MyApp Extends App
 		Scale DeviceWidth/WIDTH,DeviceHeight/HEIGHT
 		
 		For Local sprite:=Eachin sprites
-			DrawImage image,sprite.x,sprite.y,sprite.f
+			DrawImage image,sprite.x,sprite.y,0,5,5,sprite.f
 		Next
 		
 		PopMatrix

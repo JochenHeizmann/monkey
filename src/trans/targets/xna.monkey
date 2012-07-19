@@ -48,6 +48,9 @@ Class XnaTarget Extends Target
 					Case "mp3"
 						ps+="      <Importer>Mp3Importer</Importer>~n"
 						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
+					Case "wma"
+						ps+="      <Importer>WmaImporter</Importer>~n"
+						ps+="      <Processor>SoundEffectProcessor</Processor>~n"					
 					End
 					If ps
 						t+="  <ItemGroup>~r~n"
@@ -72,7 +75,7 @@ Class XnaTarget Extends Target
 
 		'app code
 		Local main$=LoadString( "MonkeyGame/MonkeyGame/Program.cs" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		SaveString main,"MonkeyGame/MonkeyGame/Program.cs"
 			

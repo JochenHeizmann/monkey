@@ -50,7 +50,7 @@ Class FlashTarget Extends Target
 		'app code
 		Local main$=LoadString( "MonkeyGame.as" )
 		
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		main=ReplaceBlock( main,"${ASSETS_BEGIN}","${ASSETS_END}",assets )
 		

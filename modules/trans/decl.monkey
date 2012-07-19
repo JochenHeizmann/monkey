@@ -7,7 +7,7 @@
 Import trans
 
 Const DECL_EXTERN=		$010000
-Const DECL_PRIVATE=		$020000
+Const DECL_PRIVATE=	$020000
 Const DECL_ABSTRACT=	$040000
 Const DECL_FINAL=		$080000
 
@@ -1214,6 +1214,8 @@ Class ModuleDecl Extends ScopeDecl
 				declmod=mdecl.ident
 			Endif
 			
+			If Not _env Exit
+			
 			Local imps:=mdecl.imported
 			If mdecl<>_env.ModuleScope() imps=mdecl.pubImported
 
@@ -1242,15 +1244,13 @@ Class AppDecl Extends ScopeDecl
 
 	Field imported:=New StringMap<ModuleDecl>			'maps modpath->mdecl
 	
-	Field fileImports:=New StringList
-	
-	Field mainModule:ModuleDecl							'main module
-	Field mainFunc:FuncDecl
+	Field mainModule:ModuleDecl
+	Field mainFunc:FuncDecl	
 		
 	Field semantedClasses:=New List<ClassDecl>			'in-order (ie: base before derived) list of semanted classes
 	Field semantedGlobals:=New List<GlobalDecl>			'in-order (ie: dependancy sorted) list of semanted globals
 
-	Field transCode$									'translated code!
+	Field fileImports:=New StringList
 	
 	Method InsertModule( mdecl:ModuleDecl )
 		mdecl.scope=Self
@@ -1260,17 +1260,12 @@ Class AppDecl Extends ScopeDecl
 		Endif
 	End
 	
-	Method AddTransCode( tcode$ )
-		If transCode.Contains( "${CODE}" )
-			transCode=transCode.Replace( "${CODE}",tcode )
-		Else
-			transCode+=tcode
-		Endif
-	End
-	
 	Method OnSemant()
+	
+		_env=Null
 		
 		mainFunc=mainModule.FindFuncDecl( "Main",[] )
+		
 		If Not mainFunc Err "Function 'Main' not found."
 		
 		If Not IntType( mainFunc.retType ) Or mainFunc.argDecls.Length

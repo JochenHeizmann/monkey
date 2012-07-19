@@ -23,7 +23,7 @@ Class Html5Target Extends Target
 		'app code
 		Local main$=LoadString( "main.js" )
 		
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		main=ReplaceBlock( main,"${METADATA_BEGIN}","${METADATA_END}",meta )
 		
@@ -32,8 +32,6 @@ Class Html5Target Extends Target
 		If OPT_RUN
 			Local p$=RealPath( "MonkeyGame.html" )
 			
-'			Local t$="~q"+ExtractDir(AppPath)+"/mserver_winnt~q ~q"+p+"~q"
-
 			Local t$=HTML_PLAYER+" ~q"+p+"~q"
 
 			Execute t,False

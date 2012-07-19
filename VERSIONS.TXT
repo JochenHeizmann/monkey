@@ -1,6 +1,31 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+
+***** V42 *****
+
+Modules:
+
+More tweaks to android mojo VBOs.
+
+Optimized android mojo blending for opaque rendering.
+
+Fixed android mojo r,g,b byte ordering for non-alpha images.
+
+
+Trans (1.15):
+
+Added WMA audio format support to trans/XNA.
+
+Fixed trans crashing if no Main() declared.
+
+Fixed consts in interfaces crashing as/java/cs translators.
+
+Fixed conversion C++ interfaces to objects for use with generics.
+
+Fixed float->string conversion precision issue.
+
+
 ***** V41 *****
 
 Modules:

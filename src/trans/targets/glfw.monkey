@@ -28,7 +28,7 @@ Class GlfwTarget Extends Target
 			CreateDataDir "vc2010/"+CASED_CONFIG+"/data",False
 			
 			Local main$=LoadString( "main.cpp" )
-			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
+			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 			SaveString main,"main.cpp"
 			
 			If OPT_BUILD
@@ -47,7 +47,7 @@ Class GlfwTarget Extends Target
 			CreateDataDir "xcode/data",False
 
 			Local main$=LoadString( "main.cpp" )
-			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
+			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 			SaveString main,"main.cpp"
 			
 			If OPT_BUILD

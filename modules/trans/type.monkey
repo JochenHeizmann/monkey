@@ -16,10 +16,6 @@ Class Type
 		Return False
 	End
 	
-	Method EqualsActualType( ty:Type )
-		Return EqualsType( ty )
-	End
-	
 	Method ExtendsType( ty:Type )
 		Return EqualsType( ty )
 	End
@@ -196,11 +192,6 @@ Class ObjectType Extends Type
 	Method EqualsType( ty:Type )
 		Local objty:ObjectType=ObjectType( ty )
 		Return objty And classDecl=objty.classDecl
-	End
-	
-	Method EqualsActualType( ty:Type )
-		Local objty:ObjectType=ObjectType( ty )
-		Return objty And classDecl.actual=objty.classDecl.actual
 	End
 	
 	Method ExtendsType( ty:Type )

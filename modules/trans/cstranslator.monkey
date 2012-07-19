@@ -363,8 +363,9 @@ Class CsTranslator Extends Translator
 			
 			Emit "interface "+classid+bases+"{"
 			For Local decl:=Eachin classDecl.Semanted
-				If Not FuncDecl( decl ) InternalErr
-				EmitFuncDecl FuncDecl( decl )
+				Local fdecl:=FuncDecl( decl )
+				If Not fdecl Continue
+				EmitFuncDecl fdecl
 			Next
 			Emit "}"
 			Return

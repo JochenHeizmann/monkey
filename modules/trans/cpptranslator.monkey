@@ -18,12 +18,12 @@ Class CppTranslator Extends Translator
 		If ObjectType( ty ) Return ty.GetClass().actual.munged+"*"
 		InternalErr
 	End
-
+	
 	Method TransRefType$( ty:Type )
-		If ObjectType( ty ) And ty.GetClass().IsInterface() Return "gc_iptr<"+ty.GetClass().actual.munged+" >"
+		If ObjectType( ty ) And ty.GetClass().IsInterface() Return "gc_iptr<"+ty.GetClass().actual.munged+">"
 		Return TransType( ty )
 	End
-
+	
 	Method TransValue$( ty:Type,value$ )
 		If value
 			If BoolType( ty ) Return "true"
@@ -39,14 +39,33 @@ Class CppTranslator Extends Translator
 		Endif
 		InternalErr
 	End
-
-	Method TransArgs$( args:Expr[] )
+	
+	Method TransArgs$( args:Expr[],decl:FuncDecl )
 		Local t$
-		For Local arg:=Eachin args
+		For Local i=0 Until args.Length
 			If t t+=","
-			t+=arg.Trans()
+			t+=TransTemplateCast( ArgDecl(decl.argDecls[i].actual).ty,args[i].exprType,args[i].Trans() )
 		Next
 		Return Bra(t)
+	End
+	
+	Method TransPtrCast$( ty:Type,src:Type,expr$,cast$ )
+	
+		If Not ObjectType(ty) Or Not ObjectType(src) InternalErr
+		
+		Local t$=TransType(ty)
+		
+		If src.GetClass().IsInterface() Or ty.GetClass().IsInterface() cast="dynamic"
+		
+		If src.GetClass().IsInterface() And Not ty.GetClass().IsInterface()
+			Return cast+"_cast<"+TransType(ty)+">"+Bra( expr )
+		End
+		
+		'upcast?
+		If src.GetClass().ExtendsClass( ty.GetClass() ) Return expr
+		
+		Return cast+"_cast<"+TransType(ty)+">"+Bra( expr )
+		
 	End
 	
 	'***** Utility *****
@@ -83,21 +102,22 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-		ty=ty.ActualType()
+
+		If ty=src Return expr
 		
-		If ty.EqualsType( src.ActualType() ) Return expr
-	
-		If Not ObjectType( src ) Err "Can't convert from "+src.ToString()+" to "+ty.ToString()
+		ty=ty.ActualType()
+		src=src.ActualType()
+		
+		If ty.EqualsType( src ) Return expr
+		
+		Return TransPtrCast( ty,src,expr,"static" )
 
-		If ty.GetClass().IsInterface() Return "dynamic_cast<"+TransType(ty)+" >"+Bra(expr)
-
-		Return "static_cast<"+TransType(ty)+" >"+Bra(expr)
 	End
 	
 	Method TransGlobal$( decl:GlobalDecl )
 		Local swiz$
 		If ObjectType( decl.ty )
-			If ObjectType( decl.ty ).classDecl.IsInterface() swiz="._p"
+			If ObjectType( decl.ty ).classDecl.IsInterface() swiz=".p"
 		Endif
 		Return TransStatic( decl )+swiz
 	End
@@ -105,7 +125,7 @@ Class CppTranslator Extends Translator
 	Method TransField$( decl:FieldDecl,lhs:Expr )
 		Local swiz$
 		If ObjectType( decl.ty )
-			If ObjectType( decl.ty ).classDecl.IsInterface() swiz="._p"
+			If ObjectType( decl.ty ).classDecl.IsInterface() swiz=".p"
 		Endif
 		If lhs Return TransSubExpr( lhs )+"->"+decl.munged+swiz
 		Return decl.munged+swiz
@@ -113,14 +133,14 @@ Class CppTranslator Extends Translator
 		
 	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr )
 		If decl.IsMethod()
-			If lhs Return TransSubExpr( lhs )+"->"+decl.munged+TransArgs( args )
-			Return decl.munged+TransArgs( args )
+			If lhs Return TransSubExpr( lhs )+"->"+decl.munged+TransArgs( args,decl )
+			Return decl.munged+TransArgs( args,decl )
 		Endif
-		Return TransStatic( decl )+TransArgs( args )
+		Return TransStatic( decl )+TransArgs( args,decl )
 	End
 	
 	Method TransSuperFunc$( decl:FuncDecl,args:Expr[] )
-		Return decl.ClassScope().munged+"::"+decl.munged+TransArgs( args )
+		Return decl.ClassScope().munged+"::"+decl.munged+TransArgs( args,decl )
 	End
 	
 	'***** Expressions *****
@@ -131,7 +151,7 @@ Class CppTranslator Extends Translator
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
 		Local t$="(new "+expr.classDecl.actual.munged+")"
-		If expr.ctor t+="->"+expr.ctor.actual.munged+TransArgs( expr.args )
+		If expr.ctor t+="->"+expr.ctor.actual.munged+TransArgs( expr.args,expr.ctor )
 		Return t
 	End
 	
@@ -174,12 +194,7 @@ Class CppTranslator Extends Translator
 			If StringType( src ) Return t
 		Endif
 		
-		If src.GetClass().ExtendsClass( dst.GetClass() )
-			If Not src.GetClass().IsInterface() Return t
-			Return "dynamic_cast<"+TransType(dst)+" >"+Bra( t )
-		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Return "dynamic_cast<"+TransType(dst)+" >"+Bra( t )
-		Endif
+		Return TransPtrCast( dst,src,t,"dynamic" )
 
 		Err "C++ translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
@@ -290,16 +305,22 @@ Class CppTranslator Extends Translator
 
 	'***** Statements *****
 	
-'	Method _TransAssignStmt$( stmt:AssignStmt )
-'		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
-'		Return stmt.lhs.Trans()
-'	End
+	Method TransAssignStmt$( stmt:AssignStmt )
+		If Not stmt.rhs Return stmt.lhs.Trans()
+		
+		Local rhs:=stmt.rhs.Trans()
+		Local lhs:=stmt.lhs.TransVar()
+		
+		If ObjectType( stmt.rhs.exprType )
+			If stmt.rhs.exprType.GetClass().IsInterface() rhs="GC_IPTR"+Bra(rhs)
+		Endif
+
+		Return lhs+TransAssignOp( stmt.op )+rhs
+	End
 	
 	'***** Declarations *****
 	
 	Method EmitFuncProto( decl:FuncDecl )
-		'PushMungScope
-		
 		'Find decl we override
 		Local odecl:=decl
 		While odecl.overrides
@@ -309,7 +330,7 @@ Class CppTranslator Extends Translator
 		Local args$
 		For Local arg:=Eachin odecl.argDecls
 			If args args+=","
-			args+=TransType( arg.ty )'+" "+arg.munged
+			args+=TransType( arg.ty )
 		Next
 		
 		Local t$=TransType( odecl.retType )+" "+decl.munged+Bra( args )
@@ -320,8 +341,6 @@ Class CppTranslator Extends Translator
 		If decl.IsStatic() And decl.ClassScope() q+="static "
 		
 		Emit q+t+";"
-
-		'PopMungScope
 	End
 	
 	Method EmitFuncDecl( decl:FuncDecl )
@@ -385,7 +404,6 @@ Class CppTranslator Extends Translator
 			If Not bases bases=" : public virtual gc_interface"
 			Emit "class "+classid+bases+"{"
 			Emit "public:"
-'			Emit "virtual ~"+classid+"(){}"
 			Local emitted:=New Stack<FuncDecl>
 			For Local decl:=Eachin classDecl.Semanted
 				Local fdecl:=FuncDecl(decl)
@@ -457,10 +475,7 @@ Class CppTranslator Extends Translator
 	
 	Method EmitMark( id$,ty:Type,queue? )
 		If ObjectType( ty )
-			If id.EndsWith( "._p" ) id=id[..-3]
-'			If ty.GetClass().IsInterface()
-'				id="dynamic_cast<Object*>("+id+")"
-'			Endif
+			If id.EndsWith( ".p" ) id=id[..-2]
 			If queue
 				Emit "gc_mark_q("+id+");"
 			Else
@@ -479,10 +494,6 @@ Class CppTranslator Extends Translator
 		Endif
 		
 		If classDecl.IsInterface()
-'			For Local decl:=Eachin classDecl.Semanted
-'				If Not FuncDecl( decl ) InternalErr
-'				EmitFuncDecl FuncDecl( decl )
-'			Next
 			Return
 		Endif
 

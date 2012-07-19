@@ -23,7 +23,7 @@ Class StdcppTarget Extends Target
 	Method MakeTarget()
 	
 		Local main$=LoadString( "main.cpp" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		SaveString main,"main.cpp"
 
 		If OPT_BUILD

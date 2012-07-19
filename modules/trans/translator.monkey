@@ -350,13 +350,7 @@ Class Translator
 	End
 	
 	Method TransAssignStmt$( stmt:AssignStmt )
-	
 		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
-		Return stmt.lhs.Trans()
-	
-		If stmt.rhs 
-			Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
-		Endif
 		Return stmt.lhs.Trans()
 	End
 	

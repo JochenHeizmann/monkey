@@ -178,23 +178,13 @@ void gc_mark_q( gc_object *p ){
 	gc_marked_queue.push_back( p );
 }
 
-// Some ugly hacks for interfaces in an attempt to keep plain objects speedy...
-//
-struct gc_interface{
-	virtual ~gc_interface(){}
-};
-
-//for fields, elements and globals of type interface
-template<class T> struct gc_iptr{
-	T *_p;
-};
-
-template<class T> void gc_mark( gc_iptr<T> i ){
-	gc_mark( dynamic_cast<gc_object*>(i._p) );
+//array of values
+template<class T> void gc_mark( int n,T *p ){
 }
 
-template<class T> void gc_mark_q( gc_iptr<T> i ){
-	gc_mark_q( dynamic_cast<gc_object*>(i._p) );
+//array of objects/interfaces
+template<class T> void gc_mark( int n,T **p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
 // ***** Monkey Types *****
@@ -241,21 +231,6 @@ template<class T> T *t_create( int n,T *p,const T *q ){
 template<class T> void t_destroy( int n,T *p ){
 //	for( int i=0;i<n;++i ) p[i].~String();
 }
-
-template<class T> void t_mark( int n,T *p ){
-//	for( int i=0;i<n;++i ) gc_mark( p[i] );
-}
-
-template<class T> void t_mark( int n,T **p ){
-	for( int i=0;i<n;++i ) gc_mark( p[i] );
-}
-
-template<class T> void t_mark( int n,gc_iptr<T> *p ){
-	for( int i=0;i<n;++i ) gc_mark( p[i] );
-}
-
-// Hacks for strings...
-//
 
 template<class T> class Array{
 public:
@@ -352,7 +327,7 @@ public:
 		}
 		
 		void mark(){
-			t_mark( length,data );
+			gc_mark( length,data );
 		}
 
 		static Rep *alloc( int length ){
@@ -392,7 +367,7 @@ public:
 
 	String( float n ){
 		char buf[64];
-		snprintf( buf,64,"%f",n );
+		snprintf( buf,64,"%#.9g",n );
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
@@ -713,6 +688,9 @@ private:
 void gc_mark( String &t ){
 }
 
+void gc_mark( int n,String *p ){
+}
+
 String *t_create( int n,String *p ){
 	for( int i=0;i<n;++i ) new( &p[i] ) String();
 	return p+n;
@@ -725,9 +703,6 @@ String *t_create( int n,String *p,const String *q ){
 
 void t_destroy( int n,String *p ){
 	for( int i=0;i<n;++i ) p[i].~String();
-}
-
-void t_mark( int n,String *p ){
 }
 
 String T( const char *p ){
@@ -751,7 +726,43 @@ public:
 	}
 };
 
-// ***** print *****
+//Some ugly hacks for interfaces in an attempt to keep plain objects speedy.
+//
+//This mess is mainly to prevent classes from having to virtually inherit 'Object', which incurs quite a
+//bit of overhead when upcasting to Object - eg: hurts generics!
+//
+struct gc_interface{
+	virtual ~gc_interface(){}
+};
+
+//holds a pointer to an interface
+template<class T>
+struct gc_iptr{
+	T *p;
+	
+	gc_iptr(T *p=0):p(p){}
+	
+	gc_iptr &operator=(T*p){ this->p=p;return *this; }
+	
+	operator T*(){ return p; }
+	
+	T *operator->(){ return p; }
+	
+	operator Object*(){ return dynamic_cast<Object*>(p); }
+};
+
+//mark iptr value
+template<class T> void gc_mark( gc_iptr<T> &i ){
+	gc_mark(i.p);
+}
+
+//mark array of iptrs
+template<class T> void gc_mark( int n,gc_iptr<T> *p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i].p );
+}
+
+//create tmp iptr - yuck, fix!
+template<class T> gc_iptr<T> GC_IPTR( T *p ){ return gc_iptr<T>(p); }
 
 //**** main ****
 
@@ -859,7 +870,7 @@ int bb_std_main( int argc,const char **argv ){
 #endif
 
 	try{
-
+	
 #if _MSC_VER
 		seh_call( bbInit );
 		seh_call( bbMain );
@@ -872,8 +883,6 @@ int bb_std_main( int argc,const char **argv ){
 
 		Die( p );
 	}
-	
-//	gc_collect();
 	
 	return 0;
 }

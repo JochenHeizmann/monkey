@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.14"
+Const VERSION$="1.15"
 
 Global CONFIG_FILE$
 
