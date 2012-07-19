@@ -14,7 +14,7 @@ Class CppTranslator Extends Translator
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "bool"
 		If IntType( ty ) Return "int"
-		If FloatType( ty ) Return "float"
+		If FloatType( ty ) Return "Float"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return "Array<"+TransRefType( ArrayType(ty).elemType )+" >"
 		If ObjectType( ty ) Return ty.GetClass().actual.munged+"*"
@@ -30,7 +30,7 @@ Class CppTranslator Extends Translator
 		If value
 			If BoolType( ty ) Return "true"
 			If IntType( ty ) Return value
-			If FloatType( ty ) Return value+"f"
+			If FloatType( ty ) Return "FLOAT("+value+")"
 			If StringType( ty ) Return "String("+Enquote( value )+")"
 		Else
 			If BoolType( ty ) Return "false"
@@ -177,7 +177,7 @@ Class CppTranslator Extends Translator
 		If BoolType( dst )
 			If BoolType( src ) Return t
 			If IntType( src ) Return Bra( t+"!=0" )
-			If FloatType( src ) Return Bra( t+"!=0.0f" )
+			If FloatType( src ) Return Bra( t+"!=0" )
 			If ArrayType( src ) Return Bra( t+".Length()!=0" )
 			If StringType( src ) Return Bra( t+".Length()!=0" )
 			If ObjectType( src ) Return Bra( t+"!=0" )
@@ -187,7 +187,7 @@ Class CppTranslator Extends Translator
 			If FloatType( src ) Return "int"+Bra(t)
 			If StringType( src ) Return t+".ToInt()"
 		Else If FloatType( dst )
-			If IntType( src ) Return "float"+Bra(t)
+			If IntType( src ) Return "Float"+Bra(t)
 			If FloatType( src ) Return t
 			If StringType( src ) Return t+".ToFloat()"
 		Else If StringType( dst )
@@ -298,18 +298,18 @@ Class CppTranslator Extends Translator
 		Case "fromchar" Return "String"+Bra( "(Char)"+Bra(arg0)+",1" )
 
 		'trig functions - degrees
-		Case "sin","cos","tan" Return "(float)"+id+Bra( Bra(arg0)+"*D2R" )
-		Case "asin","acos","atan" Return "(float)"+Bra( id+Bra(arg0)+"*R2D" )
-		Case "atan2" Return "(float)"+Bra( id+Bra(arg0+","+arg1)+"*R2D" )
+		Case "sin","cos","tan" Return "(Float)"+id+Bra( Bra(arg0)+"*D2R" )
+		Case "asin","acos","atan" Return "(Float)"+Bra( id+Bra(arg0)+"*R2D" )
+		Case "atan2" Return "(Float)"+Bra( id+Bra(arg0+","+arg1)+"*R2D" )
 
 		'trig functions - radians
-		Case "sinr","cosr","tanr" Return "(float)"+id[..-1]+Bra( arg0 )
-		Case "asinr","acosr","atanr" Return "(float)"+id[..-1]+Bra( arg0 )
-		Case "atan2r" Return "(float)"+id[..-1]+Bra( arg0+","+arg1 )
+		Case "sinr","cosr","tanr" Return "(Float)"+id[..-1]+Bra( arg0 )
+		Case "asinr","acosr","atanr" Return "(Float)"+id[..-1]+Bra( arg0 )
+		Case "atan2r" Return "(Float)"+id[..-1]+Bra( arg0+","+arg1 )
 		
 		'misc math functions
-		Case "sqrt","floor","ceil","log" Return "(float)"+id+Bra( arg0 )
-		Case "pow" Return "(float)"+id+Bra( arg0+","+arg1 )
+		Case "sqrt","floor","ceil","log","exp" Return "(Float)"+id+Bra( arg0 )
+		Case "pow" Return "(Float)"+id+Bra( arg0+","+arg1 )
 
 		End Select
 		
@@ -489,11 +489,13 @@ Class CppTranslator Extends Translator
 	Method EmitMark( id$,ty:Type,queue? )
 	
 		If ObjectType( ty )
-		
+			Local clas:=ty.GetClass()
+			If Not clas.ExtendsObject() Return
+			
 			If id.EndsWith( ".p" )
-				If ty.GetClass().IsInterface() id=id[..-2] Else InternalErr
+				If clas.IsInterface() id=id[..-2] Else InternalErr
 			Else 
-				If ty.GetClass().IsInterface() InternalErr
+				If clas.IsInterface() InternalErr
 			Endif
 
 			If queue

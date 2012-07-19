@@ -22,7 +22,15 @@
 #endif
 #endif
 
-#define DEBUG_GC 0
+//#define DEBUG_GC 1
+
+#if DOUBLEP
+typedef double Float;
+#define FLOAT(X) X
+#else
+typedef float Float;
+#define FLOAT(X) X##f
+#endif
 
 //***** Simple profiler *****
 
@@ -525,9 +533,23 @@ public:
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
 
-	String( float n ){
-		char buf[64];
-		snprintf( buf,64,"%#.9g",n );
+	String( Float n ){
+		char buf[256];
+		
+		//would rather use snprintf, but it's doing weird things in MingW.
+		//
+		sprintf( buf,"%.17lg",n );
+		//
+		char *p;
+		for( p=buf;*p;++p ){
+			if( *p=='.' || *p=='e' ) break;
+		}
+		if( !*p ){
+			*p++='.';
+			*p++='0';
+			*p=0;
+		}
+
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
@@ -799,7 +821,7 @@ public:
 		return atoi( ToCString<char>() );
 	}
 	
-	float ToFloat()const{
+	Float ToFloat()const{
 		return atof( ToCString<char>() );
 	}
 	
@@ -961,8 +983,8 @@ const char **argv;
 const char *errInfo="";
 std::vector<const char*> errStack;
 
-float D2R=0.017453292519943295f;
-float R2D=57.29577951308232f;
+Float D2R=0.017453292519943295f;
+Float R2D=57.29577951308232f;
 
 void pushErr(){
 	errStack.push_back( errInfo );

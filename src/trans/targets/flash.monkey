@@ -4,6 +4,7 @@ Import target
 Class FlashTarget Extends Target
 
 	Function IsValid()
+		If FileType( "flash" )<>FILETYPE_DIR Return False
 		Return FLEX_PATH<>"" And FLASH_PLAYER<>""
 	End
 	

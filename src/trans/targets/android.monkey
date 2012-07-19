@@ -4,6 +4,7 @@ Import target
 Class AndroidTarget Extends Target
 
 	Function IsValid()
+		If FileType( "android" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "winnt"
 			If ANDROID_PATH And JDK_PATH And ANT_PATH Return True

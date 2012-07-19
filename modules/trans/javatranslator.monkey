@@ -299,7 +299,7 @@ Class JavaTranslator Extends Translator
 		Case "atan2r" Return "(float)Math."+id[..-1]+Bra( arg0+","+arg1 )
 
 		'misc math functions
-		Case "sqrt","floor","ceil","log" Return "(float)Math."+id+Bra(arg0)
+		Case "sqrt","floor","ceil","log","exp" Return "(float)Math."+id+Bra(arg0)
   		Case "pow" Return "(float)Math."+id+Bra( arg0+","+arg1 )
 
 		End Select
@@ -340,6 +340,8 @@ Class JavaTranslator Extends Translator
 		
 		If decl.ClassScope() And decl.ClassScope().IsInterface()
 			Emit t+";"
+		Else If decl.IsAbstract()
+			Emit "abstract "+t+";"
 		Else
 			Local q$
 			If decl.IsStatic() q+="static "
@@ -388,7 +390,10 @@ Class JavaTranslator Extends Translator
 			bases+=iface.actual.munged
 		Next
 		
-		Emit "class "+classid+" extends "+superid+bases+"{"
+		Local q$
+		If classDecl.IsAbstract() q="abstract "
+		
+		Emit q+"class "+classid+" extends "+superid+bases+"{"
 		
 		For Local decl:=Eachin classDecl.Semanted
 

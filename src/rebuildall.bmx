@@ -67,9 +67,17 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 	Else
 		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 
+		Delay 100
+		
+		DeleteFile trans
+		If FileType( trans )
+			Print "***** ERROR ***** Failed to delete trans"
+			End
+		EndIf
+		
 		CopyFile newtrans,trans
 		If FileType( trans )<>FILETYPE_FILE 
-			Print "cp failed"
+			Print "***** ERROR ***** Failed to copy trans"
 			End
 		EndIf
 ?Not win32

@@ -4,6 +4,7 @@ Import target
 Class StdcppTarget Extends Target
 
 	Function IsValid()
+		If FileType( "stdcpp" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "winnt"
 			If MINGW_PATH Return True
@@ -22,10 +23,15 @@ Class StdcppTarget Extends Target
 
 	Method MakeTarget()
 	
+		Local opts$
+		opts+="#define DOUBLEP 1~n"
+		If CONFIG_PROFILE opts+="#define PROFILE 1~n"
+		
 		Local main$=LoadString( "main.cpp" )
+		
+		main=ReplaceBlock( main,"${CPP_OPTS_BEGIN}","${CPP_OPTS_END}",opts )
+		
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
-
-		If CONFIG_PROFILE main="#define PROFILE 1~n"+main
 
 		SaveString main,"main.cpp"
 

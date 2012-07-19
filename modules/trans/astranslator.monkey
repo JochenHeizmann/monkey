@@ -285,7 +285,7 @@ Class AsTranslator Extends Translator
 		Case "atan2r" Return "Math."+id[..-1]+Bra( arg0+","+arg1 )
 
 		'misc math functions
-		Case "sqrt","floor","ceil","log" Return "Math."+id+Bra( arg0 )
+		Case "sqrt","floor","ceil","log","exp" Return "Math."+id+Bra( arg0 )
 		Case "pow" Return "Math."+id+Bra( arg0+","+arg1 )
 
 		End Select

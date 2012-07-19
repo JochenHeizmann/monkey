@@ -8,13 +8,6 @@ Private
 
 Import boxes
 
-Class Head<T> Extends Node<T>
-
-	Method ThisNode:Node<T>()
-		Return Null
-	End
-End
-
 Public
 
 Class List<T>
@@ -31,10 +24,6 @@ Class List<T>
 		_head=New Node<T>()
 	End
 
-	Method IsEmpty?()
-		Return _head._succ=_head
-	End
-	
 	Method Count()
 		Local n,node:=_head._succ
 		While node<>_head
@@ -42,6 +31,10 @@ Class List<T>
 			n+=1
 		Wend
 		Return n
+	End
+	
+	Method IsEmpty?()
+		Return _head._succ=_head
 	End
 	
 	Method Contains?( value:T )
@@ -52,6 +45,14 @@ Class List<T>
 		Wend		
 	End Method
 	
+	Method First:T()
+		Return _head._succ._data
+	End
+
+	Method Last:T()
+		Return _head._pred._data
+	End
+	
 	Method FirstNode:Node<T>()
 		Return _head.NextNode()
 	End
@@ -60,36 +61,12 @@ Class List<T>
 		Return _head.PrevNode()
 	End
 	
-	Method First:T()
-#If CONFIG="debug"
-		If IsEmpty() Error "Illegal operation on empty list"
-#Endif
-		Return _head.NextNode()._data
+	Method AddFirst:Node<T>( data:T )
+		Return New Node<T>( _head._succ,_head,data )
 	End
 
-	Method Last:T()
-#If CONFIG="debug"
-		If IsEmpty() Error "Illegal operation on empty list"
-#Endif
-		Return _head.PrevNode()._data
-	End
-	
-	Method RemoveFirst:T()
-#If CONFIG="debug"
-		If IsEmpty() Error "Illegal operation on empty list"
-#Endif
-		Local data:=_head.NextNode()._data
-		_head._succ.Remove
-		Return data
-	End
-
-	Method RemoveLast:T()
-#If CONFIG="debug"
-		If IsEmpty() Error "Illegal operation on empty list"
-#Endif
-		Local data:=_head.PrevNode()._data
-		_head._pred.Remove
-		Return data
+	Method AddLast:Node<T>( data:T )
+		Return New Node<T>( _head,_head._pred,data )
 	End
 
 	'Deprecating, use RemoveEach
@@ -106,12 +83,16 @@ Class List<T>
 		Wend
 	End
 
-	Method AddFirst:Node<T>( data:T )
-		Return New Node<T>( _head._succ,_head,data )
+	Method RemoveFirst:T()
+		Local data:T=_head._succ._data
+		_head._succ.Remove
+		Return data
 	End
 
-	Method AddLast:Node<T>( data:T )
-		Return New Node<T>( _head,_head._pred,data )
+	Method RemoveLast:T()
+		Local data:T=_head._pred._data
+		_head._pred.Remove
+		Return data
 	End
 
 	Method ObjectEnumerator:Enumerator<T>()
@@ -210,35 +191,26 @@ Class Node<T>
 	End
 
 	Method Remove()
-#If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
-#Endif
 		_succ._pred=_pred
 		_pred._succ=_succ
 		_succ=Null
 		_pred=Null
 	End Method
-
+	
 	Method NextNode:Node()
-#If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
-#Endif
 		If _succ._data<>_sentinal Return _succ
 	End
 
 	Method PrevNode:Node()
-#If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
-#Endif
 		If _pred._data<>_sentinal Return _pred
 	End
 
 Private
-
+	
 	Field _succ:Node
 	Field _pred:Node
 	Field _data:T
-
+	
 	Global _sentinal:=New Object
 
 End

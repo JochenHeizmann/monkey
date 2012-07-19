@@ -234,6 +234,8 @@ Class Translator
 	End
 	
 	'***** Utility *****
+	
+	Method TransValue$( ty:Type,value$ ) Abstract
 
 	Method TransLocalDecl$( munged$,init:Expr ) Abstract
 	
@@ -397,18 +399,21 @@ Class Translator
 	
 	'returns unreachable status!
 	Method EmitBlock( block:BlockDecl )
-
-		If ENV_CONFIG<>"release" And FuncDecl( block )
-			EmitEnter block.scope.ident+"."+block.ident
-		Endif
-		
+	
 		PushEnv block
+		
+		Local func:=FuncDecl( block )
+		
+		If func 
+			If func.IsAbstract() InternalErr
+			If ENV_CONFIG<>"release" EmitEnter func.scope.ident+"."+func.ident
+		Endif
 
 		For Local stmt:Stmt=Eachin block.stmts
 		
 			_errInfo=stmt.errInfo
 			
-			If unreachable And ENV_LANG<>"as"
+			If unreachable	' And ENV_LANG<>"as"
 				'If stmt.errInfo Print "Unreachable:"+stmt.errInfo
 				Exit
 			Endif
@@ -439,14 +444,25 @@ Class Translator
 		Local r=unreachable
 		unreachable=False
 		
-		PopEnv
-		
-		If ENV_CONFIG<>"release"
-			Local func:=FuncDecl( block )
-			If func And VoidType( func.retType ) And Not r
-				EmitLeave
+		If func And Not r
+
+			If ENV_CONFIG<>"release" EmitLeave
+			
+			If Not VoidType( func.retType )
+				If func.IsCtor()
+					Emit "return this;"
+				Else
+					If func.ModuleScope().IsStrict()
+						_errInfo=func.errInfo
+						Err "Missing return statement."
+					Endif
+					Emit "return "+TransValue( func.retType,"" )+";"
+				Endif
 			Endif
+
 		Endif
+		
+		PopEnv
 		
 		Return r
 	End
@@ -469,10 +485,10 @@ Class Translator
 		If ConstExpr( stmt.expr )
 			If ConstExpr( stmt.expr ).value
 				If EmitBlock( stmt.thenBlock ) unreachable=True
-			Else If stmt.elseBlock.stmts.First()
+			Else If Not stmt.elseBlock.stmts.IsEmpty()
 				If EmitBlock( stmt.elseBlock ) unreachable=True
 			Endif
-		Else If stmt.elseBlock.stmts.First()
+		Else If Not stmt.elseBlock.stmts.IsEmpty()
 			Emit "if"+Bra( stmt.expr.Trans() )+"{"
 			Local unr=EmitBlock( stmt.thenBlock )
 			Emit "}else{"

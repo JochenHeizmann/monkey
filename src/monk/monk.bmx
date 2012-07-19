@@ -6552,6 +6552,11 @@ Type TCodePlay
 		transpath=monkeypath+"/bin/trans_winnt"
 ?macos
 		transpath=monkeypath+"/bin/trans_macos"
+		
+		'A bit rude! This turns off the 'app was downloaded from the internet' warning
+		'that prevents MServer from running cleanly.
+		'
+		system_ "xattr -d com.apple.quarantine ~q"+monkeypath+"/bin/mserver_macos.app~q"
 ?
 
 		monkpath=AppDir
@@ -6561,7 +6566,6 @@ Type TCodePlay
 			End
 		EndIf
 		
-
 		Try
 			bmxpath=BlitzMaxPath()
 			homedir=bmxpath

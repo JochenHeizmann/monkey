@@ -15,6 +15,8 @@ Class AngelFontExample Extends App
 	Method OnCreate()
 		SetUpdateRate 30
 		
+		EnableKeyboard
+		
 		font = New AngelFont()
 		font.italicSkew = 0.15
 		'font.LoadFont("angel3")

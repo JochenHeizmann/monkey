@@ -18,8 +18,8 @@ Global Seed=1234
 'Should probably be & $ffffffff? Think about it later!
 '
 Function Rnd#()
-	Seed=(Seed*A+C) | 0
-	Return Float(Seed/4 & 1073741823)/1073741824
+	Seed=(Seed*A+C)|0
+	Return Float(Seed Shr 8 & $ffffff)/$1000000
 End
 
 Function Rnd#( range# )

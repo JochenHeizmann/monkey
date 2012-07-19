@@ -4,6 +4,7 @@ Import target
 Class GlfwTarget Extends Target
 
 	Function IsValid()
+		If FileType( "glfw" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "winnt"
 			If MSBUILD_PATH Return True

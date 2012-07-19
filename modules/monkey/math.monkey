@@ -33,6 +33,7 @@ Function Floor#( n# )="$floor"
 Function Ceil#( n# )="$ceil"
 Function Log#( n# )="$log"
 Function Pow#( x#,y# )="$pow"
+Function Exp#( x# )="$exp"
 
 Public
 

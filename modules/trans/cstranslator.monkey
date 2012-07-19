@@ -286,7 +286,7 @@ Class CsTranslator Extends Translator
 		Case "atan2r" Return "(float)Math."+id2[..-1]+Bra( arg0+","+arg1 )
 
 		'misc math functions
-		Case "sqrt","floor","log" Return "(float)Math."+id2+Bra(arg0)
+		Case "sqrt","floor","log","exp" Return "(float)Math."+id2+Bra(arg0)
 		Case "ceil" Return "(float)Math.Ceiling"+Bra(arg0)
 		Case "pow" Return "(float)Math."+id2+Bra( arg0+","+arg1 )
 
@@ -328,16 +328,20 @@ Class CsTranslator Extends Translator
 
 		If decl.ClassScope() And decl.ClassScope().IsInterface()
 			Emit t+";"
+		Else If decl.IsAbstract()
+			If decl.overrides
+				Emit "public abstract override "+t+";"
+			Else
+				Emit "public abstract "+t+";"
+			Endif
 		Else
 			Local q$="public "
 			If decl.IsStatic()
 				q+="static "
+			Else If decl.overrides And Not decl.IsCtor()
+				q+="override "
 			Else
-				If decl.overrides And Not decl.IsCtor()
-					q+="override "
-				Else
-					q+="virtual "
-				Endif
+				q+="virtual "
 			Endif
 			
 			Emit q+t+"{"
@@ -382,7 +386,11 @@ Class CsTranslator Extends Translator
 		For Local iface:=Eachin classDecl.implments
 			bases+=","+iface.actual.munged
 		Next
-		Emit "class "+classid+bases+"{"
+		
+		Local q$
+		If classDecl.IsAbstract() q+="abstract "
+		
+		Emit q+"class "+classid+bases+"{"
 		
 		For Local decl:=Eachin classDecl.Semanted
 			Local tdecl:=FieldDecl( decl )

@@ -4,6 +4,7 @@ Import target
 Class Html5Target Extends Target
 
 	Function IsValid()
+		If FileType( "html5" )<>FILETYPE_DIR Return False
 		Return HTML_PLAYER<>""
 	End
 

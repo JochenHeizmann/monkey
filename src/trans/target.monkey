@@ -88,6 +88,22 @@ Class Target
 		
 		Print "Building..."
 	End
+	
+	Method ImportedFiles:StringList( exts$[] )
+		Local files:=New StringList	
+		
+		For Local file$=Eachin app.fileImports
+			Local ext$=ExtractExt( file ).ToLower()
+			For Local t$=Eachin exts
+				If t=ext
+					files.AddLast file
+					Exit
+				Endif
+			Next
+		Next
+		
+		Return files
+	End
 
 	'create '.build/target' directory and copy in project template
 	'
@@ -116,6 +132,7 @@ Class Target
 		
 		DeleteDir dir,True
 		CreateDir dir
+
 		If FileType( dataPath )=FILETYPE_DIR
 			CopyDir dataPath,dir,True,False
 		Endif

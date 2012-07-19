@@ -2,6 +2,38 @@
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
 
+***** V45c *****
+
+Monkey IDE:
+
+Added magic code (xattr) to prevent MacOS mserver from stalling due to 'app was downloaded for the internet...' warning.
+
+
+MServer:
+
+Fixed MServer not relaunching cleanly immediately after shutdown (setsockopt SO_REUSEADDR).
+
+
+Modules:
+
+monkey.random - Fixed Rnd#() to always (let's hope...) return values < 1.
+
+monkey.list - added FirstNode, LastNode, NextNode, PrevNode. Added some debug mode checks for empty lists.
+
+
+Trans (1.20)
+
+stdcpp builds now uses doubles!
+
+Extern classes that extend Null no longer GC'd by C++ target.
+
+Added Exp() to monkey.math
+
+Fixed C#/Java handling of abstract classes/methods so they emit actual abstract native decls.
+
+Fixed bug where abstract implementation checking was ignoring method identifiers!
+
+
 ***** V45b *****
 
 Modules:

@@ -10,8 +10,12 @@ Import ios
 Import stdcpp
 
 Function ValidTargets$()
+
 	Local valid:=New StringStack
 
+	Local cd$=CurrentDir()
+	ChangeDir ExtractDir( AppPath )+"/../targets"
+	
 	If Html5Target.IsValid() valid.Push "html5"
 	If FlashTarget.IsValid() valid.Push "flash"
 	If AndroidTarget.IsValid() valid.Push "android"
@@ -19,6 +23,8 @@ Function ValidTargets$()
 	If XnaTarget.IsValid() valid.Push "xna"
 	If IosTarget.IsValid() valid.Push "ios"
 	If StdcppTarget.IsValid() valid.Push "stdcpp"
+	
+	ChangeDir cd
 	
 	Return valid.Join( " " )
 End

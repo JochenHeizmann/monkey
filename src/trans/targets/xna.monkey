@@ -4,6 +4,7 @@ Import target
 Class XnaTarget Extends Target
 
 	Function IsValid()
+		If FileType( "xna" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "winnt"
 			If MSBUILD_PATH Return True

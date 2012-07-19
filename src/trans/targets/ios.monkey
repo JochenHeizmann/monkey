@@ -4,6 +4,7 @@ Import target
 Class IosTarget Extends Target
 
 	Function IsValid()
+		If FileType( "ios" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "macos"
 			Return True

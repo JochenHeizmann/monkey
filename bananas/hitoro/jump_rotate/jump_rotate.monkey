@@ -195,11 +195,11 @@ Class Game Extends App
 		SetColor 0, 64, 0
 		DrawRect -DeviceWidth, groundy, DeviceWidth * 4.0, DeviceHeight * 3.0 ' Just making sure...
 	
+		SetColor 255,255,255
 		For Local B:Block = Eachin blocklist
 			DrawImage B.Image, B.X, B.Y, 0, 0.25, 0.25
 		Next
 	
-		SetColor 1.0, 1.0, 1.0
 		DrawText "-11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 000 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 + 11", 0, groundy
 		
 		' ---------------------------------------------------------------------

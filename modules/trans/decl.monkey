@@ -7,7 +7,7 @@
 Import trans
 
 Const DECL_EXTERN=		$010000
-Const DECL_PRIVATE=	$020000
+Const DECL_PRIVATE=		$020000
 Const DECL_ABSTRACT=	$040000
 Const DECL_FINAL=		$080000
 
@@ -20,11 +20,12 @@ Global _envStack:=New List<ScopeDecl>
 Global _loopnest
 
 Function PushEnv( env:ScopeDecl )
-	If _env _envStack.AddLast( _env )
+	_envStack.AddLast _env
 	_env=env
 End Function
 
 Function PopEnv()
+	If _envStack.IsEmpty() InternalErr
 	_env=ScopeDecl( _envStack.RemoveLast() )
 End Function
 
@@ -592,6 +593,7 @@ End
 Const FUNC_METHOD=1			'mutually exclusive with ctor
 Const FUNC_CTOR=2
 Const FUNC_PROPERTY=4
+Const FUNC_CALLSCTOR=8
 
 'Fix! A func is NOT a block/scope!
 '
@@ -602,7 +604,6 @@ Class FuncDecl Extends BlockDecl
 	Field argDecls:ArgDecl[]
 
 	Field overrides:FuncDecl
-	Field superCtor:InvokeSuperExpr
 	
 	Method New( ident$,ty:Type,argDecls:ArgDecl[],attrs )
 		Self.ident=ident
@@ -701,28 +702,13 @@ Class FuncDecl Extends BlockDecl
 		If cdecl sclass=ClassDecl( cdecl.superClass )
 		
 		'prefix call to super ctor if necessary
-		If IsCtor() And superCtor=Null 
+		If IsCtor() And Not (attrs & FUNC_CALLSCTOR)
 			If sclass.FindFuncDecl( "new",[] )
-				superCtor=New InvokeSuperExpr( "new",[] )
-				stmts.AddFirst New ExprStmt( superCtor )
+				Local expr:=New InvokeSuperExpr( "new",[] )
+				stmts.AddFirst New ExprStmt( expr )
 			Endif
 		Endif
 		
-		'append a return statement if necessary
-		If Not IsExtern() And Not VoidType( retType ) And Not ReturnStmt( stmts.Last() )
-			Local stmt:ReturnStmt
-			If IsCtor()
-				stmt=New ReturnStmt( Null )
-			Else
-				If ModuleScope().IsStrict()
-					Err "Missing return statement."
-				Endif
-				stmt=New ReturnStmt( New ConstExpr( retType,"" ) )
-			Endif
-			stmt.errInfo=errInfo
-			stmts.AddLast stmt
-		Endif
-
 		'check we exactly match an override
 		If sclass And IsMethod()
 			While sclass
@@ -758,7 +744,8 @@ End
 Const CLASS_INTERFACE=1
 Const CLASS_TEMPLATEARG=2
 Const CLASS_TEMPLATEINST=4
-Const CLASS_INSTANCED=8		'class used in New?
+Const CLASS_INSTANCED=8
+Const CLASS_EXTENDSOBJECT=16
 
 Class ClassDecl Extends ScopeDecl
 
@@ -872,6 +859,10 @@ Class ClassDecl Extends ScopeDecl
 		Return (attrs & CLASS_INSTANCED)<>0
 	End
 	
+	Method ExtendsObject()
+		Return (attrs & CLASS_EXTENDSOBJECT)<>0
+	End
+	
 	Method GetDecl:Object( ident$ )
 	
 		Local cdecl:ClassDecl=Self
@@ -932,7 +923,7 @@ Class ClassDecl Extends ScopeDecl
 	
 	Method ExtendsClass( cdecl:ClassDecl )
 		If Self=nullObjectClass Return True
-		
+
 		If cdecl.IsTemplateArg()
 			cdecl=Type.objectType.FindClass()
 		Endif
@@ -968,6 +959,9 @@ Class ClassDecl Extends ScopeDecl
 		If superTy
 			superClass=superTy.FindClass()
 			If superClass.IsInterface() Err superClass.ToString()+" is an interface, not a class."
+			If superClass.ExtendsObject() attrs|=CLASS_EXTENDSOBJECT
+		Else
+			If munged="Object" attrs|=CLASS_EXTENDSOBJECT
 		Endif
 		
 		'Semant implemented interfaces
@@ -1113,70 +1107,77 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	Method FinalizeClass()
+	
+		If IsInterface() Return
 
 		PushErr errInfo
 		
-		If Not IsInterface()
-			'
-			'check for duplicate fields!
-			'
-			For Local decl:=Eachin Semanted
-				Local fdecl:=FieldDecl( decl )
-				If Not fdecl Continue
-				Local cdecl:=superClass
-				While cdecl
-					For Local decl:=Eachin cdecl.Semanted
-						If decl.ident=fdecl.ident Err "Field '"+fdecl.ident+"' in class "+ToString()+" overrides existing declaration in class "+cdecl.ToString()
-					Next
-					cdecl=cdecl.superClass
-				Wend
-			Next
-			'
-			'Check we implement all abstract methods!
-			'
-			If Not IsAbstract()	'was IsInstanced() - ie: only 'Newed' classes.
-				Local cdecl:=Self
-				Local impls:=New List<FuncDecl>
-				While cdecl
-					For Local decl:=Eachin cdecl.SemantedMethods()
-						If decl.IsAbstract()
-							Local found
-							For Local decl2:=Eachin impls
-								If decl.EqualsFunc( decl2 )
-									found=True
-									Exit
-								Endif
-							Next
-							If Not found
+		'check for duplicate fields!
+		'
+		For Local decl:=Eachin Semanted
+			Local fdecl:=FieldDecl( decl )
+			If Not fdecl Continue
+			Local cdecl:=superClass
+			While cdecl
+				For Local decl:=Eachin cdecl.Semanted
+					If decl.ident=fdecl.ident Err "Field '"+fdecl.ident+"' in class "+ToString()+" overrides existing declaration in class "+cdecl.ToString()
+				Next
+				cdecl=cdecl.superClass
+			Wend
+		Next
+		'
+		'Check we implement all abstract methods!
+		'
+		If IsAbstract()
+			If IsInstanced()
+				Err "Can't create instance of abstract class "+ToString()+"."
+			Endif
+		Else
+			Local cdecl:=Self
+			Local impls:=New List<FuncDecl>
+			While cdecl And Not IsAbstract()
+				For Local decl:=Eachin cdecl.SemantedMethods()
+					If decl.IsAbstract()
+						Local found
+						For Local decl2:=Eachin impls
+							If decl.ident=decl2.ident And decl.EqualsFunc( decl2 )
+								found=True
+								Exit
+							Endif
+						Next
+						If Not found
+							If IsInstanced()
 								Err "Can't create instance of class "+ToString()+" due to abstract method "+decl.ToString()+"."
 							Endif
-						Else
-							impls.AddLast decl
+							attrs|=DECL_ABSTRACT
+							Exit
 						Endif
-					Next
-					cdecl=cdecl.superClass
-				Wend
-			Endif
-			'
-			'Check we implement all interface methods!
-			'
-			For Local iface:=Eachin implmentsAll
-				For Local decl:=Eachin iface.SemantedMethods()
-					Local found
-					For Local decl2:=Eachin SemantedMethods( decl.ident )
-						If decl.EqualsFunc( decl2 )
-							If decl2.munged
-								Err "Extern methods cannot be used to implement interface methods."
-							Endif
-							found=True
-						Endif
-					Next
-					If Not found
-						Err decl.ToString()+" must be implemented by class "+ToString()
+					Else
+						impls.AddLast decl
 					Endif
 				Next
-			Next
+				cdecl=cdecl.superClass
+			Wend
 		Endif
+		'
+		'Check we implement all interface methods!
+		'
+		For Local iface:=Eachin implmentsAll
+			For Local decl:=Eachin iface.SemantedMethods()
+				Local found
+				For Local decl2:=Eachin SemantedMethods( decl.ident )
+					If decl.EqualsFunc( decl2 )
+						If decl2.munged
+							Err "Extern methods cannot be used to implement interface methods."
+						Endif
+						found=True
+					Endif
+				Next
+				If Not found
+					Err decl.ToString()+" must be implemented by class "+ToString()
+				Endif
+			Next
+		Next
 		
 		PopErr
 		

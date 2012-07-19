@@ -280,7 +280,7 @@ Class JsTranslator Extends Translator
 		Case "atan2r" Return "Math."+id[..-1]+Bra( arg0+","+arg1 )
 
 		'misc math functions
-		Case "sqrt","floor","ceil","log" Return "Math."+id+Bra( arg0 )
+		Case "sqrt","floor","ceil","log","exp" Return "Math."+id+Bra( arg0 )
 		Case "pow" Return "Math."+id+Bra( arg0+","+arg1 )
 
 		End Select
@@ -308,8 +308,9 @@ Class JsTranslator Extends Translator
 		Else
 			Emit "function "+decl.munged+args+"{"
 		Endif
+		
+		If Not decl.IsAbstract() EmitBlock decl
 
-		EmitBlock decl
 		Emit "}"
 		
 		PopMungScope

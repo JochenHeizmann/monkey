@@ -595,10 +595,17 @@ Class Parser
 			NextToke
 			Parse "."
 			If _toke="new"
-				Err "Call to super class constructor must be first statement in a constructor."
+				NextToke
+				Local func:=FuncDecl( _block )
+				If Not func Or Not stmt Or Not func.IsCtor() Or Not func.stmts.IsEmpty()
+					Err "Call to Super.new must be first statement in a constructor."
+				Endif
+				expr=New InvokeSuperExpr( "new",ParseArgs( stmt ) )
+				func.attrs|=FUNC_CALLSCTOR
+			Else
+				Local id$=ParseIdent()
+				expr=New InvokeSuperExpr( id,ParseArgs( stmt ) )
 			Endif
-			Local id$=ParseIdent()
-			expr=New InvokeSuperExpr( id,ParseArgs( stmt ) )
 		Default
 			Select _tokeType
 			Case TOKE_IDENT
@@ -623,7 +630,21 @@ Class Parser
 			Case "."
 
 				NextToke
-				expr=New IdentExpr( ParseIdent(),expr )
+				If False	'_toke="new"	'experimental Self.New - needs more testing/thinking.
+					NextToke
+					If Not SelfExpr( expr )
+						Err "Member 'New' can only by accessed using Self."
+					Endif
+					Local func:=FuncDecl( _block )
+					If Not func Or Not stmt Or Not func.IsCtor() Or Not func.stmts.IsEmpty()
+						Err "Call to Self.New must be first statement in a constructor."
+					Endif
+					expr=New FuncCallExpr( New IdentExpr( "new",expr ),ParseArgs( True ) )
+					func.attrs|=FUNC_CALLSCTOR
+				Else
+					Local id$=ParseIdent()
+					expr=New IdentExpr( id,expr )
+				Endif
 				
 			Case "("
 			
@@ -1257,7 +1278,6 @@ Class Parser
 			funcDecl.munged=funcDecl.ident
 			If CParse( "=" )
 				funcDecl.munged=ParseStringLit()
-				
 				'Array $resize hack!
 				If funcDecl.munged="$resize"
 					funcDecl.retTypeExpr=Type.emptyArrayType
@@ -1270,6 +1290,7 @@ Class Parser
 		If funcDecl.IsAbstract() Return funcDecl
 		
 		'Ok, only first statement of a constructor can call super constructor - not pretty, should be in semant.
+		#rem
 		If attrs & FUNC_CTOR
 			SkipEols
 			If CParse( "super" )
@@ -1283,12 +1304,9 @@ Class Parser
 					Local id$=ParseIdent()
 					funcDecl.AddStmt New ExprStmt( New InvokeSuperExpr( id,ParseArgs( True ) ) )
 				Endif
-			Else
-					'Invoke super default ctor
-					'funcDecl.superCtor=New InvokeSuperExpr( "new",[] )
-					'funcDecl.AddStmt New ExprStmt( funcDecl.superCtor )
 			Endif
 		Endif
+		#end
 
 		PushBlock funcDecl
 		While _toke<>"end"

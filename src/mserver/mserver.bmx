@@ -18,8 +18,12 @@ Global textarea:TGadget
 Global addText:TList=New TList
 Global textMutex:TMutex=CreateMutex()
 
-Function Error( t$ )
-	WriteStdout t+"~n"
+Function Error( t$,quiet=False )
+	If quiet
+		WriteStdout t+"~n"
+	Else
+		Notify t$
+	EndIf
 	exit_ -1
 End Function
 
@@ -54,7 +58,7 @@ Function ConnectToMServer:TSocket()
 		Next
 		
 		If i=50
-			Error "Can't connect to MServer"
+			Error "MServer: Client can't connect to MServer",True
 		EndIf
 		
 	EndIf
@@ -70,7 +74,7 @@ If AppArgs.length=1
 Else If AppArgs.length=2 
 
 	Local p$=RealPath( AppArgs[1] )
-	If FileType( p )<>FILETYPE_FILE Error "Invalid file '"+p+"'"
+	If FileType( p )<>FILETYPE_FILE Error "MServer: Invalid file '"+p+"'",True
 	
 	Local client:TSocket=ConnectToMServer()
 	
@@ -88,9 +92,9 @@ Else If AppArgs.length=2
 		exit_ 0
 	EndIf
 	
-	Error "Failed to create new server."
+	Error "MServer: Failed to create new server.",True
 Else
-	Error "Usage: mserver [filePath]"
+	Error "MServer: mserver [filePath]",True
 EndIf
 
 Function StartGUI()
@@ -310,7 +314,7 @@ Function ServerThread:Object( data:Object )
 	
 	Repeat
 	
-		Local socket:TSocket=SocketAccept( server.socket,60*1000 )
+		Local socket:TSocket=SocketAccept( server.socket,1000 )'60*1000 )
 		If Not socket Continue
 		
 		If SocketRemoteIP( socket )<>localhostIp
@@ -335,10 +339,20 @@ End Function
 Function MServer()
 
 	Local server:TSocket=CreateTCPSocket()
-	If Not BindSocket( server,mserverPort )
-		Error "BindSocket failed"
-	EndIf
 	
+?Macos
+	'Whew!
+	'This stunningly sexy piece of code allows use to bind to serverport without having to wait for the jug to boil first...
+	Const SOL_SOCKET=$ffff
+	Const SO_REUSEPORT=$200
+	Local flag=1
+	setsockopt_( server._socket,SOL_SOCKET,SO_REUSEADDR,Varptr flag,4 )
+'	setsockopt_( server._socket,SOL_SOCKET,SO_REUSEPORT,Varptr flag,4 )
+?
+	If Not BindSocket( server,mserverPort )
+		Error "MServer: Server failed to bind socket to port:"+mserverPort
+	EndIf
+
 	SocketListen server
 
 	StartGUI
@@ -355,6 +369,7 @@ Function MServer()
 		While PollEvent()
 			Select EventID()
 			Case EVENT_APPTERMINATE,EVENT_WINDOWCLOSE
+'				shutdown_ server._socket,2		'This should be in bmx CloseSocket!!!!
 				CloseSocket server
 				exit_ 0
 			End Select

@@ -1,4 +1,9 @@
 
+//${CPP_OPTS_BEGIN}
+//#define DOUBLEP 1
+//#define PROFILE 1
+//${CPP_OPTS_END}
+
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
 
