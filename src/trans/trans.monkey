@@ -6,21 +6,13 @@
 
 Import targets
 
-Const VERSION$="1.16"
+Const VERSION$="1.17"
 
 Global CONFIG_FILE$
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
 	Return str
-#rem
-	If rhs.StartsWith( "~q" )
-		Local i2=rhs.Find( "~q",1 )
-		If i2=-1 Die "Bad string"
-		rhs=rhs[1..i2]
-	Endif
-	Return rhs
-#end
 End
 
 Function LoadConfig()
@@ -121,47 +113,6 @@ Function LoadConfig()
 
 	Return True
 End
-
-#rem
-Function ValidTargets$()
-	Local valid:=New StringList
-	valid.AddLast "html5"
-	Select HostOS
-	Case "winnt"
-		If FLEX_PATH 'And JDK_PATH
-			valid.AddLast "flash"
-		Endif
-		If ANDROID_PATH And JDK_PATH And ANT_PATH
-			valid.AddLast "android"
-		Endif
-		If MSBUILD_PATH
-			valid.AddLast "xna"
-			valid.AddLast "glfw"
-		Endif
-		If MINGW_PATH
-			valid.AddLast "stdcpp"
-		Endif
-	Case "macos"
-		If FLEX_PATH
-			valid.AddLast "flash"
-		Endif
-		If ANDROID_PATH
-			valid.AddLast "android"
-		Endif
-		valid.AddLast "ios"
-		valid.AddLast "glfw"
-		valid.AddLast "stdcpp"
-	End
-	Local v$
-	For Local t$=Eachin valid
-		If FileType( RealPath( ExtractDir( AppPath )+"/../targets/"+t ) )=FILETYPE_DIR
-			If v v+=" "
-			v+=t
-		Endif
-	Next
-	Return v
-End
-#end
 
 Function Main()
 

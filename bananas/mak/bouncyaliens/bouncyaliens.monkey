@@ -33,45 +33,50 @@ End
 
 Class MyApp Extends App
 
-	Field time,frames,fps
+	Field utime,uframes,ufps
+	Field rtime,rframes,rfps
+	
 	Field image:Image
-	Field image_trans:Image
-	Field image_solid:Image
+	Field image1:Image
+	Field image2:Image
 	Field sprites:=New Stack<Sprite>
+	
+	Field rot#
 
 	Method OnCreate()
 	
-		image_trans=LoadImage( "alien1.png",8,Image.MidHandle )
-		image_solid=LoadImage( "alien1_solid.png",8,Image.MidHandle )
-		
-		image=image_trans
+		image1=LoadImage( "alien1.png",8,Image.MidHandle )
+		image2=LoadImage( "alien2.png",8,Image.MidHandle )
 		
 		For Local i=0 Until 100
 			sprites.Push New Sprite
 		Next
 		
-		time=Millisecs
-		
+		utime=Millisecs
+		rtime=utime
+				
 		SetUpdateRate 60
 	End
 	
 	Method OnUpdate()
+	
+		uframes+=1
+		Local e=Millisecs-utime
+		If e>=1000
+			ufps=uframes
+			uframes=0
+			utime+=e
+		Endif
 	
 		If TouchHit(0)
 			If TouchX(0)<DeviceWidth/3
 				For Local i=0 Until 25
 					If Not sprites.IsEmpty() sprites.Pop
 				Next
-			Else If TouchX(0)>DeviceWidth-DeviceWidth/3
+			Else If TouchX(0)>DeviceWidth*2/3
 				For Local i=0 Until 25
 					sprites.Push New Sprite
 				Next
-			Else
-				If image=image_trans
-					image=image_solid
-				Else
-					image=image_trans
-				Endif
 			Endif
 		Endif
 	
@@ -83,12 +88,12 @@ Class MyApp Extends App
 	
 	Method OnRender()
 
-		frames+=1
-		Local e=Millisecs-time
+		rframes+=1
+		Local e=Millisecs-rtime
 		If e>=1000
-			fps=frames
-			frames=0
-			time+=e
+			rfps=rframes
+			rframes=0
+			rtime+=e
 		Endif
 	
 		Cls 0,128,255
@@ -97,14 +102,24 @@ Class MyApp Extends App
 				
 		Scale DeviceWidth/WIDTH,DeviceHeight/HEIGHT
 		
+		rot+=1
+		Local r:=rot
+		Local image:=image1
+		Local i,n=sprites.Length()/10	'ie: simulate 10 render state changes
+		random.Seed=1234
 		For Local sprite:=Eachin sprites
-			DrawImage image,sprite.x,sprite.y,0,3,3,sprite.f
+			i+=1
+			If i Mod n=0
+				If image=image1 image=image2 Else image=image1
+			End
+			r+=Rnd(360)
+			DrawImage image,sprite.x,sprite.y,r,Rnd(1,2),Rnd(1,2),sprite.f
 		Next
 		
 		PopMatrix
 		
 		DrawText "[<<]",0,8,0,.5
-		DrawText "sprites="+sprites.Length()+", fps="+fps,DeviceWidth/2,8,.5,.5
+		DrawText "imgs="+sprites.Length()+", ufps="+ufps+", rfps="+rfps,DeviceWidth/2,8,.5,.5
 		DrawText "[>>]",DeviceWidth,8,1,.5
 
 	End

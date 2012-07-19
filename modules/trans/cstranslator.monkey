@@ -245,7 +245,7 @@ Class CsTranslator Extends Translator
 		Local id2$=id[..1].ToUpper()+id[1..]
 
 		Select id
-		'
+
 		'global functions
 		Case "print" Return "bb_std_lang.Print"+Bra( arg0 )
 		Case "error" Return "bb_std_lang.Error"+Bra( arg0 )
@@ -255,11 +255,9 @@ Class CsTranslator Extends Translator
 			If StringType( expr.exprType ) Return texpr+".Length"
 			Return "bb_std_lang.length"+Bra( texpr )
 		
-'		Case "length" Return texpr+".Length"
-		'
 		'array methods
 		Case "resize" Return "("+TransType( expr.exprType )+")bb_std_lang.resize"+Bra( texpr+","+arg0 )
-		'
+
 		'string methods
 		Case "compare" Return texpr+".CompareTo"+Bra( arg0 )
 		Case "find" Return texpr+".IndexOf"+Bra( arg0+","+arg1 )
@@ -276,17 +274,24 @@ Class CsTranslator Extends Translator
 		Case "endswith" Return texpr+".EndsWith"+Bra( arg0 )
 		'string functions
 		Case "fromchar" Return "new String"+Bra("(char)"+Bra( arg0 )+",1")
-		'
-		'math functions
+
+		'trig functions - degrees
 		Case "sin","cos","tan" Return "(float)Math."+id2+Bra( Bra(arg0)+"*bb_std_lang.D2R" )
 		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id2+Bra(arg0)+"*bb_std_lang.R2D" )
 		Case "atan2" Return "(float)"+Bra( "Math."+id2+Bra(arg0+","+arg1)+"*bb_std_lang.R2D" )
-		'
+
+		'trig functions - radians
+		Case "sinr","cosr","tanr" Return "(float)Math."+id2[..-1]+Bra( arg0 )
+		Case "asinr","acosr","atanr" Return "(float)Math."+id2[..-1]+Bra( arg0 )
+		Case "atan2r" Return "(float)Math."+id2[..-1]+Bra( arg0+","+arg1 )
+
+		'misc math functions
 		Case "sqrt","floor","log" Return "(float)Math."+id2+Bra(arg0)
 		Case "ceil" Return "(float)Math.Ceiling"+Bra(arg0)
 		Case "pow" Return "(float)Math."+id2+Bra( arg0+","+arg1 )
-		'
+
 		End Select
+		
 		InternalErr
 	End
 

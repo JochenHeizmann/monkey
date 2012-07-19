@@ -1,5 +1,5 @@
 
-This directory contains the experimental DOM (document object module) module - use with html5 target.
+This directory contains the OS (operating system) module, for use with targets with a reasonably 'standard' operating system. Currently, this is the STDCPP and GLFW targets only.
 
 The author has placed this work in the Public Domain, thereby relinquishing all copyrights. Everyone is free to use, modify, republish, sell or give away this work without prior consent from anybody.
 

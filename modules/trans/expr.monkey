@@ -758,8 +758,10 @@ Class BinaryMathExpr Extends BinaryExpr
 		If IntType( exprType )
 			Local x=Int(lhs),y=Int(rhs)
 			Select op
+			Case "/" 
+				If Not y Err "Divide by zero error."
+				Return x/y
 			Case "*" Return x*y
-			Case "/" Return x/y
 			Case "mod" Return x Mod y
 			Case "shl" Return x Shl y
 			Case "shr" Return x Shr y
@@ -772,8 +774,10 @@ Class BinaryMathExpr Extends BinaryExpr
 		Else If FloatType( exprType )
 			Local x#=Float(lhs),y#=Float(rhs)
 			Select op
+			Case "/" 
+				If Not y Err "Divide by zero error."
+				Return x / y
 			Case "*" Return x * y
-			Case "/" Return x / y
 			Case "+" Return x + y
 			Case "-" Return x - y
 			End

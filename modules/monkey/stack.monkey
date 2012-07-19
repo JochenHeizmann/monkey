@@ -32,6 +32,12 @@ Class Stack<T>
 		Return length=0
 	End
 	
+	Method Contains?( value:T )
+		For Local i=0 Until length
+			If Equals( data[i],value ) Return True
+		Next
+	End Method
+	
 	Method Push( value:T )
 		If length=data.Length
 			data=data.Resize( length*2+10 )

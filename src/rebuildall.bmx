@@ -4,11 +4,11 @@ Strict
 'rebuild options
 Const Rebuild_Trans=True
 
-Const Rebuild_Mserver=False'True
+Const Rebuild_Mserver=False
 
-Const Rebuild_Monk=False'True
+Const Rebuild_Monk=False
 
-Const Rebuild_Makemeta=False'True
+Const Rebuild_Makemeta=False
 
 ?Win32
 

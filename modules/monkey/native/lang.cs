@@ -70,7 +70,13 @@ public class bb_std_lang{
 	}
 
 	static public String[] split( String str,String sep ){
-		if( sep.Length!=0 ){
+		if( sep.Length==0 ){
+			String[] bits=new String[str.Length];
+			for( int i=0;i<str.Length;++i ){
+				bits[i]=new String( str[i],1 );
+			}
+			return bits;
+		}else{
 			int i=0,i2,n=1;
 			while( (i2=str.IndexOf( sep,i ))!=-1 ){
 				++n;
@@ -86,7 +92,6 @@ public class bb_std_lang{
 			}
 			return bits;
 		}
-		return null;
 	}
 	
 	//***** Array stuff *****

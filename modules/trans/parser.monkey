@@ -6,6 +6,14 @@
 
 Import trans
 
+Extern
+
+Function gc_markex()
+
+Function gc_collectex()
+
+Public
+
 Global FILE_EXT$="monkey"
 
 Class ScopeExpr Extends Expr
@@ -244,7 +252,7 @@ Class IdentExpr Extends Expr
 		If fdecl
 			If Not fdecl.IsStatic()
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-				If scope<>_env Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
+				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
@@ -1633,6 +1641,7 @@ Class Parser
 		
 		'Parse main app
 		While _toke
+		
 			SetErr
 			Select _toke
 			Case "~n"
@@ -1663,6 +1672,7 @@ Class Parser
 			Default
 				Err "Syntax error - expecting declaration."
 			End Select
+			
 		Wend
 		
 	End
@@ -1792,6 +1802,8 @@ End
 
 Function ParseModule:ModuleDecl( path$,app:AppDecl )
 
+'	Print "Parsing "+path
+
 	Local source$=PreProcess( path )
 	
 	Local toker:Toker=New Toker( path,source )
@@ -1806,6 +1818,8 @@ End
 '***** PUBLIC API ******
 
 Function ParseApp:AppDecl( path$ )
+
+'	Print "Parsing app:"+path
 
 	Local app:AppDecl=New AppDecl
 	

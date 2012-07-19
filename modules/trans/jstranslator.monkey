@@ -233,11 +233,11 @@ Class JsTranslator Extends Translator
 		Local id$=decl.munged[1..]
 		
 		Select id
-		'
-		'functions
+
+		'global functions
 		Case "print" Return "print"+Bra( arg0 )
 		Case "error" Return "error"+Bra( arg0 )
-		'
+
 		'string/array methods
 		Case "length" Return texpr+".length"
 		
@@ -250,13 +250,13 @@ Class JsTranslator Extends Translator
 			If ArrayType( ty ) Return "resize_array_array"+Bra( texpr+","+arg0 )
 			If ObjectType( ty ) Return "resize_object_array"+Bra( texpr+","+arg0 )
 			InternalErr
+
 		'string methods
 		Case "compare" Return "string_compare"+Bra( texpr+","+arg0 )
 		Case "find" Return texpr+".indexOf"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".lastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".lastIndexOf"+Bra( arg0+","+arg1 )
 		Case "trim" Return "string_trim"+Bra( texpr )
-'		Case "join" Return "string_join"+Bra( texpr+","+arg0 )
 		Case "join" Return arg0+".join"+Bra( texpr )
 		Case "split" Return texpr+".split"+Bra( arg0 )
 		Case "replace" Return "string_replace"+Bra( texpr+","+arg0+","+arg1 )
@@ -265,19 +265,26 @@ Class JsTranslator Extends Translator
 		Case "contains" Return Bra( texpr+".indexOf"+Bra( arg0 )+"!=-1" )
 		Case "startswith" Return "string_starts_with"+Bra( texpr+","+arg0 )
 		Case "endswith" Return "string_ends_with"+Bra( texpr+","+arg0 )
+
 		'string functions
 		Case "fromchar" Return "String.fromCharCode"+Bra( arg0 )
-		'
-		'math functions
+
+		'trig functions - degrees
 		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*D2R" )
 		Case "asin","acos","atan" Return Bra( "Math."+id+Bra( arg0 )+"*R2D" )
 		Case "atan2" Return Bra( "Math."+id+Bra( arg0+","+arg1 )+"*R2D" )
-		'
+
+		'trig functions - radians
+		Case "sinr","cosr","tanr" Return "Math."+id[..-1]+Bra( arg0 )
+		Case "asinr","acosr","atanr" Return "Math."+id[..-1]+Bra( arg0 )
+		Case "atan2r" Return "Math."+id[..-1]+Bra( arg0+","+arg1 )
+
+		'misc math functions
 		Case "sqrt","floor","ceil","log" Return "Math."+id+Bra( arg0 )
 		Case "pow" Return "Math."+id+Bra( arg0+","+arg1 )
-		'
+
 		End Select
-		'
+
 		InternalErr
 	End
 	

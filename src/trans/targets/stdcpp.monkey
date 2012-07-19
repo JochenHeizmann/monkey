@@ -33,9 +33,17 @@ Class StdcppTarget Extends Target
 			
 			Select ENV_HOST
 			Case "macos"
-				Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"
+				If CASED_CONFIG="Release"
+					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -O3 -o "+out+" main.cpp"
+				Else
+					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"
+				Endif
 			Default
-				Execute "g++ -o "+out+" main.cpp"
+				If CASED_CONFIG="Release"
+					Execute "g++ -O3 -o "+out+" main.cpp"
+				Else
+					Execute "g++ -o "+out+" main.cpp"
+				Endif
 			End
 
 			If OPT_RUN

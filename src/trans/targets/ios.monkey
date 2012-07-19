@@ -29,22 +29,29 @@ Class IosTarget Extends Target
 			Execute "xcodebuild -configuration "+CASED_CONFIG+" -sdk iphonesimulator"
 
 			If OPT_RUN
-
-				Local ver$="4.2"	'put output app here…				
-				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/MonkeyGame.app"
+			
+				Local home$=GetEnv( "HOME" )
 
 				'Woah, freaky, got this from: http://www.somacon.com/p113.php
-				'
 				Local uuid$="00C69C9A-C9DE-11DF-B3BE-5540E0D72085"
 				
-				Local home$=GetEnv( "HOME" )
+				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/MonkeyGame.app"
+
+				'fixme!				
+				Local dst$=home+"/Library/Application Support/iPhone Simulator/4.3.2"
+				If FileType( dst )=FILETYPE_NONE
+					dst=home+"/Library/Application Support/iPhone Simulator/4.3"
+					If FileType( dst )=FILETYPE_NONE
+						dst=home+"/Library/Application Support/iPhone Simulator/4.2"
+					Endif
+				Endif
 				
-				Local dst$=home+"/Library/Application Support/iPhone Simulator/"+ver
 				CreateDir dst
 
 				dst+="/Applications"
+
 				CreateDir dst
-				
+
 				dst+="/"+uuid
 
 				If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst

@@ -8,6 +8,9 @@ import java.lang.Math;
 import java.lang.reflect.Array;
 import java.util.Vector;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
+
 class bb_std_lang{
 
 	//***** Error handling *****
@@ -17,6 +20,8 @@ class bb_std_lang{
 	
 	static float D2R=0.017453292519943295f;
 	static float R2D=57.29577951308232f;
+	
+	static NumberFormat numberFormat=NumberFormat.getInstance();
 	
 	static void pushErr(){
 		errStack.addElement( errInfo );
@@ -44,7 +49,7 @@ class bb_std_lang{
 	}
 	
 	//***** String stuff *****
-	
+
 	static public String[] stringArray( int n ){
 		String[] t=new String[n];
 		for( int i=0;i<n;++i ) t[i]="";
@@ -73,7 +78,13 @@ class bb_std_lang{
 	}
 	
 	static public String[] split( String str,String sep ){
-		if( sep.length()!=0 ){
+		if( sep.length()==0 ){
+			String[] bits=new String[str.length()];
+			for( int i=0;i<str.length();++i){
+				bits[i]=String.valueOf( str.charAt(i) );
+			}
+			return bits;
+		}else{
 			int i=0,i2,n=1;
 			while( (i2=str.indexOf( sep,i ))!=-1 ){
 				++n;
@@ -89,7 +100,6 @@ class bb_std_lang{
 			}
 			return bits;
 		}
-		return null;
 	}
 	
 	static public String join( String sep,String[] bits ){

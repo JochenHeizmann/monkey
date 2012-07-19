@@ -117,7 +117,7 @@ Class Decl
 		
 		attrs|=DECL_SEMANTING
 
-		'If ident And ClassScope() Print "Semanting "+ToString()
+'		If ident Print "Semanting "+ToString()
 
 		OnSemant
 		

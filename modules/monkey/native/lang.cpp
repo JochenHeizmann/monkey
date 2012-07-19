@@ -21,7 +21,7 @@
 #endif
 #endif
 
-#define DEBUG_GC 0	
+#define DEBUG_GC 0
 
 // ***** gc_object *****
 
@@ -104,12 +104,13 @@ void gc_sweep(){
 		if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
 
 		while( (p->flags & 1)==gc_markbit ){
+
 			q=&p->succ;
 			p=*q;
 			
 			if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
 		}
-
+		
 		*q=p->succ;
 		
 		delete p;
@@ -128,8 +129,7 @@ void gc_collect(){
 		gc_max=gc_maxalloced;
 		printf( "gc_max=%i\n",gc_max );fflush( stdout );
 	}
-
-	double time=glfwGetTime();
+//	double time=glfwGetTime();
 
 #endif
 
@@ -145,9 +145,11 @@ void gc_collect(){
 	
 #if DEBUG_GC
 
-	time=glfwGetTime()-time;
-	int ms=time*1000000;
-	printf( "gc_time=%i, gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",ms,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+//	time=glfwGetTime()-time;
+//	int ms=time*1000000;
+//	printf( "gc_time=%i, gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",ms,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+
+	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
 	
 #endif
 }
@@ -164,6 +166,58 @@ void gc_mark_q( gc_object *p ){
 	p->flags^=1;
 	++gc_marked;
 	gc_marked_queue.push_back( p );
+}
+
+static std::vector<gc_object*> gc_exstack;
+
+void gc_markex(){
+	gc_exstack.push_back( gc_objs );
+}
+
+void gc_collectex(){
+
+#if DEBUG_GC
+	static int gc_max;
+	if( gc_maxalloced>gc_max ){
+		gc_max=gc_maxalloced;
+		printf( "gc_max=%i\n",gc_max );fflush( stdout );
+	}
+#endif
+
+	gc_mark();
+	
+	for( gc_object *p=gc_exstack.back();p;p=p->succ ){
+		gc_mark( p );
+	}
+
+	gc_exstack.pop_back();
+
+	while( !gc_marked_queue.empty() ){
+		gc_object *p=gc_marked_queue.back();
+		gc_marked_queue.pop_back();
+		p->mark();
+	}
+
+	gc_object **q=&gc_objs,*p;
+
+	while( p=*q ){
+		if( p->flags & 2 ){
+			p->flags&=~2;
+			q=&p->succ;
+		}else if( (p->flags&1)==gc_markbit ){
+			q=&p->succ;
+		}else{
+			*q=p->succ;
+			delete p;
+		}
+	}
+
+	gc_markbit^=1;
+	gc_marked=0;
+
+#if DEBUG_GC
+	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+#endif
 }
 
 // ***** Monkey Types *****
@@ -500,9 +554,15 @@ public:
 	}
 
 	Array<String> Split( String sep )const{
+	
 		if( !sep.rep->length ){
-			return Array<String>();
+			Array<String> bits( rep->length );
+			for( int i=0;i<rep->length;++i ){
+				bits[i]=String( (Char)(*this)[i],1 );
+			}
+			return bits;
 		}
+		
 		int i=0,i2,n=1;
 		while( (i2=Find( sep,i ))!=-1 ){
 			++n;
@@ -770,20 +830,10 @@ String StackTrace(){
 	return str;
 }
 
-#if 0	//def _MSC_VER
-
-void Print( String t ){
-	OutputDebugString( (t+"\n").ToCString<TCHAR>() );
-}
-
-#else
-
 void Print( String t ){
 	puts( t.ToCString<char>() );
 	fflush( stdout );
 }
-
-#endif
 
 void Error( String t ){
 	throw t.ToCString<char>();

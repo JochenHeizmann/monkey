@@ -435,9 +435,19 @@ Class Translator
 			If t Emit t+";"
 			
 		Next
+		
 		Local r=unreachable
 		unreachable=False
+		
 		PopEnv
+		
+		If ENV_CONFIG="debug"
+			Local func:=FuncDecl( block )
+			If func And VoidType( func.retType ) And Not r
+				EmitPopErr
+			Endif
+		Endif
+		
 		Return r
 	End
 	
@@ -458,13 +468,9 @@ Class Translator
 		
 		If ConstExpr( stmt.expr )
 			If ConstExpr( stmt.expr ).value
-'				Emit "if"+Bra( stmt.expr.Trans() )+"{"
 				If EmitBlock( stmt.thenBlock ) unreachable=True
-'				Emit "}"
 			Else If stmt.elseBlock.stmts.First()
-'				Emit "if(!"+Bra( stmt.expr.Trans() )+"){"
 				If EmitBlock( stmt.elseBlock ) unreachable=True
-'				Emit "}"
 			Endif
 		Else If stmt.elseBlock.stmts.First()
 			Emit "if"+Bra( stmt.expr.Trans() )+"{"
@@ -484,9 +490,7 @@ Class Translator
 		Local nbroken=broken
 		
 		Emit "while"+Bra( stmt.expr.Trans() )+"{"
-		
 		Local unr=EmitBlock( stmt.block )
-		
 		Emit "}"
 		
 		If broken=nbroken And ConstExpr( stmt.expr ) And ConstExpr( stmt.expr ).value unreachable=True
@@ -497,9 +501,7 @@ Class Translator
 		Local nbroken=broken
 
 		Emit "do{"
-		
 		Local unr=EmitBlock( stmt.block )
-		
 		Emit "}while(!"+Bra( stmt.expr.Trans() )+");"
 
 		If broken=nbroken And ConstExpr( stmt.expr ) And Not ConstExpr( stmt.expr ).value unreachable=True
@@ -514,9 +516,7 @@ Class Translator
 		Local incr$=stmt.incr.Trans()
 
 		Emit "for("+init+";"+expr+";"+incr+"){"
-		
 		Local unr=EmitBlock( stmt.block )
-		
 		Emit "}"
 		
 		If broken=nbroken And ConstExpr( stmt.expr ) And ConstExpr( stmt.expr ).value unreachable=True
@@ -526,19 +526,6 @@ Class Translator
 	'module
 	Method TransApp$( app:AppDecl ) Abstract
 
-#rem	
-	Method MungOverrides( cdecl:ClassDecl )
-		For Local decl:=Eachin cdecl.Semanted
-			Local fdecl:=FuncDecl( decl )
-			If fdecl And fdecl.overrides
-				If Not fdecl.overrides.munged InternalErr
-				fdecl.munged=fdecl.overrides.munged
-				mungScope.Insert fdecl.munged,fdecl
-			Endif
-		Next
-	End
-#end
-	
 	Method PostProcess$( source$ ) 
 		Return source
 	End

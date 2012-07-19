@@ -1,12 +1,12 @@
 
 package{
 
-	[SWF(width="640",height="480")]
-	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.text.*;
 	import flash.media.*;
+
+	[SWF(width="640",height="480")]
 	
 	public class MonkeyGame extends Sprite{
 	

@@ -35,7 +35,7 @@ End
 
 Function Err( err$ )
 	Print _errInfo+" : Error : "+err
-'	Print _errInfo+" "+err
+	'Print _errInfo+" "+err
 	ExitApp -1
 End
 

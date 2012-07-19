@@ -37,6 +37,14 @@ Class List<T>
 		Return _head._succ=_head
 	End
 	
+	Method Contains?( value:T )
+		Local node:=_head._succ
+		While node<>_head
+			If Equals( node._data,value ) Return True
+			node=node._succ
+		Wend		
+	End Method
+	
 	Method First:T()
 		Return _head._succ._data
 	End

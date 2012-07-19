@@ -268,11 +268,11 @@ Class CppTranslator Extends Translator
 		Local id2$=id[..1].ToUpper()+id[1..]
 		
 		Select id
-		'
+
 		'global functions
 		Case "print" Return "Print"+Bra( arg0 )
 		Case "error" Return "Error"+Bra( arg0 )
-		'
+
 		'string/array methods
 		Case "length" Return texpr+".Length()"
 		Case "resize" Return texpr+".Resize"+Bra( arg0 )
@@ -295,14 +295,22 @@ Class CppTranslator Extends Translator
 		'string functions
 		Case "fromchar" Return "String"+Bra( "(Char)"+Bra(arg0)+",1" )
 
-		'math methods
+		'trig functions - degrees
 		Case "sin","cos","tan" Return "(float)"+id+Bra( Bra(arg0)+"*D2R" )
 		Case "asin","acos","atan" Return "(float)"+Bra( id+Bra(arg0)+"*R2D" )
 		Case "atan2" Return "(float)"+Bra( id+Bra(arg0+","+arg1)+"*R2D" )
+
+		'trig functions - radians
+		Case "sinr","cosr","tanr" Return "(float)"+id[..-1]+Bra( arg0 )
+		Case "asinr","acosr","atanr" Return "(float)"+id[..-1]+Bra( arg0 )
+		Case "atan2r" Return "(float)"+id[..-1]+Bra( arg0+","+arg1 )
+		
+		'misc math functions
 		Case "sqrt","floor","ceil","log" Return "(float)"+id+Bra( arg0 )
 		Case "pow" Return "(float)"+id+Bra( arg0+","+arg1 )
-		'
+
 		End Select
+		
 		InternalErr
 	End
 

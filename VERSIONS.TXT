@@ -1,6 +1,38 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V44 *****
+
+Modules:
+
+mojo.input - fixed some CHAR_ codes.
+
+mojo.graphics - Tweaks all round, and fix for android 16bit 1555 fmt textures.
+
+monkey.math - Added 'radian' versions of trig functions, named Sinr, Cosr etc. See docs.
+
+monkey.lang - fixed String.Split with "" separator on C++, C#, Java.
+
+mojo.graphics - optimized GLFW and iOS graphics a bit.
+
+Added docs for DrawPoly.
+
+
+Trans (1.17):
+
+Fixed various Lion issues.
+
+Fixed trans issue with void functions not popping scope stack.
+
+Added .trim() to java string->numeric conversions to prevent *some* number format exceptions. Strings should still contain numeric values only.
+
+Added radian version of trig functions to translators. Use 'r' suffix for radian versions...
+
+Added -O3 (speed optimizations) for release mode stdcpp builds.
+
+Added check for divide by zero when evaluating consts.
+
+
 ***** V43 *****
 
 Modules:

@@ -173,11 +173,11 @@ Class JavaTranslator Extends Translator
 			If BoolType( src ) Return Bra( texpr+"?1:0" )
 			If IntType( src ) Return texpr
 			If FloatType( src ) Return "(int)"+texpr
-			If StringType( src ) Return "Integer.parseInt"+texpr
+			If StringType( src ) Return "Integer.parseInt("+texpr+".trim())"
 		Else If FloatType( dst )
 			If IntType( src ) Return "(float)"+texpr
 			If FloatType( src ) Return texpr
-			If StringType( src ) Return "Float.parseFloat"+texpr
+			If StringType( src ) Return "Float.parseFloat("+texpr+".trim())"
 		Else If StringType( dst )
 			If IntType( src ) Return "String.valueOf"+texpr
 			If FloatType( src ) Return "String.valueOf"+texpr
@@ -258,7 +258,7 @@ Class JavaTranslator Extends Translator
 		Local id$=decl.munged[1..]
 		
 		Select id
-		'
+
 		'global functions
 		Case "print" Return "bb_std_lang.print"+Bra( arg0 )
 		Case "error" Return "bb_std_lang.error"+Bra( arg0 )
@@ -267,7 +267,7 @@ Class JavaTranslator Extends Translator
 		Case "length"
 			If StringType( expr.exprType ) Return texpr+".length()"
 			Return "bb_std_lang.arrayLength"+Bra( texpr )
-		'
+
 		Case "resize" Return "(("+TransType( expr.exprType )+")bb_std_lang.resizeArray"+Bra( texpr+","+arg0 )+")"
 		
 		'string methods
@@ -284,18 +284,26 @@ Class JavaTranslator Extends Translator
 		Case "contains" Return Bra( texpr+".indexOf"+Bra( arg0 )+"!=-1" )
 		Case "startswith" Return texpr+".startsWith"+Bra( arg0 )
 		Case "endswith" Return texpr+".endsWith"+Bra( arg0 )
+
 		'string functions		
 		Case "fromchar" Return "String.valueOf"+Bra("(char)"+Bra( arg0 ) )
-		'
-		'math methods
+
+		'trig methods - degrees
 		Case "sin","cos","tan" Return "(float)Math."+id+Bra( Bra(arg0)+"*bb_std_lang.D2R" )
 		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id+Bra(arg0)+"*bb_std_lang.R2D" )
 		Case "atan2" Return "(float)"+Bra( "Math."+id+Bra(arg0+","+arg1)+"*bb_std_lang.R2D" )
-		'
+
+		'trig methods - radians
+		Case "sinr","cosr","tanr" Return "(float)Math."+id[..-1]+Bra( arg0 )
+		Case "asinr","acosr","atanr" Return "(float)Math."+id[..-1]+Bra( arg0 )
+		Case "atan2r" Return "(float)Math."+id[..-1]+Bra( arg0+","+arg1 )
+
+		'misc math functions
 		Case "sqrt","floor","ceil","log" Return "(float)Math."+id+Bra(arg0)
   		Case "pow" Return "(float)Math."+id+Bra( arg0+","+arg1 )
-		'
+
 		End Select
+		
 		InternalErr
 	End
 
