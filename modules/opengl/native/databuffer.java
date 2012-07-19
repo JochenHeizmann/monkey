@@ -2,14 +2,23 @@
 class DataBuffer{
 	
 	ByteBuffer _data;
+	int _length;
 	
 	DataBuffer( int length ){
 		_data=ByteBuffer.allocateDirect( length );
 		_data.order( ByteOrder.nativeOrder() );
+		_length=length;
 	}
 
 	int Size(){
-		return _data.capacity();
+		return _length;
+	}
+	
+	void Discard(){
+		if( _data!=null ){
+			_data=null;
+			_length=0;
+		}
 	}
 		
 	Buffer GetBuffer(){

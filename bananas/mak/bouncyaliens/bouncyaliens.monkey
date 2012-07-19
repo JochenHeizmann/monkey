@@ -22,6 +22,7 @@ Class Sprite
 	Field tmp:I[10]
 	
 	Method New()
+	
 		x=Rnd( WIDTH )
 		y=Rnd( HEIGHT )
 		vx=Rnd(1,2)
@@ -44,10 +45,11 @@ Class Sprite
 		f+=vf
 		If f>=8 f-=8
 		
-		For Local i=0 Until 10
-			tmp[i]=New F
-			tmp[i].Test
-		Next
+'		For Local i=0 Until 10
+'			tmp[i]=New F
+'			tmp[i].Test
+'		Next
+
 	End
 	
 End
@@ -83,9 +85,9 @@ Class MyApp Extends App
 	
 	Method OnUpdate()
 	
-		For Local i=1 To 100
-			New F
-		Next
+'		For Local i=1 To 100
+'			New F
+'		Next
 	
 		uframes+=1
 		Local e=Millisecs-utime

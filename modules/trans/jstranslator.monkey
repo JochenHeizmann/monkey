@@ -373,7 +373,7 @@ Class JsTranslator Extends CTranslator
 	End
 	
 	Method TransApp$( app:AppDecl )
-		
+
 		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values()

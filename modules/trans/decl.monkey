@@ -416,6 +416,8 @@ Public
 		Else
 			Err "Duplicate identifier '"+ident+"'."
 		Endif
+		
+		If decl.IsSemanted() semanted.AddLast decl
 
 	End
 
@@ -437,9 +439,20 @@ Public
 	End
 	
 	Method FindDecl:Object( ident$ )
+	
+		If _env<>Self Return GetDecl( ident )
+		
+		Local tscope:=Self
+		While tscope
+			Local decl:=tscope.GetDecl( ident )
+			If decl Return decl
+			tscope=tscope.scope
+		Wend
+#rem
 		Local decl:=GetDecl( ident )
 		If decl Return decl
 		If scope Return scope.FindDecl( ident )
+#end
 	End
 	
 	Method FindValDecl:ValDecl( ident$ )
@@ -484,15 +497,6 @@ Public
 			scope.Semant
 			Return scope
 		Endif
-#rem	
-		Local decl:=ScopeDecl( FindDecl( ident ) )
-		If Not decl Return
-		Local cdecl:=ClassDecl( decl )
-		If cdecl And cdecl.args Return
-		decl.AssertAccess
-		decl.Semant
-		Return decl
-#end
 	End
 	
 	Method FindModuleDecl:ModuleDecl( ident$ )
@@ -896,21 +900,23 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	Method GetDecl:Object( ident$ )
-	
 		Local cdecl:ClassDecl=Self
 		While cdecl
 			Local decl:=cdecl.GetDecl2( ident )
 			If decl Return decl
-			
 			cdecl=cdecl.superClass
 		Wend
-
 	End
 	
 	'needs this 'coz you can't go blah.Super.GetDecl()...
 	Method GetDecl2:Object( ident$ )
 		Return Super.GetDecl( ident )
 	End
+	
+'	Method FindDecl:Object( ident$ )
+'		If _env=Self Return Super.FindDecl( ident )
+'		Return GetDecl( ident )
+'	End
 	
 	Method FindFuncDecl:FuncDecl( ident$,args:Expr[],explicit=False )
 	
@@ -1139,7 +1145,10 @@ Class ClassDecl Extends ScopeDecl
 			Local cdecl:=superClass
 			While cdecl
 				For Local decl:=Eachin cdecl.Semanted
-					If decl.ident=fdecl.ident Err "Field '"+fdecl.ident+"' in class "+ToString()+" overrides existing declaration in class "+cdecl.ToString()
+					If decl.ident=fdecl.ident 
+						_errInfo=fdecl.errInfo
+						Err "Field '"+fdecl.ident+"' in class "+ToString()+" overrides existing declaration in class "+cdecl.ToString()
+					Endif
 				Next
 				cdecl=cdecl.superClass
 			Wend

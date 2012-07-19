@@ -103,9 +103,11 @@ class bb_std_lang{
 	}
 	
 	static public String join( String sep,String[] bits ){
-		StringBuffer buf=new StringBuffer();
-		for( int i=0;i<bits.length;++i ){
-			if( i>0 ) buf.append( sep );
+		if( bits.length<2 ) return bits.length==1 ? bits[0] : "";
+		StringBuilder buf=new StringBuilder( bits[0] );
+		boolean hasSep=sep.length()>0;
+		for( int i=1;i<bits.length;++i ){
+			if( hasSep ) buf.append( sep );
 			buf.append( bits[i] );
 		}
 		return buf.toString();

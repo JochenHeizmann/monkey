@@ -90,6 +90,8 @@ DataBuffer *LoadImageData( String path,Array<int> info ){
 	if( info.Length()>0 ) info[0]=width;
 	if( info.Length()>1 ) info[1]=height;
 	
+	unloadImage( data );
+	
 	return buf;
 }
 

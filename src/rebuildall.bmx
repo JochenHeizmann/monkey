@@ -23,7 +23,7 @@ Const QUICKTRANS=False
 
 Const trans$="../bin/trans_macos"
 Const trans2$=trans
-'Const trans2$="../bin/trans_macos_v48"
+'Const trans2$="../bin/trans_macos_bak"
 Const newtrans$="trans/trans.build/stdcpp/main_macos"
 Const mserver$="../bin/mserver_macos"
 
@@ -31,9 +31,9 @@ Const mserver$="../bin/mserver_macos"
 
 Const QUICKTRANS=True
 
-Const trans$="../bni/trans_linux"
+Const trans$="../bin/trans_linux"
 Const trans2$=trans
-'Const trans2$="../bin/trans_linux_v38"
+'Const trans2$="../bin/trans_linux_bak"
 Const newtrans$="trans/trans.build/stdcpp/main_linux"
 Const mserver$="../bin/mserver_linux"
 

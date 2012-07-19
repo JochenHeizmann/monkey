@@ -225,7 +225,6 @@ Class IdentExpr Extends Expr
 			Else If FieldDecl( vdecl )
 				If static Err "Field '"+ident+"' cannot be accessed from here."
 				If expr Return New MemberVarExpr( expr,VarDecl( vdecl ) ).Semant()
-'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New VarExpr( VarDecl( vdecl ) ).Semant()
 		Endif
@@ -270,7 +269,6 @@ Class IdentExpr Extends Expr
 			If Not fdecl.IsStatic()
 				If static Err "Method '"+ident+"' cannot be accessed from here."
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-	'			If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
@@ -287,7 +285,6 @@ Class IdentExpr Extends Expr
 			If Not fdecl.IsStatic()
 				If static Err "Method '"+ident+"' cannot be accessed from here."
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
@@ -434,8 +431,11 @@ Class Parser
 	
 	Method ParseIdent$()
 		Select _toke
-		Case "@" NextToke
-		Case "string","object","array"
+		Case "@" 
+			NextToke
+		Case "object"
+'		Case "string","object","array"
+			'			
 		Default	
 			If _tokeType<>TOKE_IDENT Err "Syntax error - expecting identifier."
 		End
@@ -1646,14 +1646,29 @@ Class Parser
 				Repeat
 					Local ident$=ParseIdent()
 					Parse "="
-					
 					Local decl:Object
+
+					Select _toke
+					Case "int"
+						decl=Type.intType
+					Case "float"
+						decl=Type.floatType
+					Case "string"
+						decl=Type.stringType
+					End
+					
+					If decl
+						_module.InsertDecl New AliasDecl( ident,attrs,decl )
+						NextToke
+						Continue
+					Endif
+
 					Local scope:ScopeDecl=_module
 					
 					_env=_module	'naughty! Shouldn't be doing GetDecl in parser...
 					
 					Repeat
-						Local id$=ParseIdent()
+						Local id:=ParseIdent()
 						decl=scope.FindDecl( id )
 						If Not decl Err "Identifier '"+id+"' not found."
 						If Not CParse( "." ) Exit
@@ -1662,7 +1677,7 @@ Class Parser
 					Forever
 					
 					_env=Null	'/naughty
-
+					
 					_module.InsertDecl New AliasDecl( ident,attrs,decl )
 					
 				Until Not CParse(",")

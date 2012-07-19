@@ -11,11 +11,19 @@ class DataBuffer : public Object{
 	}
 	
 	~DataBuffer(){
-		free( _data );
+		if( _data _) free( _data );
 	}
 	
 	int Size(){
 		return _length;
+	}
+	
+	void Discard(){
+		if( _data ){
+			free( _data );
+			_data=0;
+			_length=0;
+		}
 	}
 	
 	void *ReadPointer(){

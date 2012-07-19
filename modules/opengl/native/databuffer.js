@@ -16,6 +16,17 @@ DataBuffer.prototype.Size=function(){
 	return this.size;
 }
 
+DataBuffer.prototype.Discard=function(){
+	if( this.arrayBuffer ){
+		this.arrayBuffer=null;
+		this.byteArray=null;
+		this.shortArray=null;
+		this.intArray=null;
+		this.floatArray=null
+		this.size=0;
+	}
+}
+
 DataBuffer.prototype.PokeByte=function( addr,value ){
 	this.byteArray[addr]=value;
 }

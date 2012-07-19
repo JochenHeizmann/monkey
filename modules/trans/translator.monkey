@@ -467,6 +467,7 @@ Class CTranslator Extends Translator
 		
 		If func
 			emitDebugInfo=ENV_CONFIG<>"release"
+			
 			If func.attrs & DECL_NODEBUG emitDebugInfo=False
 			
 			If emitDebugInfo EmitEnter func.scope.ident+"."+func.ident

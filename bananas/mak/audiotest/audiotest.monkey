@@ -61,6 +61,12 @@ Class MyApp Extends App
 		soundFmt="wav"
 		musicFmt="m4a"
 		'
+#Elseif TARGET="pss"
+		'
+		'PSS supports WAV for sounds, MP3 for music.
+		'
+		soundFmt="wav"
+		musicFmt="mp3"
 #End
 		LoadStuff
 				
@@ -76,7 +82,7 @@ Class MyApp Extends App
 	Method OnUpdate()
 	
 		Local tx#=TouchX(0)*(320.0/DeviceWidth)
-		Local ty#=TouchY(0)*(480.0/DeviceHeight)
+		Local ty#=TouchY(0)*(480.0/DeviceHeight)
 	
 		Local key
 		If TouchHit(0)

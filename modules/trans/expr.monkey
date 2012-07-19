@@ -949,7 +949,7 @@ Class IndexExpr Extends Expr
 	End
 	
 	Method SideEffects?()
-		Return False
+		Return ENV_CONFIG="debug"
 	End
 	
 	Method Semant:Expr()

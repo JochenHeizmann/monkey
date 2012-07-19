@@ -339,7 +339,7 @@ Class CppTranslator Extends CTranslator
 		If decl.IsAbstract() Return
 		
 		BeginLocalScope
-		
+
 		Local args$
 		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
