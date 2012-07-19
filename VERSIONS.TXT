@@ -2,6 +2,18 @@
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
 
+***** V45b *****
+
+Modules:
+
+mojo.graphics - html5 ignores F11-F12 for fullscreen/debugger support.
+
+
+Trans (1.19)
+
+Fixed strict mode error with abstract method's not returning a value.
+
+
 ***** V45 *****
 
 Modules:
