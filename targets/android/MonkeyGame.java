@@ -3,12 +3,15 @@
 package com.monkey;
 //${PACKAGE_END}
 
-//${TRANSCODE_BEGIN}
-//${TRANSCODE_END}
+//${IMPORTS_BEGIN}
+//${IMPORTS_END}
+
+class MonkeyConfig{
+//${CONFIG_BEGIN}
+//${CONFIG_END}
+}
 
 class MonkeyData{
-
-	static final boolean HICOLOR_TEXTURES=true;		//true=32 bit textures, false=16 bit
 
 	static AssetManager getAssets(){
 		return MonkeyGame.activity.getAssets();
@@ -129,4 +132,7 @@ class MonkeyData{
 		return null;
 	}
 
-};
+}
+
+//${TRANSCODE_BEGIN}
+//${TRANSCODE_END}

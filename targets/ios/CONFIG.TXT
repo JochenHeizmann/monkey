@@ -1,0 +1,55 @@
+
+
+' Set true to enable 'hi-res' mode, false to disable.
+'
+RETINA_ENABLED=true
+
+
+' Set to true to enable accelerometer, false to disable. Not sure why you'd want to disable, may give more CPU grunt?
+'
+ACCELEROMETER_ENABLED=true
+
+
+' Set to 1 to enable use of 'displaylink' timing.
+'
+' This will only apply for apps that use SetUpdateRate 60 - different hertz will use normal NSTimer.
+'
+' This should give more accurate 60hz timing, ie: smoother updates, but is also reputed to cause laggy input so is off by default.
+'
+DISPLAY_LINK_ENABLED=false
+
+
+' Garbage collection mode.
+'
+' Set to 1 for incremental GC, 0 for mark-and-sweep.
+'
+INCREMENTAL_GC=1
+
+
+' Depth buffer support.
+'
+' Set to true to enable depth buffer, false to disable.
+'
+DEPTH_BUFFER_ENABLED=false
+
+
+' Image filtering.
+'
+' Set to true to enable image filtering, false to disable.
+'
+IMAGE_FILTERING_ENABLED=true
+
+
+' Data file filters - these decide what data gets included in the target project.
+'
+' Image file types supported by iOS: .png, .jpg
+'
+' Audio file types supported by iOS: .wav, .mp3, .m4a, more...
+'
+TEXT_FILES=*.txt|*.xml|*.json
+
+IMAGE_FILES=*.png|*.jpg
+
+SOUND_FILES=*.wav|*.mp3|*.m4a
+
+MUSIC_FILES=*.wav|*.mp3|*.m4a

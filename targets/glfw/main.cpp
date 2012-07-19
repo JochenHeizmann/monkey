@@ -11,12 +11,13 @@
 #define STBI_HEADER_FILE_ONLY
 #include <stb_image.c>
 
-#include "config.h"
-
 #undef LoadString
 
 //For monkey main to set...
 int (*runner)();
+
+//${CONFIG_BEGIN}
+//${CONFIG_END}
 
 //${TRANSCODE_BEGIN}
 void GameMain(){
@@ -67,21 +68,21 @@ int main( int argc,const char *argv[] ){
 	GLFWvidmode desktopMode;
 	glfwGetDesktopMode( &desktopMode );
 	
-	int w=WINDOW_WIDTH;
+	int w=CFG_WINDOW_WIDTH;
 	if( !w ) w=desktopMode.Width;
 	
-	int h=WINDOW_HEIGHT;
+	int h=CFG_WINDOW_HEIGHT;
 	if( !h ) h=desktopMode.Height;
 	
-	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,WINDOW_NO_RESIZE );
+	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,CFG_WINDOW_RESIZABLE ? GL_FALSE : GL_TRUE );
 	
-	if( !glfwOpenWindow( w,h, 0,0,0,0,DEPTH_BUFFER_BITS,0, WINDOW_MODE ) ){
+	if( !glfwOpenWindow( w,h, 0,0,0,0,CFG_DEPTH_BUFFER_ENABLED ? 32 : 0,0,CFG_WINDOW_FULLSCREEN ? GLFW_FULLSCREEN : GLFW_WINDOW  ) ){
 		fail( "glfwOpenWindow failed" );
 	}
 
 	glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );	
 
-	glfwSetWindowTitle( WINDOW_TITLE );
+	glfwSetWindowTitle( CFG_WINDOW_TITLE );
 	
 	if( (alcDevice=alcOpenDevice( 0 )) ){
 		if( (alcContext=alcCreateContext( alcDevice,0 )) ){

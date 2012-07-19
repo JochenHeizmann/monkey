@@ -77,6 +77,11 @@ package{
 
 var game:MonkeyGame;
 
+final class Config{
+//${CONFIG_BEGIN}
+//${CONFIG_END}
+}
+
 final class Assets{
 //${ASSETS_BEGIN}
 //${ASSETS_END}

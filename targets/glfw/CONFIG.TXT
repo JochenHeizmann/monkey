@@ -1,0 +1,68 @@
+
+' Window title.
+'
+WINDOW_TITLE="Monkey Game"
+
+
+' Window width.
+'
+' Set to 0 to use desktop width.
+'
+WINDOW_WIDTH=640
+
+
+' Window height.
+'
+' Set to 0 to use desktop height.
+'
+WINDOW_HEIGHT=480
+
+
+' Window sizing mode.
+'
+' Set to true for a resizable window, false for a fixed window.
+'
+WINDOW_RESIZABLE=false
+
+
+' Window mode.
+'
+' Set to true for fullscreen mode, false for windowed.
+'
+WINDOW_FULLSCREEN=false
+
+
+' Garbage collection mode.
+'
+' Set to 1 for incremental GC, 0 for mark-and-sweep.
+'
+INCREMENTAL_GC=1
+
+
+' Depth buffer bits.
+'
+' Set to true to enable depth buffer, false to disable.
+'
+DEPTH_BUFFER_ENABLED=false
+
+
+' Image filtering.
+'
+' Set to true to enable image filtering, false to disable.
+'
+IMAGE_FILTERING_ENABLED=true
+
+
+' Data file filters - these decide what data gets included in the target project.
+'
+' Image file types supported by GLFW: .png, .jpg
+'
+' Audio file types supported by GLFW: .wav
+'
+TEXT_FILES=*.txt|*.xml|*.json
+
+IMAGE_FILES=*.png|*.jpg
+
+SOUND_FILES=*.wav
+
+MUSIC_FILES=*.wav

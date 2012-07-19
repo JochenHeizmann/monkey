@@ -16,35 +16,29 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 public class MonkeyConfig{
-#if WINDOWS
-	public const int WINDOW_WIDTH=640;
-	public const int WINDOW_HEIGHT=480;
-	public const bool WINDOW_RESIZABLE=false;
-	public const bool WINDOW_FULLSCREEN=false;
-#elif XBOX
-	public const int WINDOW_WIDTH=640;
-	public const int WINDOW_HEIGHT=480;
-	public const bool WINDOW_RESIZABLE=false;
-	public const bool WINDOW_FULLSCREEN=true;
-#elif WINDOWS_PHONE
-	public const int WINDOW_WIDTH=640;
-	public const int WINDOW_HEIGHT=480;
-	public const bool WINDOW_RESIZABLE=false;
-	public const bool WINDOW_FULLSCREEN=true;
-#endif
+
+//${CONFIG_BEGIN}
+//${CONFIG_END}
+
 }
 
 public class MonkeyData{
 
 	public static String LoadString( String path ){
-		if( path=="" ) return "";
-//${TEXTFILES_BEGIN}
-//${TEXTFILES_END}
+        try{
+			Stream stream=TitleContainer.OpenStream( "Content/monkey/"+path );
+			StreamReader reader=new StreamReader( stream );
+			String text=reader.ReadToEnd();
+			reader.Close();
+			return text;
+		}catch( Exception ){
+		}
+		return "";
 	}
 	
 	public static Texture2D LoadTexture2D( String path,ContentManager content ){
 		try{
-			return content.Load<Texture2D>( "Content/"+path );
+			return content.Load<Texture2D>( "Content/monkey/"+path );
 		}catch( Exception ){
 		}
 		return null;
@@ -52,7 +46,7 @@ public class MonkeyData{
 
 	public static SoundEffect LoadSoundEffect( String path,ContentManager content ){
 		try{
-			return content.Load<SoundEffect>( "Content/"+path );
+			return content.Load<SoundEffect>( "Content/monkey/"+path );
 		}catch( Exception ){
 		}
 		return null;
@@ -60,7 +54,7 @@ public class MonkeyData{
 	
 	public static Song LoadSong( String path,ContentManager content ){
 		try{
-			return content.Load<Song>( "Content/"+path );
+			return content.Load<Song>( "Content/monkey/"+path );
 		}catch( Exception ){
 		}
 		return null;

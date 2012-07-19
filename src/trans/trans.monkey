@@ -6,9 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.27"
-
-Global CONFIG_FILE$
+Const VERSION$="1.28"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
@@ -17,6 +15,15 @@ End
 
 Function LoadConfig()
 
+	Local CONFIG_FILE$
+
+	For Local i=1 Until AppArgs.Length
+		If AppArgs[i].ToLower().StartsWith( "-cfgfile=" )
+			CONFIG_FILE=AppArgs[i][9..]
+			Exit
+		Endif
+	Next
+	
 	Local cfgpath$=ExtractDir( AppPath )+"/"
 	If CONFIG_FILE
 		cfgpath+=CONFIG_FILE
@@ -28,6 +35,8 @@ Function LoadConfig()
 
 	Local cfg$=LoadString( cfgpath )
 	
+	Env.Set "TRANSDIR",ExtractDir( AppPath )
+
 	For Local line$=Eachin cfg.Split( "~n" )
 	
 		line=line.Trim()
@@ -107,6 +116,8 @@ Function LoadConfig()
 		SetEnv "PATH",path
 		
 	End
+	
+	Env.Remove "TRANSDIR"
 
 	Return True
 End
@@ -115,27 +126,15 @@ Function Main()
 
 	Print "TRANS monkey compiler V"+VERSION
 	
-	For Local i=1 Until AppArgs.Length
-		If AppArgs[i].ToLower().StartsWith( "-cfgfile=" )
-			CONFIG_FILE=AppArgs[i][9..]
-			Exit
-		Endif
-	Next
-	
-	SetEnv "TRANSDIR",ExtractDir( AppPath )
-
 	LoadConfig
 	
-	Local valid$=ValidTargets()
-	
-	If AppArgs.Length<2 Or AppArgs.Length=2 And CONFIG_FILE
+	If AppArgs.Length<2
 		Print "TRANS Usage: trans [-update] [-build] [-run] [-clean] [-config=...] [-target=...] [-cfgfile=...] [-modpath=...] <main_monkey_source_file>"
-		Print "Valid targets: "+valid
+		Print "Valid targets: "+ValidTargets()
 		Print "Valid configs: debug release"
-		If AppArgs.Length=1 ExitApp 0
-		ExitApp -1
+		ExitApp 0
 	Endif
-
+	
 	Local srcpath$=StripQuotes( AppArgs[AppArgs.Length-1].Trim() )
 	If FileType( srcpath )<>FILETYPE_FILE Die "Invalid source file"
 	srcpath=RealPath( srcpath )
@@ -144,43 +143,40 @@ Function Main()
 	ENV_MODPATH=".;"+ExtractDir( srcpath )+";"+RealPath( ExtractDir( AppPath )+"/../modules" )
 
 	Local target:Target
-
+	
 	For Local i=1 Until AppArgs.Length-1
-
-		Local arg$=AppArgs[i].Trim()
-
-		If Not arg.StartsWith( "-" )
-			Die "Command line Die"
-		Endif
-		
-		Local j=arg.Find( "=" )
-
+	
+		Local arg:=AppArgs[i].Trim()
+		Local j:=arg.Find( "=" )
+	
 		If j=-1
-			Local lhs$=arg[1..]
-			Select lhs.ToLower()
-			Case "safe"
+			Select arg.ToLower()
+			Case "-safe"
 				ENV_SAFEMODE=True
-			Case "clean"
+			Case "-clean"
 				OPT_CLEAN=True
-			Case "check"
+			Case "-check"
 				OPT_ACTION=ACTION_TRANSLATE
-			Case "update"
+			Case "-update"
 				OPT_ACTION=ACTION_UPDATE
-			Case "build"
+			Case "-build"
 				OPT_ACTION=ACTION_BUILD
-			Case "run"
+			Case "-run"
 				OPT_ACTION=ACTION_RUN
 			Default
-				Die "Command line error"
+				Die "Unrecognized command line option: "+arg
 			End
-		Else
-			Local lhs$=arg[1..j].Trim()
-			Local rhs$=arg[j+1..].Trim()
+			Continue
+		Endif
+		
+		Local lhs:=arg[..j],rhs:=arg[j+1..]
+		
+		If lhs.StartsWith( "-" )
 			Select lhs.ToLower()
-			Case "cfgfile"
-			Case "output"
+			Case "-cfgfile"
+			Case "-output"
 				OPT_OUTPUT=rhs
-			Case "config"
+			Case "-config"
 				Select rhs.ToLower()
 				Case "debug"
 					CASED_CONFIG="Debug"
@@ -189,17 +185,23 @@ Function Main()
 				Case "profile"
 					CASED_CONFIG="Profile"
 				Default
-					Die "Unrecognized config: "+rhs
+					Die "Command line error - invalid config: "+rhs
 				End
-			Case "target"
+			Case "-target"
 				target=SelectTarget( rhs.ToLower() )
-			Case "modpath"
+				If Not target Die "Command line error - invalid target: "+rhs
+			Case "-modpath"
 				ENV_MODPATH=StripQuotes( rhs )
 			Default
-				Die "Command line error"
+				Die "Unrecognized command line option: "+lhs
 			End
-		Endif
-	Next
+		Else If lhs.StartsWith( "+" )
+			Env.Set lhs[1..],rhs
+		Else
+			Die "Command line arg error: "+arg
+		End
+
+	Next	
 	
 	If Not target Die "No target specified"
 	

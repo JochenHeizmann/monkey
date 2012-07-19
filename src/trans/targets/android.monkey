@@ -18,22 +18,29 @@ Class AndroidTarget Extends Target
 		ENV_LANG="java"
 		_trans=New JavaTranslator
 	End
+	
+	Method Config$()
+		Local config:=New StringStack
+		For Local kv:=Eachin Env
+			config.Push "static final String "+kv.Key+"="+LangEnquote( kv.Value )+";"
+		Next
+		Return config.Join( "~n" )
+	End
 
 	Method MakeTarget()
 	
 		'create data dir
-		CreateDataDir "assets/monkey",False
+		CreateDataDir "assets/monkey"
 
-		'load config
-		Local tags:=LoadTags( "CONFIG.TXT" )
-		Local app_label$=tags.Get( "APP_LABEL" )
-		Local app_package$=tags.Get( "APP_PACKAGE" )
-		tags.Set "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
+		Local app_label$=Env.Get( "APP_LABEL" )
+		Local app_package$=Env.Get( "APP_PACKAGE" )
+		
+		Env.Set "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
 		
 		'template files
 		For Local file$=Eachin LoadDir( "templates",True )
 			Local str$=LoadString( "templates/"+file )
-			str=ReplaceTags( str,tags )
+			str=ReplaceEnv( str )
 			SaveString str,file
 		Next
 		
@@ -49,8 +56,33 @@ Class AndroidTarget Extends Target
 		
 		'create main source file
 		Local main$=LoadString( "MonkeyGame.java" )
-		main=ReplaceBlock( main,"${PACKAGE_BEGIN}","${PACKAGE_END}","package "+app_package+";" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
+		
+		main=ReplaceBlock( main,"TRANSCODE",transCode )
+		main=ReplaceBlock( main,"CONFIG",Config() )
+		
+		'extract all imports
+		Local imps:=New StringStack
+		Local done:=New StringSet
+		Local out:=New StringStack
+		For Local line:=Eachin main.Split( "~n" )
+			If line.StartsWith( "import " )
+				Local i:=line.Find( ";",7 )
+				If i<>-1
+					Local id:=line[7..i+1]
+					If Not done.Contains( id )
+						done.Insert id
+						imps.Push "import "+id
+					Endif
+				Endif
+			Else
+				out.Push line
+			Endif
+		End
+		main=out.Join( "~n" )
+
+		main=ReplaceBlock( main,"IMPORTS",imps.Join( "~n" ) )
+		main=ReplaceBlock( main,"PACKAGE","package "+app_package+";" )
+		
 		SaveString main,jpath
 		
 		If OPT_ACTION>=ACTION_BUILD

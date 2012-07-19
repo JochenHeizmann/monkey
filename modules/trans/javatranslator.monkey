@@ -460,21 +460,11 @@ Class JavaTranslator Extends Translator
 			Emit "}"
 		Next
 		
-		#rem
-		Emit "class bb_Init{"
-		Emit "public static int Init(){"
-		For Local decl:=Eachin app.semantedGlobals
-			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
-		Next
-		Emit "return 0;"
-		Emit "}"
-		Emit "}"
-		#end
-		
 		Return JoinLines()
 
 	End
-	
+
+#rem	
 	Method PostProcess$( source$ )
 		'
 		'move package/imports to top
@@ -504,6 +494,7 @@ Class JavaTranslator Extends Translator
 		Next
 		Return "~n"+pkg+"~n"+imps+"~n"+code
 	End
+#end
 	
 End
 

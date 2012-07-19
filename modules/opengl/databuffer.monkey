@@ -9,7 +9,7 @@ Import "native/databuffer.java"
 
 Extern
 
-Class DataBuffer="RamBuffer"
+Class DataBuffer
 
 	Method Size()
 
@@ -24,12 +24,11 @@ Class DataBuffer="RamBuffer"
 	Method PeekFloat:Float( addr )
 
 #if LANG="cpp"
-	Function Create:DataBuffer( size )="RamBuffer::Create"
+	Function Create:DataBuffer( size )="DataBuffer::Create"
 #ElseIf LANG="java"
-	Function Create:DataBuffer( size )="RamBuffer.Create"
+	Function Create:DataBuffer( size )="DataBuffer.Create"
 #Endif
 
 End
 
 #Endif
-

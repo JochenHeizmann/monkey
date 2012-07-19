@@ -1,6 +1,9 @@
 
 #import "main.h"
 
+//${CONFIG_BEGIN}
+//${CONFIG_END}
+
 @implementation MonkeyView
 
 +(Class)layerClass{
@@ -16,12 +19,12 @@
 	if( self=[super initWithCoder:coder] ){
 	
 		// Enable retina display
-#if RETINA_ENABLED
-		if( [self respondsToSelector:@selector(contentScaleFactor)] ){
-			float scaleFactor=[[UIScreen mainScreen] scale];
-			[self setContentScaleFactor:scaleFactor];
+		if( CFG_RETINA_ENABLED ){
+			if( [self respondsToSelector:@selector(contentScaleFactor)] ){
+				float scaleFactor=[[UIScreen mainScreen] scale];
+				[self setContentScaleFactor:scaleFactor];
+			}
 		}
-#endif
     
 		// Get the layer
 		CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
@@ -44,13 +47,12 @@
 		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
 		glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_COLOR_ATTACHMENT0_OES,GL_RENDERBUFFER_OES,colorRenderbuffer );
 
-#if DEPTH_BUFFER_ENABLED
-		glGenRenderbuffersOES( 1,&depthRenderbuffer );
-		glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
-		glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_DEPTH_ATTACHMENT_OES,GL_RENDERBUFFER_OES,depthRenderbuffer );
-		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
-#endif
-		
+		if( CFG_DEPTH_BUFFER_ENABLED ){
+			glGenRenderbuffersOES( 1,&depthRenderbuffer );
+			glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+			glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_DEPTH_ATTACHMENT_OES,GL_RENDERBUFFER_OES,depthRenderbuffer );
+			glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+		}
 	}
 	return self;
 }
@@ -72,11 +74,11 @@
 	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_WIDTH_OES,&backingWidth );
 	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_HEIGHT_OES,&backingHeight );
 	
-#if DEPTH_BUFFER_ENABLED
-	glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
-	glRenderbufferStorageOES( GL_RENDERBUFFER_OES,GL_DEPTH_COMPONENT16_OES,backingWidth,backingHeight );
-	glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
-#endif
+	if( CFG_DEPTH_BUFFER_ENABLED ){
+		glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+		glRenderbufferStorageOES( GL_RENDERBUFFER_OES,GL_DEPTH_COMPONENT16_OES,backingWidth,backingHeight );
+		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+	}
 	
 	if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ){
 		NSLog( @"Failed to make complete framebuffer object %x",glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES ) );
@@ -183,66 +185,6 @@
 //***** MONKEY CODE GOES HERE! *****
 
 //${TRANSCODE_BEGIN}
-
-// Note: MonkeyAppDelgate should be implemented by client code - this is just a sample implementation:
-
-@implementation MonkeyAppDelegate
-
-@synthesize window;
-@synthesize view;
-@synthesize viewController;
-
--(void)drawView:(MonkeyView*)aview{
-
-	int width=aview->backingWidth;
-	int height=aview->backingHeight;
-	
-	printf( "%i %i\n",width,height );
-
-	glClearColor( 1,0,0,1 );
-	glClear( GL_COLOR_BUFFER_BIT );
-	[aview presentRenderbuffer];
-}
-
--(void)onEvent:(UIEvent*)event{
-}
-
--(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions{    
-
-	[[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
-
-	[viewController.view setFrame:[[UIScreen mainScreen] applicationFrame]];
-	
-    [window addSubview:viewController.view];
-    [window makeKeyAndVisible];
-
-	[[UIAccelerometer sharedAccelerometer] setUpdateInterval:(1.0/30)];
-	[[UIAccelerometer sharedAccelerometer] setDelegate:self];
-	[[UIApplication sharedApplication] setIdleTimerDisabled:YES];
-	
-	return YES;
-}
-
--(void)applicationDidFinishLaunching:(UIApplication *)application{
-}
-
--(void)applicationWillResignActive:(UIApplication *)application{
-}
-
--(void)applicationDidBecomeActive:(UIApplication *)application{
-}
-
--(void)applicationWillTerminate:(UIApplication *)application{
-}
-
--(void)dealloc{
-	[window release];
-	[view release];
-	[super dealloc];
-}
-
-@end
-
 //${TRANSCODE_END}
 
 //***** main.m *****

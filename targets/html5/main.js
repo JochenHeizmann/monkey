@@ -40,14 +40,17 @@ window.onload=function( e ){
 	}
 }
 
-//Globals
 var game_canvas;
 var game_console;
 var game_runner;
 
+//${CONFIG_BEGIN}
+//${CONFIG_END}
+
 //${METADATA_BEGIN}
 //${METADATA_END}
-function getMetaData( path,key ){	
+
+function getMetaData( path,key ){
 	var i=META_DATA.indexOf( "["+path+"]" );
 	if( i==-1 ) return "";
 	i+=path.length+2;
@@ -66,9 +69,11 @@ function getMetaData( path,key ){
 }
 
 function loadString( path ){
-	if( path=="" ) return "";
-//${TEXTFILES_BEGIN}
-//${TEXTFILES_END}
+	var xhr=new XMLHttpRequest();
+	xhr.open( "GET","data/"+path,false );
+	xhr.send( null );
+	if( xhr.status==200 ) return xhr.responseText;
+	return "";
 }
 
 function loadImage( path,onloadfun ){

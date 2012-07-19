@@ -3,25 +3,14 @@ class DataBuffer : public Object{
 
 	public:
 	
-	virtual int Size(){ return 0; }
-	
-	virtual void *ReadPointer(){ return 0; }
-
-	virtual void *WritePointer(){ return 0; }
-};
-
-class RamBuffer : public DataBuffer{
-
-	public:
-	
 	int _length;
 	unsigned char *_data;
 	
-	RamBuffer( int length ):_length( length ){
+	DataBuffer( int length ):_length( length ){
 		_data=(unsigned char*)malloc( length );
 	}
 	
-	~RamBuffer(){
+	~DataBuffer(){
 		free( _data );
 	}
 	
@@ -69,61 +58,7 @@ class RamBuffer : public DataBuffer{
 		return *(float*)(_data+addr);
 	}
 	
-	static RamBuffer *Create( int length ){
-		return new RamBuffer( length );
+	static DataBuffer *Create( int length ){
+		return new DataBuffer( length );
 	}
-};
-
-class IntArrayBuffer : public DataBuffer{
-
-	Array<int> _data;
-	int _offset;
-	
-	public:
-	
-	IntArrayBuffer( Array<int> data,int offset ):_data( data ),_offset( offset ){
-	}
-	
-	void mark(){
-		gc_mark( _data );
-	}
-	
-	int Size(){
-		return (_data.Length()-_offset) * sizeof(Float);
-	}
-
-	void *ReadPointer(){
-		return &_data[_offset];
-	}
-	
-	static IntArrayBuffer *Create( Array<int> data,int offset ){
-		return new IntArrayBuffer( data,offset );
-	}	
-};
-
-class FloatArrayBuffer : public DataBuffer{
-
-	Array<Float> _data;
-	int _offset;
-	
-	public:
-	
-	FloatArrayBuffer( Array<Float> data,int offset ):_data( data ),_offset( offset ){
-	}
-	
-	void mark(){
-		gc_mark( _data );
-	}
-	
-	int Size(){
-		return (_data.Length()-_offset) * sizeof(Float);
-	}
-
-	void *ReadPointer(){
-		return &_data[_offset];
-	}
-	
-	static FloatArrayBuffer *Create( Array<Float> data,int offset ){
-		return new FloatArrayBuffer( data,offset );
-	}	
 };

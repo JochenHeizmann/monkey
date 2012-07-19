@@ -12,6 +12,12 @@ Global HTML_PLAYER$
 Global FLASH_PLAYER$
 
 'from trans options
+Global OPT_ACTION
+Global OPT_CLEAN
+Global OPT_OUTPUT$
+Global CASED_CONFIG$="Debug"
+
+'from OPT_ACTION
 Const ACTION_PARSE=1
 Const ACTION_SEMANT=2
 Const ACTION_TRANSLATE=3
@@ -19,27 +25,59 @@ Const ACTION_UPDATE=4
 Const ACTION_BUILD=5
 Const ACTION_RUN=6
 
-Global OPT_ACTION
-Global OPT_CLEAN
-Global OPT_OUTPUT$
-Global CASED_CONFIG$="Debug"
-
 Class Target
 
 	Method Make( path$ )
+	
 		Begin
-		SetSourcePath path
 		
+		srcPath=path
+		dataPath=StripExt( srcPath )+".data"
+		buildPath=StripExt( srcPath )+".build"
+		targetPath=buildPath+"/"+ENV_TARGET
+		
+		If OPT_CLEAN
+			DeleteDir targetPath,True
+			If FileType( targetPath )<>FILETYPE_NONE Die "Failed to clean target dir"
+		Endif
+
+		If FileType( targetPath )=FILETYPE_NONE
+			If FileType( buildPath )=FILETYPE_NONE CreateDir buildPath
+			If FileType( buildPath )<>FILETYPE_DIR Die "Failed to create build dir: "+buildPath
+			If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath,True,False ) Die "Failed to copy target dir"
+		Endif
+
+		If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
+
+		Env.Set "HOST",ENV_HOST
+		Env.Set "LANG",ENV_LANG
+		Env.Set "TARGET",ENV_TARGET
+		Env.Set "CONFIG",ENV_CONFIG
+		
+		Local cfgPath:=targetPath+"/CONFIG.TXT"
+		If FileType( cfgPath )=FILETYPE_FILE LoadEnv cfgPath
+		
+		TEXT_FILES=Env.Get( "TEXT_FILES" )
+		IMAGE_FILES=Env.Get( "IMAGE_FILES" )
+		SOUND_FILES=Env.Get( "SOUND_FILES" )
+		MUSIC_FILES=Env.Get( "MUSIC_FILES" )
+		
+		DATA_FILES=TEXT_FILES
+		If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
+		If SOUND_FILES DATA_FILES+="|"+SOUND_FILES
+		If MUSIC_FILES DATA_FILES+="|"+MUSIC_FILES
+
 		Translate
 		
 		If OPT_ACTION>=ACTION_UPDATE
 			Print "Building..."
 		
-			CreateTargetDir
-			Local cd$=CurrentDir
+			Local cd:=CurrentDir
+
 			ChangeDir targetPath
 			
 			MakeTarget
+			
 			ChangeDir cd
 		Endif
 	End
@@ -51,23 +89,24 @@ Class Target
 	Field buildPath$	'The app .build dir
 	Field targetPath$	'The app .build/target dir
 	
-	Field metaData$		'meta data string created by CreateDataDir
-	Field textFiles$	'text files string create by CreateDataDir
-	
 	Field app:AppDecl	'The app
 	Field transCode$	'translated output code
+	
+	'data file filters
+	Field DATA_FILES$
+	Field TEXT_FILES$
+	Field IMAGE_FILES$
+	Field SOUND_FILES$
+	Field MUSIC_FILES$
 
+	'actual data files
+	'
+	Field dataFiles:=New StringMap<String>	'maps real src path to virtual target path
+	
 	Method Begin() Abstract
 	
 	Method MakeTarget() Abstract
 
-	Method SetSourcePath( path$ )
-		srcPath=path
-		dataPath=StripExt( srcPath )+".data"
-		buildPath=StripExt( srcPath )+".build"
-		targetPath=buildPath+"/"+ENV_TARGET
-	End
-	
 	Method AddTransCode( tcode$ )
 		If transCode.Contains( "${CODE}" )
 			transCode=transCode.Replace( "${CODE}",tcode )
@@ -122,112 +161,59 @@ Class Target
 		Return files
 	End
 
-	'create '.build/target' directory and copy in project template
-	'
-	Method CreateTargetDir()
-
-		If OPT_CLEAN
-			DeleteDir targetPath,True
-			If FileType( targetPath )<>FILETYPE_NONE Die "Failed to clean target dir"
-		Endif
-
-		If FileType( targetPath )=FILETYPE_NONE
-			If FileType( buildPath )=FILETYPE_NONE CreateDir buildPath
-			If FileType( buildPath )<>FILETYPE_DIR Die "Failed to create build dir: "+buildPath
-			If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath,True,False ) Die "Failed to copy target dir"
-		Endif
-
-		If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
-	End
-
-	'Copy files from '.data' directory to target content directory. Creates metaData$ and textFiles$ strings
-	'
-	'If embedTextFiles is false, textfiles are also copied, else textFiles$ string is created.
-	'
-	Method CreateDataDir( dir$,embedTextFiles?=True )
+	Method CreateDataDir( dir$ )
 		dir=RealPath( dir )
-		
+	
 		DeleteDir dir,True
 		CreateDir dir
-
+		
 		If FileType( dataPath )=FILETYPE_DIR
-			CopyDir dataPath,dir,True,False
+		
+			Local srcs:=New StringStack
+			srcs.Push dataPath
+			
+			While Not srcs.IsEmpty()
+			
+				Local src:=srcs.Pop()
+				
+				For Local f:=Eachin LoadDir( src )
+					If f.StartsWith( "." ) Continue
+
+					Local p:=src+"/"+f
+					Local r:=p[dataPath.Length+1..]
+					Local t:=dir+"/"+r
+					
+					Select FileType( p )
+					Case FILETYPE_FILE
+						If MatchPath( r,DATA_FILES )
+							CopyFile p,t
+							dataFiles.Set p,r
+						Endif
+					Case FILETYPE_DIR
+						CreateDir t
+						srcs.Push p
+					End
+				Next
+			
+			Wend
+		
 		Endif
 		
-		For Local file$=Eachin app.fileImports
-			Select ExtractExt( file ).ToLower()
-			'text file formats
-			Case "txt","xml","json"
-	
-				If Not embedTextFiles 
-					CopyFile file,dir+"/"+StripDir( file )
-				Endif
-				
-			'graphic file formats
-			Case "png","jpg","bmp","wav","mp3","ogg"
-
-				CopyFile file,dir+"/"+StripDir( file )
-				
-			'audio file formats
-			Case "wav","ogg","aac","m4a","mp4","aif","caf","mp3","wma"
-
-				CopyFile file,dir+"/"+StripDir( file )
-
-			End Select
+		For Local p:=Eachin app.fileImports
+			Local r:=StripDir( p )
+			Local t:=dir+"/"+r
+			If MatchPath( r,DATA_FILES )
+				CopyFile p,t
+				dataFiles.Set p,r
+			Endif
 		Next
-		
-		Local mfile$=ExtractDir( AppPath )+"/meta.txt",meta$
-		Execute "~q"+ExtractDir( AppPath )+"/makemeta_"+HostOS+"~q ~q"+dir+"~q ~q"+mfile+"~q"
-		
-		metaData=LoadString( mfile )
-		metaData=metaData.Replace( "~n","\n" )
-		
-		textFiles=""
-		
-		If Not embedTextFiles Return
-		
-		For Local f$=Eachin LoadDir( dir,True,False )
-
-			Local p$=dir+"/"+f
-			If FileType(p)<>FILETYPE_FILE Continue
-			
-			Local ext$=ExtractExt(p).ToLower()
-			Select ext
-			Case "txt","xml","json"
-				Local text$=LoadString( p )
-				If text.Length>1024
-					Local bits:=New StringList
-					While text.Length>1024
-						bits.AddLast LangEnquote( text[..1024] )
-						text=text[1024..]
-					Wend
-					bits.AddLast LangEnquote( text )
-					If ENV_LANG="cpp"
-						text=bits.Join( "~n" )
-					Else
-						text=bits.Join( "+~n" )
-					Endif
-				Else
-					text=LangEnquote( text )
-				Endif
-				
-				If ENV_LANG="java"
-					textFiles+="~t~telse if( path.compareTo(~q"+f+"~q)==0 ) return "+text+";~n"
-				Else
-					textFiles+="~t~telse if( path=="+LangEnquote(f)+" ) return "+text+";~n"
-				Endif
-
-				DeleteFile p
-			End
-		Next
-
-		textFiles+="~t~treturn "+LangEnquote( "" )+";~n"
 		
 	End
-
+	
 	'Execute a shell cmd
 	'
 	Method Execute( cmd$,failHard=True )
+'		Print "Execute: "+cmd
 		Local r=os.Execute( cmd )
 		If Not r Return True
 		If failHard Die "TRANS Failed to execute '"+cmd+"', return code="+r
@@ -241,34 +227,57 @@ End
 'outta here!
 '
 Function Die( msg$ )
-	Print msg
+	Print "TRANS FAILED: "+msg
 	ExitApp -1
 End
 
 'Replace GetEnv tags in a string
 '
 Function ReplaceEnv$( str$ )
-	Local i=0
-	
-	Repeat
-		i=str.Find( "${",i )
-		If i=-1 Return str
-		Local e=str.Find( "}",i+2 )
-		If e=-1 Return str
 
-		Local v$=GetEnv( str[i+2..e]  )
-		str=str[..i]+v+str[e+1..]
-		i+=v.Length
+	Local bits:=New StringStack
+
+	Repeat
+	
+		Local i=str.Find( "${" )
+		If i=-1 Exit
+		
+		Local e=str.Find( "}",i+2 ) 
+		If e=-1 Exit
+		
+		If i>=2 And str[i-2..i]="//"
+			bits.Push str[..e+1]
+			str=str[e+1..]
+			Continue
+		Endif
+		
+		Local t:=str[i+2..e]
+		Local v:=Env.Get(t)
+		If Not v v=GetEnv(t)
+		v=v.Replace( "~q","" )
+		
+		bits.Push str[..i]
+		bits.Push v
+		
+		str=str[e+1..]
 	Forever
+	
+	If bits.IsEmpty() Return str
+	
+	bits.Push str
+	
+	Return bits.Join( "" )
+	
 End
 
-'Load a tag map from a file - simply a key/value map.
+'read a text file into env
 '
-Function LoadTags:StringMap<StringObject>( path$ )
-	Local tags:=New StringMap<StringObject>
+Function LoadEnv( path$ )
+
 	Local cfg$=LoadString( path )
 
 	For Local line$=Eachin cfg.Split( "~n" )
+	
 		line=line.Trim()
 		If Not line Or line.StartsWith( "'" ) Continue
 		
@@ -277,88 +286,62 @@ Function LoadTags:StringMap<StringObject>( path$ )
 		
 		Local lhs$=line[..i].Trim()
 		Local rhs$=line[i+1..].Trim()
+		
 		rhs=ReplaceEnv( rhs )
-		tags.Set lhs,rhs
+		
+		Env.Set lhs,rhs
 	Next
-	Return tags
 End
 
-'Replace all tags in a string.
-'
-Function ReplaceTags$( str$,tags:StringMap<StringObject> )
-	Local i
-	Repeat
-		i=str.Find( "${",i )
-		If i=-1 Return str
-		Local e=str.Find( "}",i+2 )
-		If e=-1 Return str
-		
-		Local v:=tags.Get( str[i+2..e] )
-		If v
-			Local t$=v.ToString()
-			str=str[..i]+t+str[e+1..]
-			i+=t.Length
-		Else
-			i=e+1
-		Endif
-		
-	Forever
-End
+Function ReplaceBlock$( text$,tag$,repText$,mark$="~n//" )
 
-'Replace block of lines starting with ${startTag} and ending with ${endTtag}, leaving tags in place.
-'
-Function ReplaceBlock$( text$,startTag$,endTag$,repText$ )
-
-	'Find *first* start tag
-	Local i=text.Find( startTag )
-	If i=-1
-		Die "Error modifying target file - can't find block start tag: "+startTag+". You may need to delete target .build directory."
-'		If dieHard Fail "Error replacing block, can't find startTag: "+startTag
-'		Return
-	Endif
-	i+=startTag.Length
+	'find begin tag
+	Local beginTag:=mark+"${"+tag+"_BEGIN}"
+	Local i=text.Find( beginTag )
+	If i=-1 Die "Error updating target project - can't find block begin tag '"+tag+"'. You may need to delete target .build directory."
+	i+=beginTag.Length
 	While i<text.Length And text[i-1]<>10
 		i+=1
 	Wend
-
-	'Find *last* end tag
-	Local i2=text.Find( endTag,i )
-	If i2=-1
-		Die "Error modifying target file - can't find block end tag: "+endTag+"."
-	Endif
-	Repeat
-		Local i3=text.Find( endTag,i2+endTag.Length )
-		If i3=-1 Exit
-		i2=i3
-	Forever
-	While i2>0 And text[i2]<>10
-		i2-=1
-	Wend
-
-	'replace text!
+	
+	'find end tag
+	Local endTag:=mark+"${"+tag+"_END}"
+	Local i2=text.Find( endTag,i-1 )
+	If i2=-1 Die "Error updating target project - can't find block end tag '"+tag+"'."
+	If Not repText Or repText[repText.Length-1]=10 i2+=1
+	
 	Return text[..i]+repText+text[i2..]
+
 End
 
-'Replace a single tag in a file
-'
-Function ReplaceFileTag( path$,tag$,rep$ )
-	Local str$=LoadString( path )
-	str=str.Replace( tag,rep )
-	SaveString str,path
-End
+Function MatchPath?( text$,pattern$ )
 
-'Replace all tags in a file.
-'
-Function ReplaceFileTags( path$,tags:StringMap<StringObject> )
-	Local str$=LoadString( path )
-	str=ReplaceTags( str,tags )
-	SaveString str,path
-End
+	text="/"+text
 
-'Replace a block in a file.
-'
-Function ReplaceFileBlock( path$,startTag$,endTag$,repText$ )
-	Local str$=LoadString( path )
-	str=ReplaceBlock( str,startTag,endTag,repText )
-	SaveString str,path
+	Local alts:=pattern.Split( "|" )
+
+	For Local alt:=Eachin alts
+	
+		Local bits:=alt.Split( "*" )
+		
+		If bits.Length=1
+			If bits[0]=text Return True
+			Continue
+		Endif
+		
+		If Not text.StartsWith( bits[0] ) Continue
+		If Not text.EndsWith( bits[bits.Length-1] ) Continue
+			
+		Local i
+		For Local j=1 Until bits.Length-1
+			Local bit:=bits[j]
+			i=text.Find( bit,i )
+			If i=-1 Exit
+			i+=bit.Length
+		Next
+		If i<>-1 Return True
+
+	Next
+
+	Return False
 End

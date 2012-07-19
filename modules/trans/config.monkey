@@ -13,6 +13,8 @@ Global ENV_TARGET$
 Global ENV_MODPATH$
 Global ENV_SAFEMODE	'True for safe mode!
 
+Global Env:=New StringMap<String>
+
 Global CONFIG_DEBUG?'=(ENV_CONFIG="debug")
 Global CONFIG_RELEASE?'=(ENV_CONFIG="release")
 Global CONFIG_PROFILE?'=(ENV_CONFIG="profile")

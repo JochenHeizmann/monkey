@@ -13,6 +13,7 @@ Import opengl.gles11
 
 Class GLApp Extends App
 
+	Field tex		'texture
 	Field vbo,ibo	'vertex buffer,index buffer
 	Field rot#
 
@@ -28,6 +29,25 @@ Class GLApp Extends App
 
 		If _inited Return
 		_inited=True
+		
+		'create texture object
+		Local texs[1]
+		glGenTextures 1,texs
+		tex=texs[0]
+		
+		'Load/bind texture data
+		Local info[2]
+		Local tbuf:=LoadImageData( "Grass_1.png",info )
+		Print "width="+info[0]
+		Print "height="+info[1]
+		If Not tbuf Error ""
+		glBindTexture GL_TEXTURE_2D,tex
+		glPixelStorei GL_UNPACK_ALIGNMENT,1
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE
+		glTexImage2D GL_TEXTURE_2D,0,GL_RGBA,256,256,0,GL_RGBA,GL_UNSIGNED_BYTE,tbuf
 
 		'create buffer objects
 		Local bufs[2]
@@ -36,7 +56,7 @@ Class GLApp Extends App
 		ibo=bufs[1]
 
 		'create VBO
-		Local vtxs:=[-.5,+.5,+.5,+.5,+.5,-.5,-.5,-.5]
+		Local vtxs:=[-1.0,+1.0,0.0,0.0, +1.0,+1.0,1.0,0.0, +1.0,-1.0,1.0,1.0, -1.0,-1.0,0.0,1.0]
 		'
 		Local vbuf:=DataBuffer.Create( vtxs.Length*4 )
 		For Local i=0 Until vtxs.Length
@@ -83,29 +103,30 @@ Class GLApp Extends App
 		glClear GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT
 		
 		glEnableClientState GL_VERTEX_ARRAY
+		glEnableClientState GL_TEXTURE_COORD_ARRAY
 		glDisableClientState GL_COLOR_ARRAY
-		glDisableClientState GL_TEXTURE_COORD_ARRAY
 
 		glBindBuffer GL_ARRAY_BUFFER,vbo
-		glVertexPointer 2,GL_FLOAT,0,0
+		glVertexPointer 2,GL_FLOAT,16,0
+		glTexCoordPointer 2,GL_FLOAT,16,8
+		
 		glBindBuffer GL_ELEMENT_ARRAY_BUFFER,ibo
+
+		glEnable GL_TEXTURE_2D
+		glBindTexture GL_TEXTURE_2D,tex
 
 		glEnable GL_DEPTH_TEST
 		glDepthFunc GL_LESS		
 		glDepthMask True
 		
 		glLoadIdentity
-		glTranslatef 0,-1,-2
+		glTranslatef 0,-1,-2.5
 		glRotatef 90,1,0,0
-		glScalef 4,1,1
-		glColor4f 0,1,0,1
 		glDrawElements GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0
 		
 		glLoadIdentity
-		glTranslatef 0,0,-2
+		glTranslatef 0,0,-2.5
 		glRotatef rot,0,0,1
-		glScalef 1,4,1
-		glColor4f 1,1,0,1
 		glDrawElements GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0
 		
 	End

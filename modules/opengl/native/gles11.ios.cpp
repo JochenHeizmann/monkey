@@ -1,4 +1,65 @@
 
+// Ok, a bit freaky coz we want non-premultipied alpha!
+//
+DataBuffer *LoadImageData( String path,Array<int> info ){
+	path=String( "data/" )+path;
+	NSString *nspath=path.ToNSString();
+
+	//This was apparently buggy in iOS2.x, but NO MORE?
+	UIImage *uiimage=[ UIImage imageNamed:nspath ];
+	if( !uiimage ) return 0;
+	
+	CGImageRef cgimage=uiimage.CGImage;
+	
+	int width=CGImageGetWidth( cgimage );
+	int height=CGImageGetHeight( cgimage );
+	int pitch=CGImageGetBytesPerRow( cgimage );
+	int bpp=CGImageGetBitsPerPixel( cgimage );
+	
+	printf( "LoadImageData: width=%i,height=%i, pitch=%i, bpp=%i\n",width,height,pitch,bpp );
+	
+	if( bpp!=24 && bpp!=32 ) return 0;
+	
+	CFDataRef cfdata=CGDataProviderCopyData( CGImageGetDataProvider( cgimage ) );
+	unsigned char *src=(unsigned char*)CFDataGetBytePtr( cfdata );
+	int srclen=(int)CFDataGetLength( cfdata );
+	
+	printf( "LoadImageData: srclen=%i\n",srclen );
+	
+	DataBuffer *buf=DataBuffer::Create( width*height*4 );
+	unsigned char *dst=(unsigned char*)buf->WritePointer();
+
+	int y;
+		
+	switch( bpp ){
+	case 24:
+		for( y=0;y<height;++y ){
+			for( int x=0;x<width;++x ){
+				*dst++=*src++;
+				*dst++=*src++;
+				*dst++=*src++;
+				*dst++=255;
+			}
+			src+=pitch-width*3;
+		}
+		break;
+	case 32:
+		for( y=0;y<height;++y ){
+			memcpy( dst,src,width*4 );
+			dst+=width*4;
+			src+=pitch;
+		}
+		break;
+	}
+	
+	if( info.Length()>0 ) info[0]=width;
+	if( info.Length()>1 ) info[1]=height;
+	
+	CFRelease( cfdata );
+	
+	return buf;
+}
+
 void _glGenBuffers( int n,Array<int> buffers,int offset ){
 	glGenBuffers( n,(GLuint*)&buffers[offset] );
 }
@@ -103,7 +164,7 @@ void _glTexParameteriv( int target,int pname,Array<int> params,int offset ){
 	glTexParameteriv( target,pname,&params[offset] );
 }
 
-void _glVertexPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glVertexPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glVertexPointer( size,type,stride,pointer->ReadPointer() );
 }
 
@@ -111,7 +172,7 @@ void _glVertexPointer( int size,int type,int stride,int offset ){
 	glVertexPointer( size,type,stride,(const void*)offset );
 }
 
-void _glColorPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glColorPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glColorPointer( size,type,stride,pointer->ReadPointer() );
 }
 
@@ -119,7 +180,7 @@ void _glColorPointer( int size,int type,int stride,int offset ){
 	glColorPointer( size,type,stride,(const void*)offset );
 }
 
-void _glNormalPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glNormalPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glNormalPointer( type,stride,pointer->ReadPointer() );
 }
 
@@ -127,7 +188,7 @@ void _glNormalPointer( int size,int type,int stride,int offset ){
 	glNormalPointer( type,stride,(const void*)offset );
 }
 
-void _glTexCoordPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glTexCoordPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glTexCoordPointer( size,type,stride,pointer->ReadPointer() );
 }
 

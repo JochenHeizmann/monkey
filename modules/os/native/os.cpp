@@ -40,6 +40,7 @@ typedef struct _stat stat_t;
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <copyfile.h>
 
 typedef char OS_CHAR;
 typedef struct stat stat_t;
@@ -90,19 +91,26 @@ String RealPath( String path ){
 }
 
 String AppPath(){
+
 	if( _appPath.Length() ) return _appPath;
+	
 #if _WIN32
+
 	OS_CHAR buf[PATH_MAX+1];
 	GetModuleFileNameW( GetModuleHandleW(0),buf,PATH_MAX );
 	buf[PATH_MAX]=0;
 	_appPath=String( buf );
+	
 #elif __APPLE__
+
 	char buf[PATH_MAX];
 	uint32_t size=sizeof( buf );
 	_NSGetExecutablePath( buf,&size );
 	buf[PATH_MAX-1]=0;
 	_appPath=String( buf );
+	
 #elif __linux
+
 	char lnk[PATH_MAX],buf[PATH_MAX];
 	pid_t pid=getpid();
 	sprintf( lnk,"/proc/%i/exe",pid );
@@ -111,7 +119,9 @@ String AppPath(){
 		buf[i]=0;
 		_appPath=String( buf );
 	}
+
 #endif
+
 	_appPath=RealPath( _appPath );
 	return _appPath;
 }
@@ -171,7 +181,9 @@ int SaveString( String str,String path ){
 
 Array<String> LoadDir( String path ){
 	std::vector<String> files;
+	
 #if _WIN32
+
 	WIN32_FIND_DATAW filedata;
 	HANDLE handle=FindFirstFileW( OS_STR(path+"/*"),&filedata );
 	if( handle!=INVALID_HANDLE_VALUE ){
@@ -185,7 +197,9 @@ Array<String> LoadDir( String path ){
 		printf( "FindFirstFileW for LoadDir(%s) failed\n",C_STR(path) );
 		fflush( stdout );
 	}
+	
 #else
+
 	if( DIR *dir=opendir( OS_STR(path) ) ){
 		while( dirent *ent=readdir( dir ) ){
 			String f=ent->d_name;
@@ -197,11 +211,30 @@ Array<String> LoadDir( String path ){
 		printf( "opendir for LoadDir(%s) failed\n",C_STR(path) );
 		fflush( stdout );
 	}
+
 #endif
+
 	return Array<String>( &files[0],files.size() );
 }
 	
 int CopyFile( String srcpath,String dstpath ){
+
+#if _WIN32
+
+	if( CopyFileW( OS_STR(srcpath),OS_STR(dstpath),FALSE ) ) return 1;
+	return 0;
+	
+#elif __APPLE__
+
+	// Would like to use COPY_ALL here, but it breaks trans on MacOS - produces weird 'pch out of date' error with copied projects.
+	//
+	// Ranlib strikes back!
+	//
+	if( copyfile( OS_STR(srcpath),OS_STR(dstpath),0,COPYFILE_DATA )>=0 ) return 1;
+	return 0;
+	
+#else
+
 	int err=-1;
 	if( FILE *srcp=fopen( OS_STR( srcpath ),OS_STR( T("rb") ) ) ){
 		err=-2;
@@ -225,6 +258,8 @@ int CopyFile( String srcpath,String dstpath ){
 		fflush( stdout );
 	}
 	return err==0;
+	
+#endif
 }
 
 int ChangeDir( String path ){
@@ -254,11 +289,7 @@ int DeleteFile( String path ){
 }
 
 int SetEnv( String name,String value ){
-//#if _WIN32
 	return putenv( OS_STR( String(name)+T("=")+String(value) ) );
-//#else
-//	return putenv( OS_STR(name),OS_STR(value),1 );
-//#endif
 }
 
 String GetEnv( String name ){
@@ -267,7 +298,9 @@ String GetEnv( String name ){
 }
 
 int Execute( String cmd ){
+
 #if _WIN32
+
 	cmd=T("cmd /S /C \"")+cmd+T("\"");
 
 	PROCESS_INFORMATION pi={0};
@@ -283,8 +316,11 @@ int Execute( String cmd ){
 	CloseHandle( pi.hThread );
 
 	return res;
+
 #else
+
 	return system( OS_STR(cmd) );
+
 #endif
 }
 

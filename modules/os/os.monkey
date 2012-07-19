@@ -35,6 +35,7 @@ Const FILETYPE_DIR=2
 Function LoadDir$[]( path$,recursive?,hidden?=False )
 
 	Local dirs:=New StringList,files:=New StringList
+	
 	dirs.AddLast ""
 	
 	While Not dirs.IsEmpty()
@@ -66,7 +67,7 @@ Function CopyDir( srcpath$,dstpath$,recursive?=True,hidden?=False )
 
 	If FileType( srcpath )<>FILETYPE_DIR Return False
 
-	'do this before create of destdir to allow a dir to be copy into itself!
+	'do this before create of destdir to allow a dir to be copied into itself!
 	'
 	Local files:=LoadDir( srcpath )
 	

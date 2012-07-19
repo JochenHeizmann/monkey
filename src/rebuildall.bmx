@@ -5,7 +5,6 @@ Strict
 Const Rebuild_Trans=	True
 Const Rebuild_Monk=		False
 Const Rebuild_Mserver=	False
-Const Rebuild_Makemeta=	False
 
 ?Win32
 
@@ -13,9 +12,8 @@ Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
 Const trans2$=trans
-'Const trans2$="..\bin\trans_winnt_v50.exe"
+'Const trans2$="..\bin\trans_winnt_bak.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
-Const makemeta$="..\bin\makemeta_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
 
 ?MacOS
@@ -26,7 +24,6 @@ Const trans$="../bin/trans_macos"
 Const trans2$=trans
 'Const trans2$="../bin/trans_macos_v48"
 Const newtrans$="trans/trans.build/stdcpp/main_macos"
-Const makemeta$="../bin/makemeta_macos"
 Const mserver$="../bin/mserver_macos"
 
 ?Linux
@@ -34,9 +31,9 @@ Const mserver$="../bin/mserver_macos"
 Const QUICKTRANS=True
 
 Const trans$="../bni/trans_linux"
+Const trans2$=trans
 'Const trans2$="../bin/trans_linux_v38"
 Const newtrans$="trans/trans.build/stdcpp/main_linux"
-Const makemeta$="../bin/makemeta_linux"
 Const mserver$="../bin/mserver_linux"
 
 ?
@@ -63,7 +60,8 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 ?
 	Else
 	
-		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
+'		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=release +DOUBLEP=1 trans/trans.monkey"
 
 		Delay 100
 		
@@ -94,13 +92,7 @@ If Rebuild_Monk And FileType( "monk/monk.bmx" )=FILETYPE_FILE
 	Print "monk built OK!"
 EndIf
 
-If Rebuild_Makemeta And FileType( "trans/makemeta.bmx" )=FILETYPE_FILE
-	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -t console -a -r -o "+makemeta+" trans/makemeta.bmx"
-	Print "makemeta built OK!"
-EndIf
-
 If Rebuild_MServer And FileType( "mserver/mserver.bmx" )=FILETYPE_FILE
 	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -h -t gui -a -r -o "+mserver+" mserver/mserver.bmx"
 	Print "mserver built OK!"
 EndIf
-

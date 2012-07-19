@@ -1,5 +1,9 @@
 
-#If TARGET="glfw" Or TARGET="android" Or TARGET="ios"
+#If TARGET<>"glfw" And TARGET<>"android" And TARGET<>"ios"
+
+#Error "The opengl module is not avaiable for the ${TARGET} target."
+
+#Endif
 
 Import databuffer
 
@@ -348,6 +352,8 @@ Extern
 
 #If TARGET="glfw"
 
+Function LoadImageData:DataBuffer( path$,info[]=[] )="LoadImageData"
+
 '${GLFW_DECLS}
 Function glBindBuffer:Void( target,buffer )="_glBindBuffer"
 Function glIsBuffer:Bool( buffer )="_glIsBuffer"
@@ -459,6 +465,8 @@ Function glViewport:Void( x,y,width,height )
 '${END}
 
 #Elseif TARGET="android"
+
+Function LoadImageData:DataBuffer( path$,info[]=[] )="bb_opengl_gles11.LoadImageData"
 
 '${ANDROID_DECLS}
 Function glBindBuffer:Void( target,buffer )="GLES11.glBindBuffer"
@@ -572,6 +580,8 @@ Function glViewport:Void( x,y,width,height )="GLES11.glViewport"
 
 #ElseIf TARGET="ios"
 
+Function LoadImageData:DataBuffer( path$,info[]=[] )="LoadImageData"
+
 '${IOS_DECLS}
 Function glBindBuffer:Void( target,buffer )
 Function glIsBuffer:Bool( buffer )
@@ -681,7 +691,5 @@ Function glTexEnvi:Void( target,pname,param )
 Function glTexParameteri:Void( target,pname,param )
 Function glViewport:Void( x,y,width,height )
 '${END}
-
-#Endif
 
 #Endif

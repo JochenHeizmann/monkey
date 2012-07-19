@@ -17,12 +17,23 @@ Class IosTarget Extends Target
 		_trans=New CppTranslator
 	End
 	
+	Method Config$()
+		Local config:=New StringStack
+		For Local kv:=Eachin Env
+			config.Push "#define CFG_"+kv.Key+" "+kv.Value
+		Next
+		Return config.Join( "~n" )
+	End
+	
 	Method MakeTarget()
 	
-		CreateDataDir "data",False
+		CreateDataDir "data"
 
 		Local main$=LoadString( "main.mm" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
+		
+		main=ReplaceBlock( main,"TRANSCODE",transCode )
+		main=ReplaceBlock( main,"CONFIG",Config() )
+		
 		SaveString main,"main.mm"
 		
 		If OPT_ACTION>=ACTION_BUILD

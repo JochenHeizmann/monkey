@@ -33,6 +33,7 @@ Class Sprite
 		For Local i=0 Until 10
 			tmp[i]=New F
 		Next
+
 	End
 
 	Method Update()
@@ -64,10 +65,12 @@ Class MyApp Extends App
 
 	Method OnCreate()
 	
+		Print LoadString( "textfile.txt" )
+	
 		image1=LoadImage( "alien1.png",8,Image.MidHandle )
 		image2=LoadImage( "alien2.png",8,Image.MidHandle )
 		
-		For Local i=0 Until 500
+		For Local i=0 Until 100
 			sprites.Push New Sprite
 		Next
 		
@@ -78,6 +81,10 @@ Class MyApp Extends App
 	End
 	
 	Method OnUpdate()
+	
+		For Local i=1 To 100
+			New F
+		Next
 	
 		uframes+=1
 		Local e=Millisecs-utime

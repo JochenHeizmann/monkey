@@ -21,7 +21,7 @@
 #endif
 #endif
 
-#if DOUBLEP
+#if DOUBLEP || CFG_DOUBLEP
 typedef double Float;
 #define FLOAT(X) X
 #else
@@ -31,11 +31,9 @@ typedef float Float;
 
 //***** GC Config *****
 
-//#define DEBUG_GC 1
-//#undef INCREMENTAL_GC
-//#define INCREMENTAL_GC 1
+//#define CFG_DEBUG_GC 1
 
-#if DEBUG_GC
+#if CFG_DEBUG_GC
 #if __APPLE__
 #define DEBUG_GC_MAC 1
 #elif defined( __glfw_h_ )
@@ -271,7 +269,7 @@ inline void gc_mark_q( gc_object *p ){
 	gc_mark_queue.push_back( p );
 }
 
-#if INCREMENTAL_GC
+#if CFG_INCREMENTAL_GC
 
 template<class T,class V> void gc_assign( T *&lhs,V *rhs ){
 	//
@@ -549,7 +547,7 @@ private:
 	template<class C> friend void gc_mark( Array<C> &t );
 	template<class C> friend void gc_mark_q( Array<C> &t );
 
-#if INCREMENTAL_GC
+#if CFG_INCREMENTAL_GC
 
 	template<class C> friend void gc_assign( Array<C> &lhs,Array<C> rhs );
 	
@@ -577,7 +575,7 @@ template<class T> void gc_mark_array( int n,Array<T> *p ){
 	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
-#if INCREMENTAL_GC
+#if CFG_INCREMENTAL_GC
 
 template<class T> void gc_assign( Array<T> &lhs,Array<T> rhs ){
 	gc_mark_q( rhs.rep );
@@ -1098,7 +1096,7 @@ template<class T> void gc_mark_array( int n,gc_iptr<T> *p ){
 	for( int i=0;i<n;++i ) gc_mark( dynamic_cast<gc_object*>( p[i].p ) );
 }
 
-#if INCREMENTAL_GC
+#if CFG_INCREMENTAL_GC
 
 //template<class T,class V> void gc_assign( gc_iptr<T> *lhs,V *rhs ){
 //	gc_mark_q( dynamic_cast<gc_object*>( rhs ) );
@@ -1223,7 +1221,7 @@ int bb_std_main( int argc,const char **argv ){
 	
 	seh_call( bbInit );
 	
-#if INCREMENTAL_GC
+#if CFG_INCREMENTAL_GC
 	gc_mark_roots();
 #endif
 	

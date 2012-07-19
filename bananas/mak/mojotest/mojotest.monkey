@@ -2,6 +2,7 @@
 'Simple graphics compatibility test
 '
 'Should behave the same on all targets
+
 Import mojo
 
 Class Test Extends App
@@ -20,7 +21,7 @@ Class Test Extends App
 	End
 	
 	Method LoadStuff()
-		image=LoadImage( "RedbrushAlpha.png",1,Image.MidHandle )
+		image=LoadImage( "images/RedbrushAlpha.png",1,Image.MidHandle )
 	End
 	
 	Method OnUpdate()

@@ -33,6 +33,30 @@ static void _init_gl_exts(){
 
 #endif
 
+DataBuffer *LoadImageData( String path,Array<int> info ){
+	int width,height,depth;
+	unsigned char *data=loadImage( path,&width,&height,&depth );
+	if( !data || depth<1 || depth>4 ) return 0;
+	
+	int size=width*height;
+	DataBuffer *buf=DataBuffer::Create( size*4 );
+	
+	unsigned char *src=data,*dst=(unsigned char*)buf->WritePointer();
+	int i;
+	
+	switch( depth ){
+	case 1:for( i=0;i<size;++i ){ *dst++=*src;*dst++=*src;*dst++=*src++;*dst++=255; } break;
+	case 2:for( i=0;i<size;++i ){ *dst++=*src;*dst++=*src;*dst++=*src++;*dst++=*src++; } break;
+	case 3:for( i=0;i<size;++i ){ *dst++=*src++;*dst++=*src++;*dst++=*src++;*dst++=255; } break;
+	case 4:for( i=0;i<size;++i ){ *dst++=*src++;*dst++=*src++;*dst++=*src++;*dst++=*src++; } break;
+	}
+	
+	if( info.Length()>0 ) info[0]=width;
+	if( info.Length()>1 ) info[1]=height;
+	
+	return buf;
+}
+
 void _glGenBuffers( int n,Array<int> buffers,int offset ){
 	INIT_GL_EXTS
 	glGenBuffers( n,(GLuint*)&buffers[offset] );
@@ -139,7 +163,7 @@ void _glTexParameteriv( int target,int pname,Array<int> params,int offset ){
 	glTexParameteriv( target,pname,&params[offset] );
 }
 
-void _glVertexPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glVertexPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glVertexPointer( size,type,stride,pointer->ReadPointer() );
 }
 
@@ -147,7 +171,7 @@ void _glVertexPointer( int size,int type,int stride,int offset ){
 	glVertexPointer( size,type,stride,(const void*)offset );
 }
 
-void _glColorPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glColorPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glColorPointer( size,type,stride,pointer->ReadPointer() );
 }
 
@@ -155,7 +179,7 @@ void _glColorPointer( int size,int type,int stride,int offset ){
 	glColorPointer( size,type,stride,(const void*)offset );
 }
 
-void _glNormalPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glNormalPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glNormalPointer( type,stride,pointer->ReadPointer() );
 }
 
@@ -163,7 +187,7 @@ void _glNormalPointer( int size,int type,int stride,int offset ){
 	glNormalPointer( type,stride,(const void*)offset );
 }
 
-void _glTexCoordPointer( int size,int type,int stride,RamBuffer *pointer ){
+void _glTexCoordPointer( int size,int type,int stride,DataBuffer *pointer ){
 	glTexCoordPointer( size,type,stride,pointer->ReadPointer() );
 }
 

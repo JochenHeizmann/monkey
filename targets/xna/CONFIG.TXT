@@ -1,0 +1,43 @@
+
+' Initial window size
+'
+WINDOW_WIDTH=640
+WINDOW_HEIGHT=480
+
+WINDOW_WIDTH_XBOX=640
+WINDOW_HEIGHT_XBOX=480
+
+WINDOW_WIDTH_PHONE=320
+WINDOW_HEIGHT_PHONE=480
+
+
+' Whether window is resizable - ignored on xbox, phone
+'
+WINDOW_RESIZABLE=false
+
+
+' Whether window is fullscreen - ignored on xbox, phone
+'
+WINDOW_FULLSCREEN=false
+
+
+' true to enable image filtering, false to disable
+'
+IMAGE_FILTERING_ENABLED=true
+
+
+' Data file filters - these decide what data gets included in the target project.
+'
+' Image file types supported by XNA: .bmp, .dds, .dib, .hdr, .jpg, .pfm, .png, .ppm, and .tga
+'
+' Audio file types supported by XNA: .wav, .mp3, .wma
+'
+' Note: Avoid the use of the same audio files for both sound and music, as such files will effectively appear twice in the output project.
+'
+TEXT_FILES=*.txt|*.xml|*.json
+
+IMAGE_FILES=*.png|*.jpg
+
+SOUND_FILES=*.wav
+
+MUSIC_FILES=*.mp3|*.wma

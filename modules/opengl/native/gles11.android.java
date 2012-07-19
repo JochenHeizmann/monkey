@@ -1,19 +1,50 @@
 
 class bb_opengl_gles11{
 
-	static void _glVertexPointer( int size,int type,int stride,RamBuffer pointer ){
+	static DataBuffer LoadImageData( String path,int[] info ){
+		Bitmap bitmap=null;
+		try{
+			bitmap=MonkeyData.loadBitmap( path );
+		}catch( OutOfMemoryError e ){
+			throw new Error( "Out of memory error loading bitmap" );
+		}
+		if( bitmap==null ) return null;
+		
+		int width=bitmap.getWidth(),height=bitmap.getHeight();
+	
+		int size=width*height;
+		int[] pixels=new int[size];
+		bitmap.getPixels( pixels,0,width,0,0,width,height );
+		
+		DataBuffer buf=DataBuffer.Create( size*4 );
+		for( int i=0;i<size;++i ){
+			int p=pixels[i];
+			int a=(p>>24) & 255;
+			int r=(p>>16) & 255;
+			int g=(p>>8) & 255;
+			int b=p & 255;
+			buf.PokeInt( i*4,(a<<24)|(b<<16)|(g<<8)|r );
+		}
+		
+		if( info.length>0 ) info[0]=width;
+		if( info.length>1 ) info[1]=height;
+		
+		return buf;
+	}
+
+	static void _glVertexPointer( int size,int type,int stride,DataBuffer pointer ){
 		GLES11.glVertexPointer( size,type,stride,pointer.GetBuffer() );
 	}
 	
-	static void _glColorPointer( int size,int type,int stride,RamBuffer pointer ){
+	static void _glColorPointer( int size,int type,int stride,DataBuffer pointer ){
 		GLES11.glColorPointer( size,type,stride,pointer.GetBuffer() );
 	}
 	
-	static void _glNormalPointer( int type,int stride,RamBuffer pointer ){
+	static void _glNormalPointer( int type,int stride,DataBuffer pointer ){
 		GLES11.glNormalPointer( type,stride,pointer.GetBuffer() );
 	}
 	
-	static void _glTexCoordPointer( int size,int type,int stride,RamBuffer pointer ){
+	static void _glTexCoordPointer( int size,int type,int stride,DataBuffer pointer ){
 		GLES11.glTexCoordPointer( size,type,stride,pointer.GetBuffer() );
 	}
 	

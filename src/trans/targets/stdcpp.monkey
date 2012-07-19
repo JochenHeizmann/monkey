@@ -20,18 +20,27 @@ Class StdcppTarget Extends Target
 		ENV_LANG="cpp"
 		_trans=New CppTranslator
 	End
-
+	
+	Method Config$()
+		Local config:=New StringStack
+		For Local kv:=Eachin Env
+			config.Push "#define CFG_"+kv.Key+" "+kv.Value
+		Next
+		Return config.Join( "~n" )
+	End
+	
 	Method MakeTarget()
 	
-		Local opts$
-		opts+="#define DOUBLEP 1~n"
-		If CONFIG_PROFILE opts+="#define PROFILE 1~n"
+		Select ENV_CONFIG
+		Case "debug" Env.Set "DEBUG","1"
+		Case "release" Env.Set "RELEASE","1"
+		Case "profile" Env.Set "PROFILE","1"
+		End
 		
 		Local main$=LoadString( "main.cpp" )
 		
-		main=ReplaceBlock( main,"${CPP_OPTS_BEGIN}","${CPP_OPTS_END}",opts )
-		
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
+		main=ReplaceBlock( main,"TRANSCODE",transCode )
+		main=ReplaceBlock( main,"CONFIG",Config() )
 
 		SaveString main,"main.cpp"
 

@@ -1,6 +1,51 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V52 *****
+
+Modules
+
+android mojo.input - added blind kludge for EnableKeyboard.
+
+os - Changed CopyFile to use os copyfile/CopyFileW.
+
+html5 mojo - Removed cookie hack from LoadState/SaveState.
+
+opengl.gles11 - Added LoadImageData for use with glTexImage2D etc.
+
+android mojo.graphics - changed gl calls to use GLES11 class instead of GL11 object.
+
+mojo.audio - added PauseChannel, ResumeChannel, PauseMusic, ResumeMusic.
+
+mojo.graphics - added support for IMAGE_FILTERING_ENABLED to appropriate targets. See CONFIG.TXT files.
+
+
+Targets:
+
+xna - text files no longer embedded.
+
+xna - data dir now created directly to xna Content dir.
+
+ios, glfw - INCREMENTAL_GC now defaults to 1.
+
+html5 - loadString now uses XMLHttpRequest.
+
+flash - added type="..." to <embed> tag
+
+glfw, flash, android, xna, glfw, android - added IMAGE_FILTERING_ENABLED setting to config files.
+
+
+Trans (1.28)
+
+bin/makemeta app gone.
+
+Text files no longer embedded in html5.
+
+Added 'data file filters' to CONFIG.TXT files.
+
+Added support for per-target CONFIG.TXT config files. 
+
+
 ***** V51 *****
 
 Modules

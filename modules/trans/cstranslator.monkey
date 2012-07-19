@@ -165,11 +165,9 @@ Class CsTranslator Extends Translator
 		Else If FloatType( dst )
 			If IntType( src ) Return "(float)"+texpr
 			If FloatType( src ) Return texpr
-'			If StringType( src ) Return "float.Parse"+texpr
 			If StringType( src ) Return "float.Parse"+Bra(uexpr+",CultureInfo.InvariantCulture")
 		Else If StringType( dst )
 			If IntType( src ) Return texpr+".ToString()"
-'			If FloatType( src ) Return texpr+".ToString()"
 			If FloatType( src ) Return texpr+".ToString(CultureInfo.InvariantCulture)"
 			If StringType( src ) Return texpr
 		Endif
@@ -469,6 +467,7 @@ Class CsTranslator Extends Translator
 		Return JoinLines()
 	End
 	
+#rem
 	Method PostProcess$( source$ )
 		'
 		'move using decls to top
@@ -494,5 +493,6 @@ Class CsTranslator Extends Translator
 		Next
 		Return head+usings+code
 	End
+#end
 	
 End

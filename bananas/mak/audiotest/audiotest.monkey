@@ -5,52 +5,70 @@ Import mojo
 
 Class MyApp Extends App
 
-	Field tkey,fmt$,mfmt$
+	Field tkey,soundFmt$,musicFmt$
 	Field shoot:Sound,shoot_chan,shoot_loop
 	Field tinkle:Sound,tinkle_chan=4,tinkle_loop
-	Field music$,music_on
+	Field music$,music_on,music_paused
 	
 	Method OnCreate()
 	
 #If TARGET="glfw"
+		'
 		'GLFW supports WAV only
-		fmt="wav"
+		'
+		soundFmt="wav"
+		musicFmt="wav"
+		'
 #Elseif TARGET="html5"
-		'Less than awesomely, there appears to be no 'common' format for html5!
-		'Opera/Chrome appear to handle everything, but...
+		'
+		'HTML5 supports WAV, OGG, MP3, M4A. However...
+		'
 		'IE wont play WAV/OGG
 		'FF wont play MP3/M4A
-		'Let's support OGG!
-		fmt="ogg"		'use M4a for IE...
+		'
+		'So this wont work on IE...
+		'
+		soundFmt="wav"
+		musicFmt="ogg"
+		'
 #Elseif TARGET="flash"
+		'
 		'Flash supports MP3, M4A online, but only MP3 embedded.
-		fmt="mp3"
+		'
+		soundFmt="mp3"
+		musicFmt="mp3"
+		'
 #Elseif TARGET="android"
-		'Android supports WAV, OGG, MP3, M4A (M4A only appears to work for music though)
-		'There are rumours of problems with WAV sounds so let's use OGG.
-		fmt="ogg"
+		'
+		'Android supports WAV, OGG, MP3, M4A
+		'
+		soundFmt="wav"
+		musicFmt="ogg"
+		'
 #Elseif TARGET="xna"
+		'
 		'XNA supports WAV, MP3, WMA
-		'Probably OK to use mp3 here, as audio is converted by XNA so you're not actually 
-		'redistributing/decoding mp3s so probably don't need a license. But that's a lot
-		'of 'probablys'...
-		fmt="wav"
-		mfmt="wma"
+		'
+		soundFmt="wav"
+		musicFmt="wma"
+		'
 #Elseif TARGET="ios"
-		'iOS supports WAV, MP3, M4A
-		fmt="m4a"
+		'
+		'iOS supports WAV, MP3, M4A, CAF, AIFF
+		'
+		soundFmt="wav"
+		musicFmt="m4a"
+		'
 #End
-		If Not mfmt mfmt=fmt
-
 		LoadStuff
 				
 		SetUpdateRate 15
 	End
 	
 	Method LoadStuff()
-		shoot=LoadSound( "shoot."+fmt )
-		tinkle=LoadSound( "tinkle."+fmt )
-		music="happy."+mfmt
+		shoot=LoadSound( "shoot."+soundFmt )
+		tinkle=LoadSound( "tinkle."+soundFmt )
+		music="happy."+musicFmt
 	End
 	
 	Method OnUpdate()
@@ -61,10 +79,10 @@ Class MyApp Extends App
 		Local key
 		If TouchHit(0)
 			Local y=ty/24
-			If y>=0 And y<8 key=y+1
+			If y>=0 And y<9 key=y+1
 		Endif
 	
-		For Local i=KEY_1 To KEY_8
+		For Local i=KEY_1 To KEY_9
 			If KeyHit(i)
 				key=i-KEY_1+1
 				Exit
@@ -107,8 +125,19 @@ Class MyApp Extends App
 			Else
 				PlayMusic music,1
 				music_on=True
+				music_paused=False
 			Endif
 		Case 8
+			If music_on
+				If music_paused
+					ResumeMusic
+					music_paused=False
+				Else
+					PauseMusic
+					music_paused=True
+				Endif
+			Endif
+		Case 9
 			'shoot.Discard		'should work with/without...
 			'tinkle.Discard
 			LoadStuff
@@ -134,7 +163,8 @@ Class MyApp Extends App
 		DrawText "5) Loop/Stop 'shoot' through channel 6",0,24*4
 		DrawText "6) Loop/Stop 'tinkle' through channel 7",0,24*5
 		DrawText "7) Loop/Stop music",0,24*6
-		DrawText "8) Reload sounds",0,24*7
+		DrawText "8) Pause/Resume music",0,24*7
+		DrawText "9) Reload sounds",0,24*8
 		
 		Local y=24*9
 		For Local i=0 Until 8

@@ -17,76 +17,101 @@ Class XnaTarget Extends Target
 		_trans=New CsTranslator
 	End
 
+	Method Config$()
+		Local config:=New StringStack
+		For Local kv:=Eachin Env
+			config.Push "public const String "+kv.Key+"="+LangEnquote( kv.Value )+";"
+		Next
+		Return config.Join( "~n" )
+	End
+	
+	Method Content$()
+		Local cont:=New StringStack
+
+		For Local kv:=Eachin dataFiles
+		
+			Print kv.Key+"->"+kv.Value
+
+			Local p:=kv.Key
+			Local r:=kv.Value
+			Local f:=StripDir( r )
+			Local t:=("monkey/"+r).Replace( "/","\" )
+			
+			Local ext:=ExtractExt( r ).ToLower()
+			
+			If MatchPath( r,TEXT_FILES )
+					cont.Push "  <ItemGroup>"
+					cont.Push "    <Content Include=~q"+t+"~q>"
+					cont.Push "      <Name>"+f+"</Name>"
+					cont.Push "      <CopyToOutputDirectory>Always</CopyToOutputDirectory>"
+					cont.Push "    </Content>"
+					cont.Push "  </ItemGroup>"
+			Else If MatchPath( r,IMAGE_FILES )
+				Select ext
+				Case "bmp","dds","dib","hdr","jpg","pfm","png","ppm","tga"
+					cont.Push "  <ItemGroup>"
+					cont.Push "    <Compile Include=~q"+t+"~q>"
+					cont.Push "      <Name>"+f+"</Name>"
+					cont.Push "      <Importer>TextureImporter</Importer>"
+					cont.Push "      <Processor>TextureProcessor</Processor>"
+					cont.Push "      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>"
+					cont.Push "      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>"
+					cont.Push "	   </Compile>"
+					cont.Push "  </ItemGroup>"
+				Default
+					Die "Invalid image file type"
+				End
+			Else If MatchPath( r,SOUND_FILES )
+				Select ext
+				Case "wav","mp3","wma"
+					Local imp:=ext[..1].ToUpper()+ext[2..]+"Importer"	'eg: wav->WavImporter
+					cont.Push "  <ItemGroup>"
+					cont.Push "    <Compile Include=~q"+t+"~q>"
+					cont.Push "      <Name>"+f+"</Name>"
+					cont.Push "      <Importer>"+imp+"</Importer>"
+					cont.Push "      <Processor>SoundEffectProcessor</Processor>"
+					cont.Push "	   </Compile>"
+					cont.Push "  </ItemGroup>"
+				Default
+					Die "Invalid sound file type"
+				End
+			Else If MatchPath( r,MUSIC_FILES )
+				Select ext
+				Case "wav","mp3","wma"
+					Local imp:=ext[..1].ToUpper()+ext[2..]+"Importer"	'eg: wav->WavImporter
+					cont.Push "  <ItemGroup>"
+					cont.Push "    <Compile Include=~q"+t+"~q>"
+					cont.Push "      <Name>"+f+"</Name>"
+					cont.Push "      <Importer>"+imp+"</Importer>"
+					cont.Push "      <Processor>SongProcessor</Processor>"
+					cont.Push "	  </Compile>"
+					cont.Push "  </ItemGroup>"
+				Default
+					Die "Invalid music file type"
+				End
+			Endif
+
+		Next
+		
+		Return cont.Join( "~n" )
+	
+	End
+
 	Method MakeTarget()
 	
-		CreateDataDir "data"
-		
-		Local t$,dirs:=New StringList
-		dirs.AddLast ""
-		While Not dirs.IsEmpty()
-		
-			Local dir$=dirs.RemoveFirst()
-			
-			For Local file$=Eachin LoadDir( "data/"+dir )
-				If file.StartsWith(".") Continue
-			
-				Local path$=file
-				If dir path=dir+"/"+file
-				'Print "Processing:"+path
-				
-				'build action
-				Local action$="Compile"
-				
-				Select FileType( "data/"+path )
-				Case FILETYPE_FILE
-					Local ps$
-					Select ExtractExt( file )
-					Case "png","jpg","jpeg"
-						ps+="      <Importer>TextureImporter</Importer>~n"
-						ps+="      <Processor>TextureProcessor</Processor>~n"
-						ps+="      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>~n"
-						ps+="      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>~n"
-					Case "wav"
-						ps+="      <Importer>WavImporter</Importer>~n"
-						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
-					Case "mp3"
-						ps+="      <Importer>Mp3Importer</Importer>~n"
-						ps+="      <Processor>SongProcessor</Processor>~n"
-					Case "wma"
-						ps+="      <Importer>WmaImporter</Importer>~n"
-						ps+="      <Processor>SongProcessor</Processor>~n"
-'					Case "mp3"
-'						ps+="      <Importer>Mp3Importer</Importer>~n"
-'						ps+="      <Processor>SoundEffectProcessor</Processor>~n"
-'					Case "wma"
-'						ps+="      <Importer>WmaImporter</Importer>~n"
-'						ps+="      <Processor>SoundEffectProcessor</Processor>~n"					
-					End
-					If ps
-						t+="  <ItemGroup>~r~n"
-						t+="    <"+action+" Include=~q"+path+"~q>~r~n"
-						t+="      <Name>"+file+"</Name>~r~n"
-						t+=ps
-						t+="	</"+action+">~r~n"
-						t+="  </ItemGroup>~r~n"
-						CopyFile "data/"+path,"MonkeyGame/MonkeyGameContent/"+path
-					Endif
-				Case FILETYPE_DIR
-					CreateDir "MonkeyGame/MonkeyGameContent/"+path
-					dirs.AddLast path
-				End
-			Next
-		Wend
-		
-		'app data
-		Local cont$=LoadString( "MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj" )
-		cont=ReplaceBlock( cont,"${CONTENT_BEGIN}","${CONTENT_END}",t )
-		SaveString cont,"MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj"
+		CreateDataDir "MonkeyGame/MonkeyGameContent/monkey"
 
+		'app data
+		Local contproj:=LoadString( "MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj" )
+		contproj=ReplaceBlock( contproj,"CONTENT",Content(),"~n<!-- " )
+		SaveString contproj,"MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj"
+		
 		'app code
-		Local main$=LoadString( "MonkeyGame/MonkeyGame/Program.cs" )
-		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
-		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
+		Local main:=LoadString( "MonkeyGame/MonkeyGame/Program.cs" )
+		
+		main=ReplaceBlock( main,"TRANSCODE",transCode )
+		main=ReplaceBlock( main,"CONFIG",Config() )
+		
 		SaveString main,"MonkeyGame/MonkeyGame/Program.cs"
 			
 		If OPT_ACTION>=ACTION_BUILD
@@ -102,4 +127,3 @@ Class XnaTarget Extends Target
 	End
 
 End
-
