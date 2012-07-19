@@ -295,7 +295,7 @@ Class CsTranslator Extends Translator
 	'***** Declarations *****
 
 	Method EmitFuncDecl( decl:FuncDecl )
-		PushMungScope
+		BeginLocalScope
 		
 		Local args$
 		For Local arg:=Eachin decl.argDecls
@@ -329,7 +329,7 @@ Class CsTranslator Extends Translator
 			Emit "}"
 		Endif
 		
-		PopMungScope
+		EndLocalScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -404,18 +404,14 @@ Class CsTranslator Extends Translator
 			Local cdecl:=ClassDecl( decl )
 			If Not cdecl Continue
 			
-			PushMungScope
-			
 			For Local decl:=Eachin cdecl.Semanted
 			
-				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod()
+				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
 					decl.ident=cdecl.ident+"_"+decl.ident
 				Endif
 				
 				MungDecl decl
 			Next
-			
-			PopMungScope
 		Next
 		
 		'classes		
@@ -450,26 +446,19 @@ Class CsTranslator Extends Translator
 			Next
 			
 			If mdecl=app.mainModule
+				BeginLocalScope
 				Emit "public static int bbInit(){"
 				For Local decl:=Eachin app.semantedGlobals
 					Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
 				Next
 				Emit "return 0;"
 				Emit "}"
+				EndLocalScope
 			Endif
 
 			Emit "}"
 		Next
-#rem		
-		Emit "class bb_Init{"
-		Emit "public static int Init(){"
-		For Local decl:=Eachin app.semantedGlobals
-			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
-		Next
-		Emit "return 0;"
-		Emit "}"
-		Emit "}"
-#end		
+
 		Return JoinLines()
 	End
 	

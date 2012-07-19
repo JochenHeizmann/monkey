@@ -13,28 +13,23 @@ Class Translator
 	Field indent$
 	Field lines:=New StringList
 	Field unreachable,broken
-	
-	'Munging needs a big cleanup!
-	
-	Field mungScope:=New StringMap<Decl>
-	Field mungStack:=New Stack< StringMap<Decl> >
 	Field funcMungs:=New StringMap<FuncDeclList>
+	Field mungedScopes:=New StringMap<StringSet>
 	
-	Method PushMungScope()
-		mungStack.Push mungScope
-		mungScope=New StringMap<Decl>
+	Method BeginLocalScope()
+		mungedScopes.Set "$",New StringSet
 	End
 	
-	Method PopMungScope()
-		mungScope=mungStack.Pop()
+	Method EndLocalScope()
+		mungedScopes.Set "$",Null
 	End
 	
-	Method MungFuncDecl( fdecl:FuncDecl )
+	Method MungMethodDecl( fdecl:FuncDecl )
 
 		If fdecl.munged Return
 		
 		If fdecl.overrides
-			MungFuncDecl fdecl.overrides
+			MungMethodDecl fdecl.overrides
 			fdecl.munged=fdecl.overrides.munged
 			Return
 		Endif
@@ -62,7 +57,7 @@ Class Translator
 			funcMungs.Set fdecl.ident,funcs
 		Endif
 		
-		fdecl.munged="bbm_"+fdecl.ident
+		fdecl.munged="m_"+fdecl.ident
 		If Not funcs.IsEmpty() fdecl.munged+=String(funcs.Count()+1)
 		funcs.AddLast fdecl
 	End
@@ -72,52 +67,57 @@ Class Translator
 		If decl.munged Return
 
 		Local fdecl:FuncDecl=FuncDecl( decl )
+		If fdecl And fdecl.IsMethod() Return MungMethodDecl( fdecl )
 		
-		If fdecl And fdecl.IsMethod() Return MungFuncDecl( fdecl )
+		Local mscope$,cscope$
+		If decl.ClassScope() cscope=decl.ClassScope().munged
+		If decl.ModuleScope() mscope=decl.ModuleScope().munged
 		
-		Local id$=decl.ident,munged$
-
-		'this lot just makes output a bit more readable...
-		Select ENV_LANG
-		Case "js"
-			If ModuleDecl( decl.scope ) Or GlobalDecl( decl ) Or (fdecl And Not fdecl.IsMethod())
-				munged=decl.ModuleScope().munged+"_"+id
-			Endif
-		Case "as"
-			If ModuleDecl( decl.scope )
-				munged=decl.ModuleScope().munged+"_"+id
-			Endif
-		Case "cs"
-			If ClassDecl( decl )
-				munged=decl.ModuleScope().munged+"_"+id
-			Endif
-		Case "java"
-			If ClassDecl( decl )
-				munged=decl.ModuleScope().munged+"_"+id
-			Endif
-		Case "cpp"
-			If ModuleDecl( decl.scope )
-				munged=decl.ModuleScope().munged+"_"+id
-			Endif
-		End Select
+		Local id:=decl.ident,munged$,scope$
 		
-		If Not munged
-			If LocalDecl( decl )
-				munged="bbt_"+id
+		'id=id.Replace( "_","_1" )
+		
+		If LocalDecl( decl )
+			scope="$"
+			munged="t_"+id
+		Else If FieldDecl( decl )
+			scope=cscope
+			munged="f_"+id
+		Else If GlobalDecl( decl ) Or FuncDecl( decl )
+			If cscope And ENV_LANG<>"js"
+				scope=cscope
+				munged="g_"+id
+			Else If cscope
+				munged=cscope+"_"+id
 			Else
-				munged="bb_"+id
+				munged=mscope+"_"+id
 			Endif
+		Else If ClassDecl( decl )
+			munged=mscope+"_"+id
+		Else If ModuleDecl( decl )
+			munged="bb_"+id
+		Else
+			InternalErr
 		Endif
 		
-		If mungScope.Contains( munged )
-			Local t$,i=1
-			Repeat
-				i+=1
-				t=munged+i
-			Until Not mungScope.Contains( t )
-			munged=t
+		Local set:=mungedScopes.Get( scope )
+		If set
+			If set.Contains( munged )
+				Local id=1
+				Repeat
+					id+=1
+					Local t$=munged+String(id)
+					If set.Contains(t) Continue
+					munged=t
+					Exit
+				Forever
+			Endif
+		Else
+			If scope="$" InternalErr
+			set=New StringSet
+			mungedScopes.Set scope,set
 		Endif
-		mungScope.Insert munged,decl
+		set.Insert munged
 		decl.munged=munged
 	End
 	

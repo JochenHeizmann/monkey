@@ -62,6 +62,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 	Else
+	
 		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 
 		Delay 100

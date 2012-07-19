@@ -353,6 +353,8 @@ Class Parser
 	
 	Field _app:AppDecl
 	Field _module:ModuleDecl
+	
+	Field _selTmpId
 		
 	Method SetErr()
 		If _toker.Path _errInfo=_toker.Path+"<"+_toker.Line+">"
@@ -1099,9 +1101,14 @@ Class Parser
 	Method ParseSelectStmt()
 		Parse "select"
 		
+		Local expr:=ParseExpr()
+		
 		Local block:BlockDecl=_block
+		
+		_selTmpId+=1
+		Local tmpId:=String( _selTmpId )	'1,2,3...
 
-		Local tmpVar:LocalDecl=New LocalDecl( "tmp",0,Null,ParseExpr() )
+		Local tmpVar:LocalDecl=New LocalDecl( tmpId,0,Null,expr )
 
 		block.AddStmt New DeclStmt( tmpVar )
 		
@@ -1114,7 +1121,7 @@ Class Parser
 				NextToke
 				Local comp:Expr
 				Repeat
-					Local expr:Expr=New IdentExpr( "tmp" )
+					Local expr:Expr=New IdentExpr( tmpId )
 					expr=New BinaryCompareExpr( "=",expr,ParseExpr() )
 					If comp
 						comp=New BinaryLogicExpr( "or",comp,expr )
@@ -1368,6 +1375,8 @@ Class Parser
 		Endif
 		
 		If funcDecl.IsAbstract() Return funcDecl
+		
+'		_selTmpId=0
 		
 		PushBlock funcDecl
 		While _toke<>"end"
@@ -1642,7 +1651,7 @@ Class Parser
 		
 		Local path$=_toker.Path()
 		Local ident$=StripAll( path )
-		Local munged$	'="bb_"+ident+"_"
+		Local munged$	'="bb_"+ident
 
 		ValidateModIdent ident
 		

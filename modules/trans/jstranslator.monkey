@@ -283,7 +283,7 @@ Class JsTranslator Extends Translator
 	'***** Declarations *****
 
 	Method EmitFuncDecl( decl:FuncDecl )
-		PushMungScope
+		BeginLocalScope
 		
 		Local args$
 		For Local arg:ArgDecl=Eachin decl.argDecls
@@ -305,7 +305,7 @@ Class JsTranslator Extends Translator
 
 		Emit "}"
 		
-		PopMungScope
+		EndLocalScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -393,20 +393,22 @@ Class JsTranslator Extends Translator
 			If Not cdecl Continue
 
 			'global mungs
+			#rem
 			For Local decl:=Eachin cdecl.Semanted
 				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod() Or GlobalDecl( decl )
 					MungDecl decl
 				Endif
 			Next
+			#end
 			
 			'local mungs
-			PushMungScope
+'			PushMungScope
 			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
 			Next
 			
-			PopMungScope
+'			PopMungScope
 		Next
 		
 		For Local decl:=Eachin app.Semanted

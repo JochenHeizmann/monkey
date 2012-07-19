@@ -58,7 +58,7 @@ Class AndroidTarget Extends Target
 			Execute "adb start-server"
 			
 			'Don't die yet...
-			Local r=Execute( "ant clean",False ) And Execute( "ant install",False )
+			Local r=Execute( "ant clean",False ) And Execute( "ant debug install",False )
 			
 			'...always execute this or project dir can remain locked by ADB!
 			Execute "adb kill-server",False

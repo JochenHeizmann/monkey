@@ -304,7 +304,7 @@ Class JavaTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncDecl( decl:FuncDecl )
-		PushMungScope
+		BeginLocalScope
 		
 		Local args$
 		For Local arg:=Eachin decl.argDecls
@@ -327,7 +327,7 @@ Class JavaTranslator Extends Translator
 			Emit "}"
 		Endif
 		
-		PopMungScope
+		EndLocalScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -406,18 +406,9 @@ Class JavaTranslator Extends Translator
 			Local cdecl:=ClassDecl( decl )
 			If Not cdecl Continue
 			
-			PushMungScope
-
 			For Local decl:=Eachin cdecl.Semanted
-			
-				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod()
-					decl.ident=cdecl.ident+"_"+decl.ident
-				Endif			
-				
 				MungDecl decl
 			Next
-			
-			PopMungScope
 		Next
 
 		For Local decl:=Eachin app.Semanted
@@ -449,12 +440,14 @@ Class JavaTranslator Extends Translator
 			Next
 			
 			If mdecl=app.mainModule
+				BeginLocalScope
 				Emit "public static int bbInit(){"
 				For Local decl:=Eachin app.semantedGlobals
 					Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
 				Next
 				Emit "return 0;"
 				Emit "}"
+				EndLocalScope
 			Endif
 			
 			Emit "}"

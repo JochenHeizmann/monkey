@@ -1,11 +1,18 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V49 *****
+***** V47c *****
+
+* YOU MUST UPDATE ANDROID SDK TO LATEST VERSION - currently this is Android SDK tools rev 14, Android SDK platform tools rev 8 according to SDK manager.
+
 
 Modules:
 
+monkey.lang - added autoscrolling Print to js target.
+
 mojo.graphics - Changed XNA PlayMusic to use MediaPlayer.
+
+ios mojo - Changed touch handling to only process touches for view.
 
 
 Monk (0.35)
@@ -13,7 +20,13 @@ Monk (0.35)
 Applied MaxIDE tab width & SaveText fixes and recompiled with new MaxGUI.
 
 
-Trans (1.22)
+Trans (1.23)
+
+Fixed/cleaned up name mangling issues. Still not perfect, probably never will be given range of targets.
+
+Fixed android target and android trans to work with latest android version.
+
+Fixed Select 'tmp' bug with multipe selects in same block.
 
 Fixed object cast bug with new generics.
 
@@ -21,26 +34,7 @@ XNA target changed to treat WAV files as sounds, MP3 and WMA files as music.
 
 Generics system majorly overhauled, now uses 'reification' instead of 'type erasure'.
 
-
-***** V48 *****
-
-Modules:
-
-mojo - Changed touch handling to only process touches for view.
-
-
-
-Targets:
-
-ios - Changed touch detection to touchesBegan, touchesEnded etc. for better compatibility with game center etc. Enabled multi-touch in UIView via xib!
-
-
-
-***** V47 *****
-
-Modules:
-
-monkey.lang - added autoscrolling Print to js target.
+ios target - Changed touch detection to touchesBegan, touchesEnded etc. for better compatibility with game center etc. Enabled multi-touch in UIView via xib!
 
 
 ***** V46 *****

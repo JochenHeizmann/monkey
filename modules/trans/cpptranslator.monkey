@@ -341,19 +341,13 @@ Class CppTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncProto( decl:FuncDecl )
-		'Find decl we override
-		Local odecl:=decl
-		While odecl.overrides
-			odecl=odecl.overrides
-		Wend
-
 		Local args$
-		For Local arg:=Eachin odecl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			If args args+=","
 			args+=TransType( arg.type )
 		Next
 		
-		Local t$=TransType( odecl.retType )+" "+decl.munged+Bra( args )
+		Local t$=TransType( decl.retType )+" "+decl.munged+Bra( args )
 		If decl.IsAbstract() t+="=0"
 		
 		Local q$
@@ -366,11 +360,10 @@ Class CppTranslator Extends Translator
 	Method EmitFuncDecl( decl:FuncDecl )
 		If decl.IsAbstract() Return
 		
-		PushMungScope
+		BeginLocalScope
 		
 		Local args$
-		For Local i=0 Until decl.argDecls.Length
-			Local arg:=decl.argDecls[i]
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransType( arg.type )+" "+arg.munged
@@ -384,8 +377,8 @@ Class CppTranslator Extends Translator
 		EmitBlock decl
 
 		Emit "}"
-
-		PopMungScope
+		
+		EndLocalScope
 	End
 	
 	Method EmitClassProto( classDecl:ClassDecl )
@@ -503,7 +496,8 @@ Class CppTranslator Extends Translator
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.munged
 		
-		'fields ctor		
+		'fields ctor
+		BeginLocalScope		
 		Emit classid+"::"+classid+"(){"
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
@@ -511,6 +505,7 @@ Class CppTranslator Extends Translator
 			Emit TransField(fdecl,Null)+"="+fdecl.init.Trans()+";"
 		Next
 		Emit "}"
+		EndLocalScope
 		
 		'methods		
 		For Local decl:=Eachin classDecl.Semanted
@@ -558,13 +553,10 @@ Class CppTranslator Extends Translator
 			
 			Emit "class "+decl.munged+";"
 			
-			PushMungScope
-			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
 			Next
-			
-			PopMungScope
+
 		Next
 		
 		'prototypes/header!
@@ -611,12 +603,14 @@ Class CppTranslator Extends Translator
 			Endif
 		Next
 		
+		BeginLocalScope
 		Emit "int bbInit(){"
 		For Local decl:=Eachin app.semantedGlobals
 			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
 		Next
 		Emit "return 0;"
 		Emit "}"
+		EndLocalScope
 
 		Emit "void gc_mark(){"
 		For Local decl:=Eachin app.semantedGlobals
