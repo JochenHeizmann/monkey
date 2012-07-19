@@ -76,7 +76,11 @@ Class List<T>
 
 	Method ObjectEnumerator:Enumerator<T>()
 		Return New Enumerator<T>( Self )
-	End Method
+	End
+	
+	Method Backwards:BackwardsList<T>()
+		Return New BackwardsList<T>( Self )
+	End
 
 Private
 
@@ -132,6 +136,46 @@ Class Enumerator<T>
 	Method NextObject:T()
 		Local data:T=_curr._data
 		_curr=_curr._succ
+		Return data
+	End
+
+Private
+	
+	Field _list:List<T>
+	Field _curr:Node<T>
+
+End
+
+Class BackwardsList<T>
+
+	Method New( list:List<T> )
+		_list=list
+	End
+
+	Method ObjectEnumerator:BackwardsEnumerator<T>()
+		Return New BackwardsEnumerator<T>( _list )
+	End Method
+	
+Private
+
+	Field _list:List<T>
+
+End
+
+Class BackwardsEnumerator<T>
+
+	Method New( list:List<T> )
+		_list=list
+		_curr=list._head._pred
+	End Method
+
+	Method HasNext:Bool()
+		Return _curr<>_list._head
+	End 
+
+	Method NextObject:T()
+		Local data:T=_curr._data
+		_curr=_curr._pred
 		Return data
 	End
 

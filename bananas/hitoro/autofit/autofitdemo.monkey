@@ -14,7 +14,7 @@ Import autofit
 Class Game Extends App
 
 	Method OnCreate ()
-		SetVirtualDisplay 1440, 900
+		SetVirtualDisplay 320,480	'1440, 900
 		SetUpdateRate 60
 	End
 

@@ -18,7 +18,21 @@ Class Test Extends App
 		If KeyDown( KEY_LMB ) Print "Yes!"
 	End
 
+	Field tx#=0,ty#=0
+
 	Method OnRender()
+	
+		If KeyDown( KEY_RIGHT )
+			tx+=.0125
+		Else If KeyDown( KEY_LEFT )
+			tx-=.0125
+		Endif
+		If KeyDown( KEY_UP )
+			ty-=.0125
+		Else If KeyDown( KEY_DOWN )
+			ty+=.0125
+		Endif
+		Translate tx,ty
 	
 		Cls 0,0,128
 	
@@ -52,11 +66,20 @@ Class Test Extends App
 			SetAlpha Sin(Millisecs*.3)*.5+.5
 			DrawImage image,320,240,0
 			SetBlend 0
-			'SetAlpha 1
+			SetAlpha 1
 		Endif
+		
+		SetColor 255,255,255
+		DrawText "The Quick Brown Fox Jumps Over The Lazy Dog",DeviceWidth/2,DeviceHeight/2,.5,.5
 		
 		PopMatrix
 		
+		SetScissor 0,0,DeviceWidth,DeviceHeight
+		SetColor 255,0,0
+		DrawRect 0,0,DeviceWidth,1
+		DrawRect DeviceWidth-1,0,1,DeviceHeight
+		DrawRect 0,DeviceHeight-1,DeviceWidth,1
+		DrawRect 0,0,1,DeviceHeight-1
 	End
 
 End

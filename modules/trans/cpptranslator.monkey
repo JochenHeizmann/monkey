@@ -211,7 +211,7 @@ Class CppTranslator Extends Translator
 		Local elemType:=ArrayType( expr.exprType ).elemType
 
 		Local tmp:=New LocalDecl( "",Type.voidType,Null )
-		MungDecl tmp,localMungs
+		MungDecl tmp
 		
 		Local t$
 		For Local elem:=EachIn expr.exprs
@@ -319,11 +319,11 @@ Class CppTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncProto( decl:FuncDecl )
-		localMungs=New StringMap<Decl>
+		PushMungScope
 
 		Local args$
 		For Local arg:=EachIn decl.argDecls
-			MungDecl arg,localMungs
+			MungDecl arg
 			If args args+=","
 			args+=TransLocalType( arg.ty )+" "+arg.munged
 		Next
@@ -334,14 +334,15 @@ Class CppTranslator Extends Translator
 		
 		Emit t+TransLocalType( decl.retType )+" "+decl.munged+Bra( args )+";"
 
-		localMungs=globalMungs
+		PopMungScope
 	End
 	
 	Method EmitFuncDecl( decl:FuncDecl )
-		localMungs=New StringMap<Decl>
+		PushMungScope
+		
 		Local args$
 		For Local arg:=EachIn decl.argDecls
-			localMungs.Insert arg.munged,arg
+			mungScope.Insert arg.munged,arg
 			If args args+=","
 			args+=TransLocalType( arg.ty )+" "+arg.munged
 		Next
@@ -355,7 +356,7 @@ Class CppTranslator Extends Translator
 
 		Emit "}"
 
-		localMungs=globalMungs
+		PopMungScope
 	End
 	
 	Method EmitClassProto( classDecl:ClassDecl )
@@ -451,31 +452,31 @@ Class CppTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 	
-		globalMungs=New StringMap<Decl>
-		
 		app.mainFunc.munged="bb_Main"
 		
 		'Munging
 		For Local decl:=EachIn app.Semanted
-			If decl.IsExtern() Or LocalDecl( decl ) Continue
 		
-			MungDecl decl,globalMungs
+			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
-			If cdecl
-				Emit "class "+decl.munged+";"
+			If Not cdecl Continue
 			
-				localMungs=New StringMap<Decl>
-				For Local decl:=EachIn cdecl.Semanted
-					MungDecl decl,localMungs
-				Next
-				localMungs=globalMungs
-			EndIf
+			Emit "class "+decl.munged+";"
+		
+			PushMungScope
+			
+			MungOverrides cdecl
+			
+			For Local decl:=EachIn cdecl.Semanted
+				MungDecl decl
+			Next
+			
+			PopMungScope
 		Next
 		
 		'Prototypes/header!
 		For Local decl:=EachIn app.Semanted
-			If decl.IsExtern() Or LocalDecl( decl ) Continue
 		
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
@@ -498,7 +499,6 @@ Class CppTranslator Extends Translator
 		
 		'declarations!
 		For Local decl:=EachIn app.Semanted
-			If decl.IsExtern() Or LocalDecl( decl ) Continue
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl

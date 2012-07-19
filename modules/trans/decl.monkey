@@ -429,17 +429,18 @@ Public
 					
 					exact=False
 					
-					If exprTy.ExtendsType( declTy ) Continue
+					If Not explicit And exprTy.ExtendsType( declTy ) Continue
 
 				Else If argDecls[i].init
 				
 					exact=False
 					
-					Continue
+					If Not explicit Continue
 				
 				EndIf
 			
 				possible=False
+				
 				Exit
 
 			Next
@@ -621,7 +622,7 @@ Class FuncDecl Extends BlockDecl
 		EndIf
 		
 		'append a return statement if necessary
-		If Not IsExtern() And Not VoidType( retType ) And Not ReturnStmt( stmts.Last() )
+		If Not IsExtern() And Not IsAbstract() And Not VoidType( retType ) And Not ReturnStmt( stmts.Last() )
 			Local stmt:=New ReturnStmt( Null )
 			stmt.errInfo=errInfo	'""
 			stmts.AddLast stmt

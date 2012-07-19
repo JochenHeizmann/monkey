@@ -7,6 +7,7 @@
 		<activity 
 			android:name="MonkeyGame" 
 			android:label="${APP_LABEL}"
+			android:screenOrientation="${SCREEN_ORIENTATION}"
 			android:configChanges="keyboardHidden|orientation"
 			android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 			<intent-filter>

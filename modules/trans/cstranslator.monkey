@@ -180,7 +180,7 @@ Class CsTranslator Extends Translator
 		'downcast		
 		If dst.ExtendsType( src )
 			Local tmp:=New LocalDecl( "",src,expr.expr )
-			MungDecl tmp,localMungs
+			MungDecl tmp
 			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
 			Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
 		EndIf
@@ -312,11 +312,11 @@ Class CsTranslator Extends Translator
 	'***** Declarations *****
 
 	Method EmitFuncDecl( decl:FuncDecl )
-		localMungs=New StringMap<Decl>
+		PushMungScope
 		
 		Local args$
 		For Local arg:=EachIn decl.argDecls
-			MungDecl arg,localMungs
+			MungDecl arg
 			If args args+=","
 			args+=TransDecl( arg )
 		Next
@@ -337,8 +337,8 @@ Class CsTranslator Extends Translator
 		EmitBlock decl
 		
 		Emit "}"
-		
-		localMungs=Null'globalMungs
+
+		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -375,24 +375,25 @@ Class CsTranslator Extends Translator
 		app.mainModule.munged="bb_"
 '		app.mainFunc.munged="bb_Main"
 
-		globalMungs=New StringMap<Decl>
-		
 		For Local decl:=EachIn app.Semanted
 
-			MungDecl decl,globalMungs
+			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
-			If cdecl
-				localMungs=New StringMap<Decl>
-				For Local decl:=EachIn cdecl.Semanted
-					If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
-						decl.ident=cdecl.ident+"_"+decl.ident
-					EndIf
-					MungDecl decl,localMungs
-				Next
-				localMungs=Null
-				Continue
-			EndIf
+			If Not cdecl Continue
+			
+			PushMungScope
+			
+			MungOverrides cdecl
+			
+			For Local decl:=EachIn cdecl.Semanted
+				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
+					decl.ident=cdecl.ident+"_"+decl.ident
+				EndIf
+				MungDecl decl
+			Next
+			
+			PopMungScope
 		Next
 		
 		'classes		

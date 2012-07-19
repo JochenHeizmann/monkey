@@ -12,13 +12,25 @@ Class Translator
 
 	Field indent$
 	Field lines:=New StringList
-	Field localMungs:StringMap<Decl>
-	Field globalMungs:StringMap<Decl>
 	Field unreachable,broken
-
-	Method MungDecl( decl:Decl,mungs:StringMap<Decl> )
+	
+	Field mungScope:=New StringMap<Decl>
+	Field mungStack:=New Stack< StringMap<Decl> >
+	
+	Method PushMungScope()
+		mungStack.Push mungScope
+		mungScope=New StringMap<Decl>
+	End
+	
+	Method PopMungScope()
+		mungScope=mungStack.Pop()
+	End
+	
+	Method MungDecl( decl:Decl )
 		If decl.munged Return
 		
+		Local mungs:=mungScope
+
 		Local id$=decl.ident,munged$
 		
 		'apply module munging if necessary...
@@ -151,7 +163,7 @@ Class Translator
 	
 	Method CreateLocal$( expr:Expr )
 		Local tmp:=New LocalDecl( "",expr.exprType,expr )
-		MungDecl tmp,localMungs
+		MungDecl tmp
 		Emit TransLocalDecl( tmp.munged,expr )+";"
 		Return tmp.munged
 	End
@@ -355,7 +367,7 @@ Class Translator
 	Method TransDeclStmt$( stmt:DeclStmt )
 		Local decl:=LocalDecl( stmt.decl )
 		If decl
-			MungDecl decl,localMungs
+			MungDecl decl
 			Return TransLocalDecl( decl.munged,decl.init )
 		Endif
 		Local cdecl:=ConstDecl( stmt.decl )
@@ -436,6 +448,17 @@ Class Translator
 	
 	'module
 	Method TransApp$( app:AppDecl ) Abstract
+	
+	Method MungOverrides( cdecl:ClassDecl )
+		For Local decl:=Eachin cdecl.Semanted
+			Local fdecl:=FuncDecl( decl )
+			If fdecl And fdecl.overrides
+				If Not fdecl.overrides.munged InternalErr
+				fdecl.munged=fdecl.overrides.munged
+				mungScope.Insert fdecl.munged,fdecl
+			Endif
+		Next
+	End
 	
 	Method PostProcess$( source$ ) 
 		Return source

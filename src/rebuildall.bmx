@@ -59,25 +59,8 @@ If FileType( "trans/trans.monkey" )=FILETYPE_FILE
 	
 		system trans+" -clean -target=stdcpp trans/trans.monkey"
 		
-'		Delay 500
-		
-Rem		
-		Delay 100	'wassup?!?
-		DeleteFile trans
-		
-		If FileType( trans )<>FILETYPE_NONE
-			Print "Failed to delete trans"
-			Return
-		EndIf
-End Rem		
-'		system rm+" "+trans,False
-'		If FileType( trans )<>FILETYPE_NONE
-'			Print "rm failed"
-'			End
-'		EndIf
 
 		CopyFile newtrans,trans
-'		system cp+" "+newtrans+" "+trans,False
 		If FileType( trans )<>FILETYPE_FILE 
 			Print "cp failed"
 			End

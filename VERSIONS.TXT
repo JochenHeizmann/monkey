@@ -1,6 +1,31 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V34b *****
+
+Quick fix release for nasty return stmt bug!
+
+
+***** V34 *****
+
+Modules:
+
+LoadState/SaveState now only use cookies on FF and IE for 'file://' document.URLs.
+
+Added a Backwards() method to List<T> and Stack<T> that allows you to iterate through elements backwards with an EachIn loop.
+
+
+Trans (1.05):
+
+Fixed non-void abstract methods in strict mode complaining about missing return expression.
+
+Fixed IntType.ExtendsType infinite recursion crash.
+
+Added SCREEN_ORIENTATION to android CONFIG.TXT.
+
+Fixed overloading method not used overloaded method's munging.
+
+
 ***** V33 *****
 
 Modules:
@@ -27,7 +52,7 @@ Added checks to mojo graphics to ensure rendering commands are only performed in
 Fixed xna mojo reach mode additive blending.
 
 
-Trans:
+Trans (1.04):
 
 Android manifest and various other files moved to .build/android/templates - edit these, not the generated copies in .build/android.
 

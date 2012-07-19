@@ -185,7 +185,7 @@ Class JavaTranslator Extends Translator
 		'downcast		
 		If dst.ExtendsType( src )
 			Local tmp:=New LocalDecl( "",src,expr.expr )
-			MungDecl tmp,localMungs
+			MungDecl tmp
 			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
 			Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
 		EndIf
@@ -305,11 +305,11 @@ Class JavaTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncDecl( decl:FuncDecl )
-		localMungs=New StringMap<Decl>
+		PushMungScope
 		
 		Local args$
 		For Local arg:=EachIn decl.argDecls
-			MungDecl arg,localMungs
+			MungDecl arg
 			If args args+=","
 			args+=TransDecl( arg )
 		Next
@@ -322,6 +322,8 @@ Class JavaTranslator Extends Translator
 		EmitBlock decl
 
 		Emit "}"
+		
+		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -359,22 +361,23 @@ Class JavaTranslator Extends Translator
 	
 		app.mainModule.munged="bb_"
 		
-		globalMungs=New StringMap<Decl>
-		localMungs=globalMungs
-
 		'***** Mung *****
 		For Local decl:=EachIn app.Semanted
 			
-			MungDecl decl,globalMungs
+			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
-			If cdecl
-				localMungs=New StringMap<Decl>
-				For Local decl:=EachIn cdecl.Semanted
-					MungDecl decl,localMungs
-				Next
-				localMungs=globalMungs
-			EndIf
+			If Not cdecl Continue
+			
+			PushMungScope
+
+			MungOverrides cdecl
+			
+			For Local decl:=EachIn cdecl.Semanted
+				MungDecl decl
+			Next
+			
+			PopMungScope
 		Next
 
 		'Translate classes		

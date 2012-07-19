@@ -301,12 +301,12 @@ Class AsTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncDecl( decl:FuncDecl )
-
-		localMungs=New StringMap<Decl>
+	
+		PushMungScope
 
 		Local args$
 		For Local arg:=EachIn decl.argDecls
-			MungDecl arg,localMungs
+			MungDecl arg
 			If args args+=","
 			args+=TransValDecl( arg )
 		Next
@@ -331,7 +331,7 @@ Class AsTranslator Extends Translator
 
 		Emit "}"
 		
-		localMungs=globalMungs
+		PopMungScope
 	End
 
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -367,29 +367,34 @@ Class AsTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 		
-		globalMungs=New StringMap<Decl>
-		
 		app.mainFunc.munged="bb_Main"
 		
 		For Local decl:=EachIn app.Semanted
-			MungDecl decl,globalMungs
+			If decl.IsExtern() Continue
+
+			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
 			If Not cdecl Continue
 			
-			localMungs=New StringMap<Decl>
+			PushMungScope
+
+			MungOverrides cdecl
+			
 			For Local decl:=EachIn cdecl.Semanted
 				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
 					decl.ident=cdecl.ident+"_"+decl.ident
 				EndIf
-				MungDecl decl,localMungs
+				MungDecl decl
 			Next
+			
+			PopMungScope
 		Next
 	
 		'decls
 		'
 		For Local decl:=EachIn app.Semanted
-			If decl.IsNative() Continue
+			If decl.IsExtern() Continue
 
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl

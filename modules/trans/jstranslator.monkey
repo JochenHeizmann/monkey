@@ -273,11 +273,11 @@ Class JsTranslator Extends Translator
 	'***** Declarations *****
 
 	Method EmitFuncDecl( decl:FuncDecl )
-		localMungs=New StringMap<Decl>
-
+		PushMungScope
+		
 		Local args$
 		For Local arg:ArgDecl=Eachin decl.argDecls
-			MungDecl arg,localMungs
+			MungDecl arg
 			If args args+=","
 			args+=arg.munged
 		Next
@@ -294,6 +294,8 @@ Class JsTranslator Extends Translator
 		EmitBlock decl
 		
 		Emit "}"
+		
+		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -342,37 +344,35 @@ Class JsTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 		
-		globalMungs=New StringMap<Decl>
-
 		app.mainFunc.munged="bb_Main"
 		
 		For Local decl:=Eachin app.Semanted
-			If decl.IsExtern() Or LocalDecl( decl ) Continue
 			
-			MungDecl decl,globalMungs
+			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
-			If cdecl
-				localMungs=New StringMap<Decl>
+			If Not cdecl Continue
 
-				For Local decl:=Eachin cdecl.Semanted
-					Local fdecl:=FuncDecl( decl )
-					If (fdecl And Not fdecl.IsMethod) Or GlobalDecl( decl )
-						decl.ident=cdecl.ident+"_"+decl.ident	'just make it a bit more readable!
-						MungDecl decl,globalMungs
-					Else
-						MungDecl decl,localMungs
-					Endif
-				Next
-				Continue
-			Endif
+			'global mungs
+			For Local decl:=Eachin cdecl.Semanted
+				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod() Or GlobalDecl( decl )
+					MungDecl decl
+				Endif
+			Next
+			
+			'local mungs
+			PushMungScope
+			
+			MungOverrides cdecl
+			
+			For Local decl:=Eachin cdecl.Semanted
+				MungDecl decl
+			Next
+			
+			PopMungScope
 		Next
 		
-
-		'functions/classes
-		'		
 		For Local decl:=Eachin app.Semanted
-			If decl.IsExtern() Or LocalDecl( decl ) Continue
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
@@ -393,8 +393,6 @@ Class JsTranslator Extends Translator
 			EndIf
 		Next
 
-		'Global inits
-		'
 		Emit "function bb_Init(){"
 		For Local decl:=Eachin app.semantedGlobals
 			Emit decl.munged+"="+decl.init.Trans()+";"

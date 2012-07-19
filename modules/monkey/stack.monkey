@@ -90,7 +90,11 @@ Class Stack<T>
 	
 	Method ObjectEnumerator:Enumerator<T>()
 		Return New Enumerator<T>( Self )
-	End Method
+	End
+	
+	Method Backwards:BackwardsStack<T>()
+		Return New BackwardsStack<T>( Self )
+	End
 	
 	Method Compare( lhs:Object,rhs:Object )
 		Error "Stack elements cannot be compared"
@@ -120,6 +124,45 @@ Class Enumerator<T>
 
 Private
 
+	Field stack:Stack<T>
+	Field index
+
+End
+
+Class BackwardsStack<T>
+
+	Method New( stack:Stack<T> )
+		Self.stack=stack
+	End
+
+	Method ObjectEnumerator:BackwardsEnumerator<T>()
+		Return New BackwardsEnumerator<T>( stack )
+	End Method
+	
+Private
+
+	Field stack:Stack<T>
+
+End
+
+Class BackwardsEnumerator<T>
+
+	Method New( stack:Stack<T> )
+		Self.stack=stack
+		index=stack.length
+	End Method
+
+	Method HasNext:Bool()
+		Return index>0
+	End 
+
+	Method NextObject:T()
+		index-=1
+		Return stack.Get( index )
+	End
+
+Private
+	
 	Field stack:Stack<T>
 	Field index
 

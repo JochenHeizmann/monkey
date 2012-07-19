@@ -49,22 +49,7 @@ Class MyApp Extends App
 		Endif
 	End
 	
-	Field tx#=0,ty#=0
-	
 	Method OnRender()
-	
-		If KeyDown( KEY_RIGHT )
-			tx+=.0125
-		Else If KeyDown( KEY_LEFT )
-			tx-=.0125
-		Endif
-		If KeyDown( KEY_UP )
-			ty-=.0125
-		Else If KeyDown( KEY_DOWN )
-			ty+=.0125
-		Endif
-		Translate tx,ty
-	
 		Cls
 		DrawText "Audio:          "+tinkle_loop,0,0
 		DrawText "Millisecs:      "+Millisecs,0,14*1
@@ -72,18 +57,10 @@ Class MyApp Extends App
 		DrawText "Suspends:       "+suspends,0,14*3
 		DrawText "Last suspended: "+suspend_ms,0,14*4
 		DrawText "Last resumed:   "+resume_ms,0,14*5
-		DrawText "tx:             "+tx,0,14*6
-		DrawText "ty:             "+ty,0,14*7
 
 		DrawText "[ *****  Click to Toggle audio  ***** ]",DeviceWidth/2,14*10,.5,.5
 		DrawText "[ ***** Click for Runtime error ***** ]",DeviceWidth/2,14*12,.5,.5
 		DrawText "[ *****  Click for Null error   ***** ]",DeviceWidth/2,14*14,.5,.5
-		
-		SetColor 255,0,0
-		DrawRect 0,0,DeviceWidth,1
-		DrawRect DeviceWidth-1,0,1,DeviceHeight
-		DrawRect 0,DeviceHeight-1,DeviceWidth,1
-		DrawRect 0,0,1,DeviceHeight-1
 	End
 	
 	Method OnSuspend()
