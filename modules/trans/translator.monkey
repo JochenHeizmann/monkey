@@ -33,12 +33,28 @@ Class Translator
 
 		If fdecl.munged Return
 		
+		If fdecl.overrides
+			MungFuncDecl fdecl.overrides
+			fdecl.munged=fdecl.overrides.munged
+			Return
+		Endif
+		
 		Local funcs:=funcMungs.Get( fdecl.ident )
 		If funcs
 			For Local tdecl:=Eachin funcs
-				If fdecl.EqualsArgs( tdecl )
-					fdecl.munged=tdecl.munged
-					Return
+				If fdecl.argDecls.Length=tdecl.argDecls.Length
+					Local match=True
+					For Local i=0 Until fdecl.argDecls.Length
+						Local ty:=ArgDecl( fdecl.argDecls[i].actual ).ty
+						Local ty2:=ArgDecl( tdecl.argDecls[i].actual ).ty
+						If ty.EqualsType( ty2 ) Continue
+						match=False
+						Exit
+					Next
+					If match
+						fdecl.munged=tdecl.munged
+						Return
+					Endif
 				Endif
 			Next
 		Else

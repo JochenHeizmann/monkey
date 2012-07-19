@@ -156,7 +156,7 @@ Function ClientThread:Object( data:Object )
 '		Print ""
 '		Print p+req
 		
-		Local range_start=-1,range_end=-1,keep_alive,req_host$,err
+		Local range_start=-1,range_end=-1,keep_alive,req_host$,if_none_match$,err
 		
 		Repeat
 			Local hdr$=ReadLine( stream )
@@ -194,6 +194,12 @@ Function ClientThread:Object( data:Object )
 				err=True
 				Exit
 			EndIf
+			
+			If toker.CParse( "if-none-match:" )
+				if_none_match=toker.text.Trim()
+				Continue
+			EndIf
+			
 		Forever
 		If err Exit
 		
@@ -216,29 +222,49 @@ Function ClientThread:Object( data:Object )
 		
 		If get And FileType( get )=FILETYPE_FILE
 		
-			Local data:Byte[]=LoadByteArray( get )
-			Local length=data.length
+			Local etag$="~q"+FileTime( get )+"~q"
 			
-			If range_start=-1
-				Print p+"GET "+get
+			If etag=if_none_match
+			
+				Print p+"GET "+get+" (304 Not Modified)"
+				
+				WriteLine stream,"HTTP/1.1 304 Not Modified"
+				WriteLine stream,"ETag: "+etag
+				WriteLine stream,""
+				
+			Else If range_start=-1
+
+				Local data:Byte[]=LoadByteArray( get )
+				Local length=data.length
+
+				Print p+"GET "+get+" (200 OK)"
+
 				WriteLine stream,"HTTP/1.1 200 OK"
+				WriteLine stream,"ETag: "+etag
+				WriteLine stream,"Content-Length: "+data.length
+				WriteLine stream,""
+				stream.WriteBytes data,data.length
+			
 			Else
+			
+				Local data:Byte[]=LoadByteArray( get )
+				Local length=data.length
+
 				If range_end=-1 Or range_end>=length
 					range_end=length-1
 				EndIf
 				data=data[range_start..range_end+1]
 				
-				Print p+"GET "+get+" (bytes "+range_start+"-"+range_end+")"
-				WriteLine stream,"HTTP/1.1 206 Partial content"
+				Print p+"GET "+get+" (206 Partial Content: "+range_start+"-"+range_end+")"
+
+				WriteLine stream,"HTTP/1.1 206 Partial Content"
+				WriteLine stream,"ETag: "+etag
+				WriteLine stream,"Content-Length: "+data.length
+				WriteLine stream,"Content-Range: bytes "+range_start+"-"+range_end+"/"+length
+				WriteLine stream,""
+				stream.WriteBytes data,data.length
+				
 			EndIf
-			
-			WriteLine stream,"Cache-Control: max-age=31556926"
-			WriteLine stream,"Date: "+HTTPNow()	'should really be GMT!
-			WriteLine stream,"Last-Modified: "+HTTPDate( 1,1,2000,"00:00:00" )
-			WriteLine stream,"Content-Length: "+data.length
-			If range_start<>-1 WriteLine stream,"Content-Range: bytes "+range_start+"-"+range_end+"/"+length
-			WriteLine stream,""
-			stream.WriteBytes data,data.length
 		
 		Else If get
 	
@@ -328,7 +354,8 @@ Function MServer()
 	
 		While PollEvent()
 			Select EventID()
-			Case EVENT_WINDOWCLOSE
+			Case EVENT_APPTERMINATE,EVENT_WINDOWCLOSE
+				CloseSocket server
 				exit_ 0
 			End Select
 		Wend
@@ -403,79 +430,4 @@ Function HTTPDecode$( t$ )
 	t=t.Replace( "%20"," " )
 	t=t.Replace( "%25","%" )
 	Return t
-End Function
-
-'With help from some wedoe code in the bmx code arcs - thanks wedoe!
-Function HTTPDate$( day,mon,year,time$ )
-
-	Local t_day$=day,w_day$,t_mon$
-	
-	If day<10 t_day="0"+t_day
-
-	Local d,a,m,y,tp$
-
-	a=14-mon
-	a=a/12
-	y=year-a
-	m=mon+(12*a)-2
-
-	d=(day+y+(y/4)-(y/100)+(y/400)+((31*m)/12)) Mod 7
-	
-	Select d
-	Case 0 w_day="Sun"
-	Case 1 w_day="Mon"
-	Case 2 w_day="Tue"
-	Case 3 w_day="Wed"
-	Case 4 w_day="Thu"
-	Case 5 w_day="Fri"
-	Case 6 w_day="Sat" 
-	End Select
-	
-	Select mon
-	Case 1 t_mon="Jan"
-	Case 2 t_mon="Feb"
-	Case 3 t_mon="Mar"
-	Case 4 t_mon="Apr"
-	Case 5 t_mon="May"
-	Case 6 t_mon="Jun"
-	Case 7 t_mon="Jul"
-	Case 8 t_mon="Aug"
-	Case 9 t_mon="Sep"
-	Case 10 t_mon="Oct"
-	Case 11 t_mon="Nov"
-	Case 12 t_mon="Dec"
-	Default Return "?"
-	End Select
-	
-	Return w_day+", "+t_day+" "+t_mon+" "+year+" "+time+" GMT"
-	
-End Function
-
-Function HTTPNow$()
-
-	Local bits$[]=CurrentDate().Split( " " )
-	If bits.length<>3 Return "?"
-	
-	Local day=Int( bits[0] ),mon
-	
-	Select bits[1]
-	Case "Jan" mon=1
-	Case "Feb" mon=2
-	Case "Mar" mon=3
-	Case "Apr" mon=4
-	Case "May" mon=5
-	Case "Jun" mon=6
-	Case "Jul" mon=7
-	Case "Aug" mon=8
-	Case "Sep" mon=9
-	Case "Oct" mon=10
-	Case "Nov" mon=11
-	Case "Dec" mon=12
-	Return "?"
-	End Select
-	
-	Local year=Int( bits[2] )
-	
-	Return HTTPDate( day,mon,year,CurrentTime() )
-
 End Function

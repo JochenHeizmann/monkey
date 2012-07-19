@@ -727,7 +727,9 @@ Class FuncDecl Extends BlockDecl
 					If EqualsFunc( decl ) 
 						overrides=FuncDecl( decl.actual )
 						If overrides.munged
-							If munged InternalErr
+							If munged And munged<>overrides.munged
+								InternalErr
+							Endif
 							munged=overrides.munged
 						Endif
 					Endif

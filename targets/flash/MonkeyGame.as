@@ -1,6 +1,8 @@
 
 package{
 
+	[SWF(width="640",height="480")]
+	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.text.*;

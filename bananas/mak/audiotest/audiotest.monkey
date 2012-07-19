@@ -18,13 +18,12 @@ Class MyApp Extends App
 		'GLFW supports WAV only
 		fmt="wav"
 #Elseif TARGET="html5"
-		'Seems to be no 100% reliable format for html5!
-		'IE wont play WAV(!)
-		'FF wont play MP3/M4A anymore
-		'Opera/Chrome appear to handle everything
-		'Safari..?
+		'Less than awesomely, there appears to be no 'common' format for html5!
+		'Opera/Chrome appear to handle everything, but...
+		'IE wont play WAV/OGG
+		'FF wont play MP3/M4A
 		'Let's support OGG!
-		fmt="ogg"
+		fmt="ogg"		'use M4a for IE...
 #Elseif TARGET="flash"
 		'Flash supports MP3, M4A online, but only MP3 embedded.
 		fmt="mp3"
@@ -138,6 +137,8 @@ Class MyApp Extends App
 End
 
 Function Main()
+
+	Print "Hello World!"
 
 	New MyApp
 

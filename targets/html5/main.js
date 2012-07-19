@@ -92,6 +92,3 @@ function loadAudio( path ){
 
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
-
-//This overrides print in 'std.lang/lang.js'
-//

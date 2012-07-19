@@ -403,9 +403,10 @@ Class NewObjectExpr Extends Expr
 
 		classDecl=objTy.classDecl
 		
-		If classDecl.IsAbstract() Err "Cannot create instance of abstract class."
-		If classDecl.IsTemplateArg() Err "Cannot create instance of template argument."
-		If classDecl.args And Not classDecl.instanceof Err "Cannot create instance of generic class."
+		If classDecl.IsInterface() Err "Cannot create instance of an interface."
+		If classDecl.IsAbstract() Err "Cannot create instance of an abstract class."
+		If classDecl.IsTemplateArg() Err "Cannot create instance of a generic argument."
+		If classDecl.args And Not classDecl.instanceof Err "Cannot create instance of a generic class."
 		
 		ctor=classDecl.FindFuncDecl( "new",args )
 		If Not ctor	Err "No suitable constructor found for class "+classDecl.ToString()+"."

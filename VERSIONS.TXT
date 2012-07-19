@@ -1,6 +1,26 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V39c *****
+
+Tools:
+
+MServer now uses 'etags' for detecting modified files.
+
+
+Trans (1.12):
+
+Fixed parenthesis mismatch error with multiline expressions.
+
+Trans compiler back to debug build for internal err stack dump.
+
+Fixed extern overriding extern causing internal err bug.
+
+Added radix 10 param to parseInt for JS/AS translators.
+
+Fixed method munging bug.
+
+
 ***** V39b *****
 
 Tools:

@@ -163,7 +163,7 @@ Class AsTranslator Extends Translator
 			If BoolType( src ) Return Bra( texpr+"?1:0" )
 			If IntType( src ) Return texpr
 			If FloatType( src ) Return Bra( texpr+"|0" )
-			If StringType( src ) Return "parseInt"+texpr
+			If StringType( src ) Return "parseInt"+Bra( texpr+",10" )
 		Else If FloatType( dst )
 			If NumericType( src ) Return texpr
 			If StringType( src ) 	Return "parseFloat"+texpr

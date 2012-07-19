@@ -354,17 +354,20 @@ Class Parser
 		Return _toke
 	End
 	
-	Method Parse( toke$ )
-		If _toke<>toke Err "Syntax error - expecting '"+toke+"'."
-		NextToke
-	End
-	
 	Method CParse( toke$ )
-		If _toke<>toke Return False
+		If _toke<>toke
+			Return False
+		Endif
 		NextToke
 		Return True
 	End
 
+	Method Parse( toke$ )
+		If Not CParse( toke )
+			Err "Syntax error - expecting '"+toke+"'."
+		Endif
+	End
+	
 	Method AtEos()
 		Return _toke="" Or _toke="~n" Or _toke="else"
 	End
@@ -483,23 +486,23 @@ Class Parser
 					toker.NextToke
 					toker.SkipSpace
 					Select toker.Toke().ToLower()
-					Case "","~n","else"
+					Case "","else"
 						Err "Parenthesis mismatch error."
-					Case "("
+					Case "(","["
 						bra+=1
-					Case ","
-						If bra<>1 Continue
-						eat=True
-						Exit
-					Case ")"
+					Case "]",")"
 						bra-=1
 						If bra Continue
 						toker.NextToke
 						toker.SkipSpace
 						Select toker.Toke().ToLower()
-						Case ".","(","[","","~n","Else"
+						Case ".","(","[","","~n","else"
 							eat=True
 						End
+						Exit
+					Case ","
+						If bra<>1 Continue
+						eat=True
 						Exit
 					End
 				Forever
@@ -514,7 +517,7 @@ Class Parser
 		
 		Repeat
 			Local arg:Expr
-			If _toke<>"," And Not AtEos() arg=ParseExpr()
+			If _toke And _toke<>"," arg=ParseExpr()
 			If args.Length=nargs args=args.Resize( nargs+10 )
 			args[nargs]=arg
 			nargs+=1
