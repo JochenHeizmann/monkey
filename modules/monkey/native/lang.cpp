@@ -139,6 +139,12 @@ void gc_sweep(){
 	gc_marked=0;
 }
 
+void gc_mark( char t ){
+}
+
+void gc_mark( wchar_t t ){
+}
+
 void gc_mark( int t ){
 }
 
@@ -150,6 +156,11 @@ void gc_mark( gc_object *p ){
 	p->flags^=1;
 	++gc_marked;
 	p->mark();
+}
+
+void gc_collect(){
+	gc_mark();
+	gc_sweep();
 }
 
 // ***** Monkey Types *****
@@ -563,7 +574,11 @@ public:
 	}
 	
 	template<class C> C *ToCString()const{
-		C *p=(C*)gc_malloc( (rep->length+1) * sizeof(C) );
+	
+//		C *p=(C*)gc_malloc( (rep->length+1) * sizeof(C) );		//Leaky!
+
+		C *p=&Array<C>( rep->length+1 )[0];					//Watertight?
+		
 		for( int i=0;i<rep->length;++i ) p[i]=rep->data[i];
 		p[rep->length]=0;
 		return p;
@@ -612,6 +627,10 @@ void gc_mark( String &t ){
 }
 
 String T( const char *p ){
+	return String( p );
+}
+
+String T( const wchar_t *p ){
 	return String( p );
 }
 
@@ -668,42 +687,14 @@ void Error( String t ){
 	throw t.ToCString<char>();
 }
 
-#if _WIN32
-
-void Alert( String t ){
-	MessageBoxA( GetDesktopWindow(),t.ToCString<char>(),"Monkey Error!",MB_OK );
-	exit(-1);
-}
-
-#elif __OBJC__	//a little misleading...here, we really want 'iOS'...but what is it?
-
-void Alert( String t ){
-	UIAlertView *aview=[[UIAlertView alloc] 
-	initWithTitle:@"Monkey Error" 
-	message:t.ToNSString() 
-	delegate:nil
-	cancelButtonTitle:nil
-	otherButtonTitles:nil];
-	[aview autorelease];
-	[aview show];
-}
-
-#else
-
-void Alert( String t ){
-	Print( t );
-}
-
-#endif
-
 void Die( const char *p ){
 	if( !p || !*p ) exit( 0 );
-	String t=String(errInfo)+" : Error : "+p;
-	puts( t.ToCString<char>() );fflush( stdout );
-	Alert( String(p)+"\n"+StackTrace() );
-#if !__OBJC__
-	exit(-1);
-#endif
+	
+	Print( String(errInfo)+" : Error : "+p );
+	
+	Print( String(p)+"\n"+StackTrace() );
+	
+	exit( -1 );
 }
 
 void sighandler( int sig  ){

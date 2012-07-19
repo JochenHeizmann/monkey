@@ -69,7 +69,7 @@ Class Translator
 	
 	'Utility C/C++ style...
 	Method Enquote$( str$ )
-		Return CppEnquote( str )
+		Return LangEnquote( str )
 	End
 
 	Method TransUnaryOp$( op$ )
@@ -95,6 +95,15 @@ Class Translator
 		Case "~~" Return "^"
 		End Select
 		InternalErr
+	End
+	
+	Method TransAssignOp$( op$ )
+		Select op
+		Case "mod=" Return "%="
+		Case "shl=" Return "<<="
+		Case "shr=" Return ">>="
+		End
+		Return op
 	End
 	
 	Method ExprPri( expr:Expr )
@@ -256,7 +265,7 @@ Class Translator
 	
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If stmt.rhs 
-			Return stmt.lhs.TransVar()+stmt.op+stmt.rhs.Trans()
+			Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
 		Endif
 		Return stmt.lhs.Trans()
 	End

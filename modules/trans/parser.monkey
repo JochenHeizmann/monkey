@@ -312,10 +312,14 @@ Class Parser
 	End
 	
 	Method NextToke$()
+		Local toke$=_toke
+		
 		Repeat
 			_toke=_toker.NextToke()
 			_tokeType=_toker.TokeType()
 		Until _tokeType<>TOKE_SPACE
+		
+		If toke="," SkipEols
 		
 		Return _toke
 	End
@@ -471,8 +475,6 @@ Class Parser
 	
 	Method ParsePrimaryExpr:Expr( stmt )
 	
-		SkipEols
-
 		Local expr:Expr
 		Select _toke
 		Case "("
@@ -598,6 +600,9 @@ Class Parser
 	End
 	
 	Method ParseUnaryExpr:Expr()
+
+		SkipEols
+	
 		Local op$=_toke
 		Select op
 		Case "+","-","~~","not"
@@ -719,20 +724,23 @@ Class Parser
 	End
 	
 	Method ParseExpr:Expr()
+
 		Return ParseOrExpr()
 	End
 	
 	Method ParseIfStmt( term$ )
+
 		CParse "if"
 
 		Local expr:Expr=ParseExpr()
+		
+		CParse "then"
 		
 		Local thenBlock:BlockDecl=New BlockDecl( _block )
 		Local elseBlock:BlockDecl=New BlockDecl( _block )
 		
 		Local eatTerm
 		If Not term
-			CParse "then"
 			If _toke="~n" term="end" Else term="~n"
 			eatTerm=True
 		EndIf
@@ -1027,10 +1035,14 @@ Class Parser
 			Local expr:Expr=ParsePrimaryExpr( True )
 			
 			Select _toke
-			Case "=","*=","/=","+=","-=","&=","|=","~="
+			Case "=","*=","/=","+=","-=","&=","|=","~=","mod","shl","shr"
 				If IdentExpr( expr ) Or IndexExpr( expr )
 					Local op$=_toke
 					NextToke
+					If Not op.EndsWith( "=" )
+						Parse "="
+						op+="="
+					Endif
 					_block.AddStmt New AssignStmt( op,expr,ParseExpr() )
 				Else
 					SyntaxErr
@@ -1145,8 +1157,8 @@ Class Parser
 		If CParse( "()" )
 		Else
 			Parse "("
+			SkipEols
 			If _toke<>")"
-	'			args=new ArgDecl[]
 				Local nargs
 				Repeat
 					Local id$=ParseIdent()
@@ -1213,6 +1225,9 @@ Class Parser
 					Local id$=ParseIdent()
 					funcDecl.AddStmt New ExprStmt( New InvokeSuperExpr( id,ParseArgs( True ) ) )
 				EndIf
+			Else	'Invoke super default ctor
+					'funcDecl.superCtor=New InvokeSuperExpr( "new",[] )
+					'funcDecl.AddStmt New ExprStmt( funcDecl.superCtor )
 			EndIf
 		EndIf
 

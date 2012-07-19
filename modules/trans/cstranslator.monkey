@@ -31,7 +31,16 @@ Class CsTranslator Extends Translator
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
 			If StringType( ty ) Return "~q~q"
-			If ArrayType( ty ) Return Bra( "new "+TransType(ArrayType(ty).elemType)+"[0]" )
+'			If ArrayType( ty ) Return Bra( "new "+TransType(ArrayType(ty).elemType)+"[0]" )
+			If ArrayType( ty ) 
+				Local elemTy:=ArrayType( ty ).elemType
+				Local t$="[0]"
+				While ArrayType( elemTy )
+					elemTy=ArrayType( elemTy ).elemType
+					t+="[]"
+				Wend
+				Return "new "+TransType( elemTy )+t
+			Endif
 			If ObjectType( ty ) Return "null"
 		EndIf
 		InternalErr
@@ -123,13 +132,13 @@ Class CsTranslator Extends Translator
 		Local texpr$=expr.expr.Trans()
 		Local elemTy:=ArrayType( expr.exprType ).elemType
 		'
-		Local t$
+		Local t$="["+texpr+"]"
 		While ArrayType( elemTy )
 			elemTy=ArrayType( elemTy ).elemType
 			t+="[]"
 		Wend
 		'
-		Return "new "+TransType( elemTy )+"["+texpr+"]"+t
+		Return "new "+TransType( elemTy )+t
 	End
 		
 	Method TransSelfExpr$( expr:SelfExpr )

@@ -160,7 +160,7 @@
 
 //***** MONKEY CODE GOES HERE! *****
 
-//${BEGIN_CODE}
+//${TRANSCODE_BEGIN}
 
 // Note: MonkeyAppDelgate should be implemented by client code - this is just a sample implementation:
 
@@ -221,7 +221,7 @@
 
 @end
 
-//${END_CODE}
+//${TRANSCODE_END}
 
 //***** main.m *****
 

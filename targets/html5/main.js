@@ -23,10 +23,27 @@ window.onload=function( e ){
 		window.onresize( null );
 	}
 	
-	var canvas=document.getElementById( "GameCanvas" );
-
-	GameMain( canvas );
+	game_canvas=document.getElementById( "GameCanvas" );
+	game_console=document.getElementById( "GameConsole" );
+	
+	
+	try{
+		bb_Init();
+		bb_Main();
+	}catch( ex ){
+		if( ex ) alert( ex );
+		return;
+	}
+	
+	if( game_runner!=null ){
+		game_runner();
+	}
 }
+
+//Globals
+var game_canvas;
+var game_console;
+var game_runner;
 
 //${METADATA_BEGIN}
 //${METADATA_END}
@@ -54,11 +71,23 @@ function loadString( path ){
 //${TEXTFILES_END}
 }
 
-//This is generally redefined by mojo.
-//
-function GameMain( canvas ){
-	bb_Init();
-	bb_Main();
+function loadImage( path,onloadfun ){
+	var ty=getMetaData( path,"type" );
+	if( ty.indexOf( "image/" )!=0 ) return null;
+
+	var image=new Image();
+	
+	image.meta_width=parseInt( getMetaData( path,"width" ) );
+	image.meta_height=parseInt( getMetaData( path,"height" ) );
+	image.onload=onloadfun;
+	image.src="data/"+path;
+	
+	return image;
+}
+
+function loadAudio( path ){
+	var audio=new Audio( "data/"+path );
+	return audio;
 }
 
 //${TRANSCODE_BEGIN}
@@ -66,15 +95,3 @@ function GameMain( canvas ){
 
 //This overrides print in 'std.lang/lang.js'
 //
-function print( str ){
-
-	var cons=document.getElementById( "GameConsole" );
-	if( cons ){
-		cons.value+=str+"\n";
-	}
-	
-	if( window.console!=undefined ){
-		window.console.log( str );
-	}
-}
-

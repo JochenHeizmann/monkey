@@ -63,12 +63,19 @@ Class AngelFont
 		iniText = LoadString(url+".txt")
 		Local lines:= iniText.Split(String.FromChar(10))
 		For Local line:= Eachin lines
+		
+			line=line.Trim()
+			
 			If line.StartsWith("id,") Or line = "" Continue
 			If line.StartsWith("first,")
 '				kernPairs = New StringMap<KernPair>
 				Continue
 			Endif
 			Local data$[] = line.Split(",")
+			
+			For Local i:=0 Until data.Length
+				data[i]=data[i].Trim()
+			Next
 			
 			error += data.Length+","	'+"-"+line
 			If data.Length > 0

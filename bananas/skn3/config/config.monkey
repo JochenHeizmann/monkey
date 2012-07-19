@@ -1,3 +1,10 @@
+#rem
+[March 11 2011]
+ - added support for xml standard single and double quotes. Single quote must end with single and double with double
+ - added support for comments <!-- comment -->
+ - added destructor .Free() to clean up xml data (needs to be called manually)
+ - tweaked parser to remove some unnecessary steps
+#end
 
 Class ConfigError
     Field message:String
@@ -44,6 +51,32 @@ Class ConfigNode
 		Self.name = name
 	End
 
+	Method Free:Void()
+		' --- free resources ---
+		name = ""
+		value = ""
+		parent = Null
+		line = 0
+		column = 0
+		scriptOffset = 0
+		
+		'free attributes
+		If attributes
+			For Local attribute := EachIn attributes
+				attribute.Free()
+			Next
+			attributes.Clear()
+		EndIf
+		
+		'free children
+		If children
+			For Local node := EachIn children
+				node.Free()
+			Next
+			children.Clear()
+		EndIf
+	End
+	
 	Method ToString:String()
 		' --- create debuggable print output ---
 		Local build := "<"+name
@@ -257,6 +290,13 @@ Class ConfigAttribute
 		SetValue(value)
 	End
 	
+	Method Free:Void()
+		' --- free resources ---
+		name = ""
+		value = ""
+		segments = []
+	End
+	
 	Private
 	Method UpdateValue()
 		Local length = segments.Length()
@@ -392,7 +432,7 @@ Class Config Extends ConfigNode
 		'setup root item
 		name = "root"
 		
-		'fix the passed in script
+		'fix the raw script
 		script = scriptRaw.Replace("~r~n","~n")
 		
 		'setup the stack
@@ -413,11 +453,13 @@ Class Config Extends ConfigNode
 		Local findTagEndSize := 0
 		Local findTag:ConfigNode
 		Local findAttribute:ConfigAttribute
+		Local findQuoteCharacter:Int
 		Local findTagLine := 0
 		Local findTagColumn := 0
 		Local findName := ""
 		Local findOperator := ""
 		Local findSegment := ""
+		Local findWhitespace := ""
 		Local findLine := 1
 		Local findLineStart := 0
 		Local findHasPair := False
@@ -428,46 +470,70 @@ Class Config Extends ConfigNode
 		Local findHasNameEnd := False
 		Local findHasEquals := False
 		Local findHasValue := False
+		Local findHasComment := False
 		Local findHasQuotes := False
 		Local findHasEnd := False
 		Local findHasSegment := False
 		Local findHasSegmentEnd := False
 		Local findHasOperator := False
 		
+		'parse the script
 		While scriptIndex < scriptLength-1
-
-			'parse looking for a complete bracket!
+			'parse looking for a complete bracket! (also skip comments)
 			For Local findIndex := scriptIndex Until scriptLength
 				'test for new line
 				If script[findIndex] = 10
 					findLine += 1
 					findLineStart = findIndex + 1
-				Endif
-
-				If findHasQuotes = False
-					If findHasStart = False
+				EndIf
+				
+				'not in comment
+				If findHasStart = False
+					'check to see if in comment
+					If findHasComment = False
 						'looking for <
-						If script[findIndex] = 34
-							'quote
-							findHasQuotes = True
-						Else If script[findIndex] = 60
+						If script[findIndex] = 60
 							'bracket starting
-							If findIndex < scriptLength-1 And script[findIndex+1] = 47
-								findHasClose = True
-								findTagStartSize = 2
+							'check if comment
+							If findIndex < scriptLength-4 And script[findIndex..findIndex+4] = "<!--"
+								'comment
+								findHasComment = True
+								findIndex += 3
 							Else
-								findTagStartSize = 1
-							Endif
-							findHasStart = True
-							findTagStart = findIndex
-							findTagLine = findLine
-							findTagColumn = (findIndex-findLineStart)+1
-						Endif
+								'process looking for start
+								If findIndex < scriptLength-1 And script[findIndex+1] = 47
+									findHasClose = True
+									findTagStartSize = 2
+								Else
+									findTagStartSize = 1
+								EndIf
+								findHasStart = True
+								findTagStart = findIndex
+								findTagLine = findLine
+								findTagColumn = (findIndex-findLineStart)+1
+							EndIf
+						Else
+							findWhitespace += String.FromChar(script[findIndex])
+						EndIf
 					Else
-						'looking for >
+						'in comment look for end of comment
+						If script[findIndex] = 45 And findIndex + 3 < scriptLength And script[findIndex..findIndex+3] = "-->"
+							findHasComment = False
+							findIndex += 2
+						EndIf
+					EndIf
+				Else
+					'looking for >
+					If findHasQuotes = False
+						'not in quotes
 						If script[findIndex] = 34
-							'quote
+							'quote (double)
 							findHasQuotes = True
+							findQuoteCharacter = 34
+						Else If script[findIndex] = 39
+							'quote (single)
+							findHasQuotes = True
+							findQuoteCharacter = 39
 						Else If script[findIndex] = 60
 							'illegal open bracket
 							Return SetError("unexpected opening bracket",findLine,(findIndex-findLineStart)+1)
@@ -481,21 +547,21 @@ Class Config Extends ConfigNode
 								findHasPair = True
 								findTagEndSize = 1
 								findTagEnd = findIndex
-							Endif
+							EndIf
 							findHasEnd = True
 							Exit
-						Endif
-					Endif
-				Else
-					'end the quote
-					If script[findIndex] = 34 findHasQuotes = False
-				Endif
+						EndIf
+					Else
+						'in quotes, can we get out please?
+						If script[findIndex] = findQuoteCharacter findHasQuotes = False
+					EndIf
+				EndIf
 			Next
 			
 			'check for errors
 			If findHasQuotes Return SetError("expecting ending quote",findLine,scriptLength-findLineStart)
 			If findHasStart And findHasEnd = False Return SetError("expecting ending bracket",findLine,scriptLength-findLineStart)
-			
+
 			'perform further parse on tag if found
 			If findHasEnd = False
 				'there are no more tags to retrieve from the string
@@ -523,7 +589,7 @@ Class Config Extends ConfigNode
 
 				'add the white space
 				stackTag = stack.Last()
-				stackTag.value += script[scriptIndex..findTagStart]
+				stackTag.value += findWhitespace'script[scriptIndex..findTagStart]
 
 				'move the script index
 				scriptIndex = findTagEnd+findTagEndSize
@@ -553,9 +619,9 @@ Class Config Extends ConfigNode
 								findHasNameEnd = True
 							Else
 								Return SetError("expecting tag or attribute name",findLine,(findIndex-findLineStart)+1)
-							Endif
+							EndIf
 							
-						Else If script[findIndex] = 95 Or (script[findIndex] >= 48 And script[findIndex] <= 57) Or (script[findIndex] >= 65 And script[findIndex] <= 90) Or (script[findIndex] >= 97 And script[findIndex] <= 122)
+						Else If script[findIndex] = 95 or (script[findIndex] >= 48 and script[findIndex] <= 57) or (script[findIndex] >= 65 and script[findIndex] <= 90) or (script[findIndex] >= 97 and script[findIndex] <= 122)
 							'_ a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9
 							findName += String.FromChar(script[findIndex])
 							
@@ -563,7 +629,7 @@ Class Config Extends ConfigNode
 							'illegal character
 							Return SetError("illegal character asc='"+script[findIndex]+"' chr='"+script[findIndex..findIndex+1]+"'",findLine,(findIndex-findLineStart)+1)
 							
-						Endif
+						EndIf
 					Else
 						'check for what to scan for next
 						If findHasEquals = False
@@ -580,7 +646,7 @@ Class Config Extends ConfigNode
 								'=
 								findHasEquals = True
 								
-							Else If script[findIndex] = 95 Or (script[findIndex] >= 48 And script[findIndex] <= 57) Or (script[findIndex] >= 65 And script[findIndex] <= 90) Or (script[findIndex] >= 97 And script[findIndex] <= 122)
+							Else If script[findIndex] = 95 or (script[findIndex] >= 48 and script[findIndex] <= 57) or (script[findIndex] >= 65 and script[findIndex] <= 90) or (script[findIndex] >= 97 and script[findIndex] <= 122)
 								'_ a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9
 								'alpha numerics
 								findHasEnd = True
@@ -590,7 +656,7 @@ Class Config Extends ConfigNode
 								'illegal character
 								Return SetError("illegal character asc='"+script[findIndex]+"' chr='"+script[findIndex..findIndex+1]+"'",findLine,(findIndex-findLineStart)+1)
 								
-							Endif
+							EndIf
 						Else
 							'scan through the value until an end is found!
 							If findHasQuotes = False
@@ -602,19 +668,19 @@ Class Config Extends ConfigNode
 										If findSegment
 											findHasSegment = True
 											findHasSegmentEnd = True
-										Endif
+										EndIf
 										
 									Else If script[findIndex] = 10
 										'new line
 										If findSegment
 											findHasSegment = True
 											findHasSegmentEnd = True
-										Endif
+										EndIf
 										
 										findLine += 1
 										findLineStart = findIndex + 1
 										
-									Else If script[findIndex] = 34
+									Else If script[findIndex] = 34 Or script[findIndex] = 39
 										'"
 										'looking for start quote
 										If findSegment
@@ -624,7 +690,8 @@ Class Config Extends ConfigNode
 											'start quotes
 											findHasQuotes = True
 											findHasValue = True
-										Endif
+											findQuoteCharacter = script[findIndex]
+										EndIf
 										
 									Else If script[findIndex] = 45
 										'-
@@ -639,9 +706,9 @@ Class Config Extends ConfigNode
 											'negative value
 											findSegment += String.FromChar(script[findIndex])
 											findHasValue = True
-										Endif
+										EndIf
 										
-									Else If script[findIndex] = 42 Or script[findIndex] = 43 Or script[findIndex] = 47
+									Else If script[findIndex] = 42 or script[findIndex] = 43 or script[findIndex] = 47
 										'+
 										'looking for (other non -) operators
 										If findHasValue = False
@@ -652,9 +719,9 @@ Class Config Extends ConfigNode
 											findHasSegmentEnd = True
 											findHasOperator = True
 											findOperator = String.FromChar(script[findIndex])
-										Endif
+										EndIf
 										
-									Else If script[findIndex] = 36 Or script[findIndex] = 46 Or script[findIndex] = 95 Or (script[findIndex] >= 48 And script[findIndex] <= 57) Or (script[findIndex] >= 65 And script[findIndex] <= 90) Or (script[findIndex] >= 97 And script[findIndex] <= 122)
+									Else If script[findIndex] = 36 or script[findIndex] = 46 or script[findIndex] = 95 or (script[findIndex] >= 48 and script[findIndex] <= 57) or (script[findIndex] >= 65 and script[findIndex] <= 90) or (script[findIndex] >= 97 and script[findIndex] <= 122)
 										'$ . _ a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9
 										'looking for unquoted attribute value
 										findSegment += String.FromChar(script[findIndex])
@@ -663,7 +730,7 @@ Class Config Extends ConfigNode
 									Else
 										'ilegal character
 										Return SetError("illegal character asc='"+script[findIndex]+"' chr='"+script[findIndex..findIndex+1]+"'",findLine,(findIndex-findLineStart)+1)
-									Endif
+									EndIf
 									
 								Else
 									'value already has segment so need to look for end or operator
@@ -675,14 +742,14 @@ Class Config Extends ConfigNode
 										findLine += 1
 										findLineStart = findIndex + 1
 										
-									Else If script[findIndex] = 95 Or (script[findIndex] >= 48 And script[findIndex] <= 57) Or (script[findIndex] >= 65 And script[findIndex] <= 90) Or (script[findIndex] >= 97 And script[findIndex] <= 122)
+									Else If script[findIndex] = 95 or (script[findIndex] >= 48 and script[findIndex] <= 57) or (script[findIndex] >= 65 and script[findIndex] <= 90) or (script[findIndex] >= 97 and script[findIndex] <= 122)
 										'_ a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9
 										'looking for new attribute so must rescan this character
 										findHasSegment = False
 										findIndex -= 1
 										findHasEnd = True
 										
-									Else If script[findIndex] = 42 Or script[findIndex] = 43 Or script[findIndex] = 45 Or script[findIndex] = 47
+									Else If script[findIndex] = 42 Or script[findIndex] = 43 or script[findIndex] = 45 or script[findIndex] = 47
 										'+ -
 										'looking for operators
 										findHasSegment = False
@@ -691,8 +758,8 @@ Class Config Extends ConfigNode
 										
 									Else
 										Return SetError("illegal character asc='"+script[findIndex]+"' chr='"+script[findIndex..findIndex+1]+"'",findLine,(findIndex-findLineStart)+1)
-									Endif
-								Endif
+									EndIf
+								EndIf
 							Else
 								'quotes mode (anything goes) (possibly need to do escape quote character at some point)
 								If script[findIndex] = 10
@@ -700,21 +767,20 @@ Class Config Extends ConfigNode
 									findLine += 1
 									findLineStart = findIndex + 1
 									
-								Else If script[findIndex] = 34
-									'"
+								Else If script[findIndex] = findQuoteCharacter
 									'looking for end of quotes
 									findHasSegment = True
 									findHasSegmentEnd = True
 									findHasQuotes = False
-									
+									findQuoteCharacter = 0
 								Else
 									'any character add to value
 									findSegment += String.FromChar(script[findIndex])
 									
-								Endif
-							Endif
-						Endif
-					Endif
+								EndIf
+							EndIf
+						EndIf
+					EndIf
 
 					'look for forced end (eol)
 					If findIndex = findTagEnd-1
@@ -737,12 +803,12 @@ Class Config Extends ConfigNode
 											Return SetError("unexcpected end of attribute",findLine,(findIndex-findLineStart)+1)
 										Else
 											If findSegment <> "" findHasSegmentEnd = True
-										Endif
-									Endif
-								Endif
-							Endif
-						Endif
-					Endif
+										EndIf
+									EndIf
+								EndIf
+							EndIf
+						EndIf
+					EndIf
 					
 					'look at setting up tag name
 					If findHasNameEnd
@@ -752,14 +818,14 @@ Class Config Extends ConfigNode
 							findTag.name = findName.ToLower()
 						Else
 							findHasStart = True
-						Endif
+						EndIf
 						
 						'say that name is found
 						findHasName = True
 						
 						'reset
 						findHasNameEnd = False
-					Endif
+					EndIf
 					
 					If findHasName
 						'look at adding segment to value
@@ -770,12 +836,12 @@ Class Config Extends ConfigNode
 								findTag.SetAttribute(findName,findSegment)
 							Else
 								findAttribute.AddSegment(findSegment)
-							Endif
+							EndIf
 							
 							'reset
 							findHasSegmentEnd = False
 							findSegment = ""
-						Endif
+						EndIf
 						
 						'look for adding operator to value
 						If findHasOperator = True
@@ -785,13 +851,13 @@ Class Config Extends ConfigNode
 								findTag.SetAttribute(findName,findOperator)
 							Else
 								findAttribute.AddSegment(findOperator)
-							Endif
+							EndIf
 							
 							'reset
 							findHasOperator = False
 							findOperator = ""
-						Endif
-					Endif
+						EndIf
+					EndIf
 					
 					If findHasEnd
 						'reset
@@ -807,7 +873,7 @@ Class Config Extends ConfigNode
 						findHasSegment = False
 						findHasSegmentEnd = False
 						findHasOperator = False
-					Endif
+					EndIf
 				Next
 
 				'node is complete - what next
@@ -822,29 +888,30 @@ Class Config Extends ConfigNode
 							Else
 								'mis matched node
 								Return SetError("open tag name '"+stackTag.name+"' doesn't match closing tag name '"+findTag.name+"'",findTag.line,findTag.column)
-							Endif
+							EndIf
 						Else
 							'error - closing unopened node
 							Return SetError("unexpected closing tag '"+findTag.name+"'",findTag.line,findTag.column)
-						Endif
+						EndIf
 					Else
 						'close the node by itself and add to parent!
 						findTag.parent = stack.Last()
 						findTag.parent.AddChild(findTag)
-					Endif
+					EndIf
 				Else
 					'add the node to the stack!
 					'set parent first
 					findTag.parent = stack.Last()
 					stack.AddLast(findTag)
-				Endif
+				EndIf
 
 				'reset flags/values
 				findHasStart = False
 				findHasClose = False
 				findHasPair = False
 				findHasFirst = False
-			Endif
+				findWhitespace = ""
+			EndIf
 		Wend
 		
 		'return parse ok
@@ -859,6 +926,17 @@ Class Config Extends ConfigNode
 		Return False
 	End
 	Public
+	
+	Method Free:Void()
+		' --- free resources ---
+		'call chain
+		Super.Free()
+		
+		'free own resources
+		path = ""
+		script = ""
+		error = Null
+	End
 	
 	Method HasError:Bool()
 		Return error <> Null

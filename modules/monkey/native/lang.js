@@ -30,6 +30,9 @@ function stackTrace(){
 }
 
 function print( str ){
+	if( game_console ){
+		game_console.value+=str+"\n";
+	}
 	if( window.console!=undefined ){
 		window.console.log( str );
 	}
@@ -119,11 +122,14 @@ function resize_object_array( arr,len ){
    return res;
 }
 
-function string_join( sep,bits ){
-	if( bits.length==0 ) return '';
-	var str=bits[0];
-	for( var i=1;i<bits.length;++i ) str+=sep+bits[i];
-	return str;
+function string_replace( str,find,rep ){	//no unregex replace all?!?
+	var i=0;
+	for(;;){
+		i=str.indexOf( find,i );
+		if( i==-1 ) return str;
+		str=str.substring( 0,i )+rep+str.substring( i+find.length );
+		i+=rep.length;
+	}
 }
 
 function string_trim( str ){

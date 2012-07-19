@@ -8,10 +8,6 @@ Import trans
 
 Class CppTranslator Extends Translator
 
-	Method Enquote$( t$ )
-		Return "T("+Super.Enquote(t)+")"
-	End
-
 	Method TransType$( ty:Type )
 		ty=ty.Actual()
 		If VoidType( ty ) Return "void"
@@ -36,11 +32,11 @@ Class CppTranslator Extends Translator
 			If BoolType( ty ) Return "true"
 			If IntType( ty ) Return value
 			If FloatType( ty ) Return value+"f"
-			If StringType( ty ) Return Enquote( value )
+			If StringType( ty ) Return "String("+Enquote( value )+")"
 		Else
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
-			If StringType( ty ) Return "T(~q~q)"
+			If StringType( ty ) Return "String()"
 			If ArrayType( ty ) Return "Array<"+TransType( ArrayType(ty).elemType )+" >()"
 			If ObjectType( ty ) Return "0"
 		EndIf
@@ -316,7 +312,7 @@ Class CppTranslator Extends Translator
 			Endif
 		Endif
 #end
-		If stmt.rhs Return stmt.lhs.TransVar()+stmt.op+stmt.rhs.Trans()
+		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
 		Return stmt.lhs.Trans()
 	End
 	

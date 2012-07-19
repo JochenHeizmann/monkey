@@ -181,7 +181,7 @@ public:
 	virtual String LoadString( String path ){
 		if( FILE *fp=fopen( OS_STR(path),OS_STR( "rb" ) ) ){
 			String str;
-			char buf[1024];
+			unsigned char buf[1024];
 			while( int n=fread( buf,1,1024,fp ) ){
 				str=str+String( buf,n );
 			}
@@ -196,7 +196,7 @@ public:
 		
 	virtual int SaveString( String val,String path ){
 		if( FILE *fp=fopen( OS_STR(path),OS_STR("wb") ) ){
-			int n=fwrite( val.ToCString<char>(),1,val.Length(),fp );
+			int n=fwrite( val.ToCString<unsigned char>(),1,val.Length(),fp );
 			fclose( fp );
 			return n==val.Length() ? 0 : -2;
 		}else{

@@ -6,7 +6,7 @@
 
 Import trans.trans
 
-Const VERSION$="1.02"
+Const VERSION$="1.03"
 
 'from config file
 Global ANDROID_PATH$
@@ -96,17 +96,6 @@ Private
 
 		If FileType( targetPath )<>FILETYPE_DIR Fail "Failed to create target dir: "+targetPath
 	End
-	
-	Method Enquote$( str$ )
-		str=str.Replace( "\","\\" )
-		str=str.Replace( "~t","\t" )
-		str=str.Replace( "~n","\n" )
-		str=str.Replace( "~r","\r" )
-		str=str.Replace( "~q","\~q" )
-		str="~q"+str+"~q"
-		If ENV_LANG="cpp" str="L"+str
-		Return str
-	End
 
 	Method CreateDataDir( dir$ )
 		dir=RealPath( dir )
@@ -144,30 +133,30 @@ Private
 				If text.Length>1024
 					Local bits:=New StringList
 					While text.Length>1024
-						bits.AddLast Enquote( text[..1024] )
+						bits.AddLast LangEnquote( text[..1024] )
 						text=text[1024..]
 					Wend
-					bits.AddLast Enquote( text )
+					bits.AddLast LangEnquote( text )
 					If ENV_LANG="cpp"
 						text=bits.Join( "~n" )
 					Else
 						text=bits.Join( "+~n" )
 					Endif
 				Else
-					text=Enquote( text )
+					text=LangEnquote( text )
 				Endif
 				
 				If ENV_LANG="java"
 					textFiles+="~t~telse if( path.compareTo(~q"+f+"~q)==0 ) return "+text+";~n"
 				Else
-					textFiles+="~t~telse if( path=="+Enquote(f)+" ) return "+text+";~n"
+					textFiles+="~t~telse if( path=="+LangEnquote(f)+" ) return "+text+";~n"
 				Endif
 
 				DeleteFile p
 			End
 		Next
 
-		textFiles+="~t~treturn "+Enquote( "" )+";~n"
+		textFiles+="~t~treturn "+LangEnquote( "" )+";~n"
 		
 	End
 	
@@ -190,9 +179,11 @@ Class Html5Target Extends Target
 		
 		'app code
 		Local main$=LoadString( "main.js" )
-		main=ReplaceBlock( main,"${METADATA_BEGIN}","${METADATA_END}",meta )
-		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
+		
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
+		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
+		main=ReplaceBlock( main,"${METADATA_BEGIN}","${METADATA_END}",meta )
+		
 		SaveString main,"main.js"
 		
 		If OPT_RUN
@@ -213,21 +204,51 @@ Class FlashTarget Extends Target
 	
 	Method MakeTarget()
 	
+		Local embedded=True	'set to false for 'non-embedded' builds'
+	
 		CreateDataDir "data"
-
-		Local meta$="var META_DATA:String=~q"+metaData+"~q;~n"
+	
+		Local assets$
 		
+		If embedded
+			Local stk:=New StringStack
+			For Local t$=Eachin LoadDir( "data",True )
+				If t.StartsWith( "." ) Continue
+				Select ExtractExt( t )
+				Case "png","jpg","mp3"
+					Local munged$="_"
+					For Local t$=EachIn StripExt( t ).Split( "/" )
+						For Local i=0 Until t.Length
+							If IsAlpha( t[i] ) Or IsDigit( t[i] ) Or t[i]=95 Continue
+							Err "Invalid character in flash filename"
+						Next
+						munged+=t.Length+t
+					Next
+					stk.Push "[Embed(source=~qdata/"+t+"~q)]"
+					stk.Push "public static var "+munged+":Class;"
+				End
+
+			Next
+			assets=stk.Join( "~n" )
+		Endif
+
 		'app code
 		Local main$=LoadString( "MonkeyGame.as" )
-		main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",app.transCode )
-		main=ReplaceBlock( main,"${METADATA_BEGIN}","${METADATA_END}",meta )
+		
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
+		main=ReplaceBlock( main,"${ASSETS_BEGIN}","${ASSETS_END}",assets )
+		
 		SaveString main,"MonkeyGame.as"
 		
 		If OPT_BUILD
 		
 			DeleteFile "main.swf"
 			Execute "mxmlc -static-link-runtime-shared-libraries=true MonkeyGame.as"
+			
+			If embedded
+				DeleteDir "data",True
+			Endif
 			
 			If OPT_RUN
 				Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.swf" )+"~q",False
@@ -295,12 +316,12 @@ Class XnaTarget Extends Target
 		
 		'app data
 		Local cont$=LoadString( "MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj" )
-		cont=ReplaceBlock( cont,"${BEGIN_ITEMS}","${END_ITEMS}",t )
+		cont=ReplaceBlock( cont,"${CONTENT_BEGIN}","${CONTENT_END}",t )
 		SaveString cont,"MonkeyGame/MonkeyGameContent/MonkeyGameContent.contentproj"
 
 		'app code
 		Local main$=LoadString( "MonkeyGame/MonkeyGame/Program.cs" )
-		main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",_trans.PostProcess( app.transCode ) )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		SaveString main,"MonkeyGame/MonkeyGame/Program.cs"
 			
@@ -387,7 +408,7 @@ Class IosTarget Extends Target
 		CreateDataDir "data"
 
 		Local main$=LoadString( "main.mm" )
-		main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",_trans.PostProcess( app.transCode ) )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		SaveString main,"main.mm"
 		
@@ -448,7 +469,7 @@ Class GlfwTarget Extends Target
 			CreateDataDir "vc2010/"+CASED_CONFIG+"/data"
 			
 			Local main$=LoadString( "main.cpp" )
-			main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",_trans.PostProcess( app.transCode ) )
+			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
 			main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 			SaveString main,"main.cpp"
 			
@@ -461,7 +482,6 @@ Class GlfwTarget Extends Target
 					ChangeDir CASED_CONFIG
 					Execute "MonkeyGame"
 				Endif
-
 			Endif
 		
 		Case "macos"
@@ -469,7 +489,7 @@ Class GlfwTarget Extends Target
 			CreateDataDir "xcode/data"
 
 			Local main$=LoadString( "main.cpp" )
-			main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",_trans.PostProcess( app.transCode ) )
+			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
 			main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 			SaveString main,"main.cpp"
 			
@@ -499,7 +519,7 @@ Class StdcppTarget Extends Target
 	Method MakeTarget()
 	
 		Local main$=LoadString( "main.cpp" )
-		main=ReplaceBlock( main,"${BEGIN_CODE}","${END_CODE}",app.transCode )
+		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",app.transCode )
 		SaveString main,"main.cpp"
 
 		If OPT_BUILD
@@ -552,7 +572,9 @@ Function ReplaceBlock$( text$,startTag$,endTag$,repText$ )
 	'Find *first* start tag
 	Local i=text.Find( startTag )
 	If i=-1
-		Fail "Error replacing block, can't find startTag: "+startTag
+		Fail "Error modifying target file - can't find block start tag: "+startTag+". You may need to delete target .build directory."
+'		If dieHard Fail "Error replacing block, can't find startTag: "+startTag
+'		Return
 	Endif
 	i+=startTag.Length
 	While i<text.Length And text[i-1]<>10
@@ -561,8 +583,8 @@ Function ReplaceBlock$( text$,startTag$,endTag$,repText$ )
 
 	'Find *last* end tag
 	Local i2=text.Find( endTag,i )
-	If i2=-1 
-		Fail "Error replacing block, can't find endTag: "+endTag
+	If i2=-1
+		Fail "Error modifying target file - can't find block end tag: "+endTag+"."
 	Endif
 	Repeat
 		Local i3=text.Find( endTag,i2+endTag.Length )

@@ -204,7 +204,7 @@ Class JsTranslator Extends Translator
 				Local t_rhs:=stmt.rhs.Trans()
 				Local t_expr:=ie.expr.Trans()
 				Local t_index:=TransExprNS( ie.index )
-				Emit "dbg_array("+t_expr+","+t_index+")["+t_index+"]"+stmt.op+t_rhs
+				Emit "dbg_array("+t_expr+","+t_index+")["+t_index+"]"+TransAssignOp(stmt.op)+t_rhs
 				Return
 			Endif
 		Endif
@@ -245,9 +245,10 @@ Class JsTranslator Extends Translator
 		Case "findlast" Return texpr+".lastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".lastIndexOf"+Bra( arg0+","+arg1 )
 		Case "trim" Return "string_trim"+Bra( texpr )
-		Case "join" Return "string_join"+Bra( texpr+","+arg0 )
+'		Case "join" Return "string_join"+Bra( texpr+","+arg0 )
+		Case "join" Return arg0+".join"+Bra( texpr )
 		Case "split" Return texpr+".split"+Bra( arg0 )
-		Case "replace" Return texpr+".replace"+Bra( "new RegExp"+Bra( arg0+",~qg~q" )+","+arg1 )
+		Case "replace" Return "string_replace"+Bra( texpr+","+arg0+","+arg1 )
 		Case "tolower" Return texpr+".toLowerCase()"
 		Case "toupper" Return texpr+".toUpperCase()"
 		Case "contains" Return Bra( texpr+".indexOf"+Bra( arg0 )+"!=-1" )

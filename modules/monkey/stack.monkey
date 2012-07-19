@@ -50,7 +50,9 @@ Class Stack<T>
 	End
 
 	Method Insert( index,value:T )
-		SetCapacity length+1
+		If length=data.Length
+			data=data.Resize( length*2+10 )
+		Endif
 		For Local i=length Until index Step -1
 			data[i]=data[i-1]
 		Next

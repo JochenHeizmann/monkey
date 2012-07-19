@@ -36,7 +36,7 @@ public class bb_std_lang{
 	public static void Error( String str ){
 		throw new Exception( str );
 	}
-
+	
 	//***** String stuff *****
 	
 	static public String slice( String str,int from ){

@@ -1,5 +1,53 @@
 
-Note: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
+NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
+
+***** V32 *****
+
+Modules:
+
+JS/AS now use built-in join().
+
+Implemented custom string_replace for JS and AS targets to avoid regex issues.
+
+Flash target can now be used mojo-less - this is probably a pointless exercise, will revisit eventually.
+
+Android mojo nows uses GL!
+
+Added simple glfw LoadState/SaveState.
+
+Fixed XNA shift/control input issues.
+
+Mojo font now loads at startup.
+
+LoadImage/LoadSound errors consistently return Null objects.
+
+Flash data embedded! Will eventually be selectable. Note: flash file names must be valid identifiers for now.
+
+Error "" added - use to 'exit app'.
+
+Android target 'screensaver' disabled via android:keepScreenOn="true" in layout/main.xml
+
+App suspend/resume improvements.
+
+
+Trans:
+
+Bumped to v1.03.
+
+Fixed default multi-dim array values in java/c#.
+
+Fixed unary expr after EOL causing syntax error.
+
+'Then' now also allowed after 'Else If'.
+
+Fixed Shl=, Shr=- and Mod=.
+
+Fixed overriding methods not matching superclass methods. 
+
+Fixed default ctors being generated when suitable ctor with defaults params already exists.
+
+Func/var decls can now handling EOLs after commas.
+
 
 ***** V31 *****
 

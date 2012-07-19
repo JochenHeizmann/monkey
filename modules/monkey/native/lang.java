@@ -20,6 +20,7 @@ class bb_std_lang{
 	}
 	
 	static void popErr(){
+		if( errStack.size()==0 ) throw new Error( "STACK ERROR!" );
 		errInfo=(String)errStack.remove( errStack.size()-1 );
 	}
 	

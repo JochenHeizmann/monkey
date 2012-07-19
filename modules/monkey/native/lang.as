@@ -30,28 +30,14 @@ function stackTrace():String{
 	return str;
 }
 
-function getConsole():TextField{
-	if( _console ) return _console;
-	_console=new TextField();
-	_console.x=0;
-	_console.y=0;
-	_console.width=bitmap.width;
-	_console.height=bitmap.height;
-	_console.background=false;
-	_console.backgroundColor=0xff000000;
-	_console.textColor=0xffffff00;
-	bitmap.stage.addChild( _console );
-	return _console;
-}
-
 function print( str:String ):void{
-	var c:TextField=getConsole();
+	var c:TextField=game.GetConsole();
 	c.appendText( str+"\n" );
 //	trace( str );	//this causes a funky VerifyError in flash!
 }
 
 function alert( str:String ):void{
-	var c:TextField=getConsole();
+	var c:TextField=game.GetConsole();
 	c.appendText( str+"\n" );
 }
 
@@ -133,10 +119,14 @@ function resize_object_array( arr:Array,len:int ):Array{
    return res;
 }
 
-function string_join( sep:String,bits:Array ):String{
-	if( bits.length==0 ) return '';
-	var str:String=bits[0];
-	for( var i:int=1;i<bits.length;++i ) str+=sep+bits[i];
+function string_replace( str:String,find:String,rep:String ):String{	//no unregex replace all?!?
+	var i:int=0;
+	for(;;){
+		i=str.indexOf( find,i );
+		if( i==-1 ) return str;
+		str=str.substring( 0,i )+rep+str.substring( i+find.length );
+		i+=rep.length;
+	}
 	return str;
 }
 

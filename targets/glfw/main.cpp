@@ -13,7 +13,11 @@
 
 #include "config.h"
 
-//${BEGIN_CODE}
+#undef LoadString
+
+void (*runner)();
+
+//${TRANSCODE_BEGIN}
 void GameMain(){
 	glClearColor( .5,0,1,1 );
 	while( glfwGetWindowParam( GLFW_OPENED ) ){
@@ -21,7 +25,25 @@ void GameMain(){
 		glfwSwapBuffers();
 	}
 }
-//${END_CODE}
+//${TRANSCODE_END}
+
+String loadString( String path ){
+	if( !path.Length() ) return "";
+//${TEXTFILES_BEGIN}
+//${TEXTFILES_END}
+}
+
+unsigned char *loadImage( String path,int *width,int *height,int *depth ){
+	return stbi_load( (String("data/")+path).ToCString<char>(),width,height,depth,0 );
+}
+
+void unloadImage( unsigned char *data ){
+	stbi_image_free( data );
+}
+
+FILE *fopenFile( String path,const char *mode ){
+	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+}
 
 int main( int argc,const char *argv[] ){
 
@@ -63,8 +85,10 @@ int main( int argc,const char *argv[] ){
 		puts( "alcmakeContextCurrent failed" );
 		exit( -1 );
 	}
-
-	GameMain();
+	
+	bb_std_main( argc,argv );
+	
+	if( runner ) runner();
 	
 	alcDestroyContext( alcContext );
 

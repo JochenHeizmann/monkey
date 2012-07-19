@@ -13,16 +13,16 @@ Class MyApp Extends App
 	
 	Method OnCreate()
 	
-#if TARGET="flash"
+#If TARGET="flash"
 		shoot=LoadSound( "shoot.mp3" )
 		tinkle=LoadSound( "tinkle.mp3" )
-#else If TARGET="android"
+#Else If TARGET="android"
 		shoot=LoadSound( "shoot.ogg" )
 		tinkle=LoadSound( "tinkle.ogg" )
-#else
+#Else
 		shoot=LoadSound( "shoot.wav" )
 		tinkle=LoadSound( "tinkle.wav" )
-#endif
+#Endif
 
 		SetUpdateRate 15
 	End

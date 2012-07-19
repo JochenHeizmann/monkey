@@ -406,7 +406,7 @@ Public
 			func.Semant
 		Next
 		
-		Local match:FuncDecl,isexact
+		Local match:FuncDecl,isexact,err$
 
 		For Local func:FuncDecl=EachIn funcs
 
@@ -418,6 +418,7 @@ Public
 			Local possible=True
 			
 			For Local i=0 Until argDecls.Length
+			
 				If i<argExprs.Length And argExprs[i]
 				
 					Local declTy:Type=argDecls[i].ty
@@ -430,31 +431,44 @@ Public
 					
 					If exprTy.ExtendsType( declTy ) Continue
 
-					possible=False
-					Exit
 				Else If argDecls[i].init
+				
 					exact=False
-				Else
-					possible=False
-					Exit
+					
+					Continue
+				
 				EndIf
+			
+				possible=False
+				Exit
+
 			Next
 			
 			If Not possible Continue
 			
 			If exact
-				match=func
-				isexact=True
-				Exit
+				If isexact
+					Err "Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+				Else
+					err=""
+					match=func
+					isexact=True
+				Endif
+			Else
+				If Not isexact
+					If match 
+						err="Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+					Else
+						match=func
+					Endif
+				Endif
 			Endif
-			
-			If match Err "Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
-			match=func
 			
 		Next
 		
-		If explicit 
-			If Not isexact Return
+		If Not isexact
+			If err Err err
+			If explicit Return
 		Endif
 		
 		If Not match
@@ -607,7 +621,7 @@ Class FuncDecl Extends BlockDecl
 		EndIf
 		
 		'append a return statement if necessary
-		If Not VoidType( retType ) And Not ReturnStmt( stmts.Last() )
+		If Not IsExtern() And Not VoidType( retType ) And Not ReturnStmt( stmts.Last() )
 			Local stmt:=New ReturnStmt( Null )
 			stmt.errInfo=errInfo	'""
 			stmts.AddLast stmt
@@ -841,20 +855,25 @@ Class ClassDecl Extends ScopeDecl
 		Endif
 		
 		If Not IsExtern()
-			'gen a default ctor if we don't already have one
+		
 			Local fdecl:FuncDecl
 			For Local decl:FuncDecl=EachIn FuncDecls
-				If decl.IsCtor() And Not decl.argDecls.Length
-					fdecl=decl
-					Exit
-				EndIf
+				If Not decl.IsCtor() Continue
+				Local nargs
+				For Local arg:=Eachin decl.argDecls
+					If Not arg.init nargs+=1
+				Next
+				If nargs Continue
+				fdecl=decl
+				Exit
 			Next
-			'
+		
 			If Not fdecl
 				fdecl=New FuncDecl( "new",New ObjectType( Self ),[],FUNC_CTOR )
 				fdecl.AddStmt New ReturnStmt( Null )
 				InsertDecl fdecl
 			EndIf
+			
 		EndIf
 
 		'NOTE: do this AFTER super semant so UpdateAttrs order is cool.
@@ -864,7 +883,6 @@ Class ClassDecl Extends ScopeDecl
 	'Ok, this dodgy looking beast 'resurrects' methods that may not currently be alive, but override methods that ARE.
 	Method UpdateLiveMethods()	
 	
-'#rem	
 		If Not superClass Return
 		
 		Local n
@@ -878,11 +896,12 @@ Class ClassDecl Extends ScopeDecl
 			unsem.AddLast decl
 			
 			Local c:=ClassDecl( superClass.actual )
+
 			While c
 				For Local decl2:=EachIn c.FuncDecls
 					If Not decl2.IsMethod() Continue
 					If decl.ident<>decl2.ident Continue
-'					If Not decl.EqualsType( decl2 ) Continue	'for now, all methods with same name always semanted...
+
 					If decl2.IsSemanted()
 						live=True
 					Else
@@ -907,11 +926,9 @@ Class ClassDecl Extends ScopeDecl
 	Method CheckDuplicateDecls()
 
 		For Local decl:=Eachin FuncDecls
-		
 			If Not decl.IsSemanted Continue
 			
 			For Local decl2:=Eachin FuncDecls
-			
 				If decl=decl2 Continue
 				If decl.ident<>decl2.ident Continue
 				If decl.argDecls.Length<>decl2.argDecls.Length Continue
@@ -937,6 +954,7 @@ Class ClassDecl Extends ScopeDecl
 		PushErr errInfo
 		
 		Local nfields,nmethods
+		
 		For Local decl:Decl=EachIn decls
 			If FieldDecl( decl )
 				nfields+=1
@@ -946,6 +964,7 @@ Class ClassDecl Extends ScopeDecl
 		Next
 		
 		If Not superClass
+		
 			Local j=0
 			methods=New FuncDecl[nmethods]
 			For Local decl:FuncDecl=EachIn FuncDecls
@@ -968,6 +987,7 @@ Class ClassDecl Extends ScopeDecl
 			superClass=ClassDecl( superClass.actual )
 
 			Local j=superClass.methods.Length
+
 			methods=superClass.methods.Resize( j+nmethods )
 			
 			For Local decl:FuncDecl=EachIn FuncDecls
@@ -975,11 +995,12 @@ Class ClassDecl Extends ScopeDecl
 				If Not decl.IsSemanted() Continue
 
 				decl.index=-1
+
+				Local match
 				For Local decl2:FuncDecl=Eachin superClass.methods
 					If Not decl2.IsMethod() Continue
-					
 					If decl.ident<>decl2.ident Continue
-					
+					match=True
 					If decl.EqualsType( decl2 )
 						decl.overrides=decl2
 						decl.index=decl2.index
@@ -988,7 +1009,13 @@ Class ClassDecl Extends ScopeDecl
 						Exit
 					EndIf
 				Next
+
 				If decl.index<>-1 Continue
+				
+				If match
+					PushErr decl.errInfo
+					Err "Overriding method does not match any overridden method."
+				Endif
 				
 				decl.index=j
 				methods[j]=decl
@@ -1000,7 +1027,6 @@ Class ClassDecl Extends ScopeDecl
 			'Do this second because semanting methods above may have activated more fields
 			'		
 			Local i=superClass.fields.Length
-			'
 			fields=superClass.fields.Resize( i+nfields )
 			'
 			For Local decl:FieldDecl=EachIn FieldDecls
@@ -1138,6 +1164,10 @@ Class AppDecl Extends ScopeDecl
 		
 		mainFunc=mainModule.FindFuncDecl( "Main",[] )
 		If Not mainFunc Err "Function 'Main' not found."
+		
+		If Not IntType( mainFunc.retType ) Or mainFunc.argDecls.Length
+			Err "Main function must be of type Main:Int()"
+		Endif
 
 		Repeat
 			Local n

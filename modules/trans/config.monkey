@@ -66,14 +66,36 @@ Function Todo()
 	Err "TODO!"
 End
 
-Function CppEnquote$( str$ )
+'enquote depending on ENV_LANG
+'
+Function LangEnquote$( str$ )
 	str=str.Replace( "\","\\" )
 	str=str.Replace( "~q","\~q" )
 	str=str.Replace( "~n","\n" )
 	str=str.Replace( "~r","\r" )
 	str=str.Replace( "~t","\t" )
-'	str=str.Replace( "~0","\0" )	'Sort me out!
+'	str=str.Replace( "~0","\0" )	'Fix me?
+	For Local i=0 Until str.Length
+		If str[i]>=32 And str[i]<128 Continue
+		Local t$,n=str[i]
+		While n
+			Local c=(n&15)+48
+			If c>=58 c+=97-58
+			t=String.FromChar( c )+t
+			n=(n Shr 4) & $0fffffff
+		Wend
+		If Not t t="0"
+		Select ENV_LANG
+		Case "cpp"
+			t="~q~q\x"+t+"~q~q"
+		Default	'js
+			t="\u"+("0000"+t)[-4..]
+		End
+		str=str[..i]+t+str[i+1..]
+		i+=t.Length-1
+	Next
 	str="~q"+str+"~q"
+	If ENV_LANG="cpp" str="L"+str
 	Return str
 End
 

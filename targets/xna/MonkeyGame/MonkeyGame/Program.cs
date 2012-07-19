@@ -20,8 +20,7 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 #endif
 
-public class GameConfig{
-
+public class MonkeyConfig{
 #if WINDOWS
 	public const int WINDOW_WIDTH=640;
 	public const int WINDOW_HEIGHT=480;
@@ -38,8 +37,25 @@ public class GameConfig{
 	public const bool WINDOW_RESIZABLE=false;
 	public const bool WINDOW_FULLSCREEN=true;
 #endif
+}
 
+public class MonkeyData{
+
+	public static String LoadString( String path ){
+		if( path=="" ) return "";
+//${TEXTFILES_BEGIN}
+//${TEXTFILES_END}
+	}
+	
+	public static Texture2D LoadTexture2D( String path,ContentManager content ){
+		return content.Load<Texture2D>( "Content/"+path );
+	}
+
+	public static SoundEffect LoadSoundEffect( String path,ContentManager content ){
+		return content.Load<SoundEffect>( "Content/"+path );
+	}
+	
 };
 
-//${BEGIN_CODE}
-//${END_CODE}
+//${TRANSCODE_BEGIN}
+//${TRANSCODE_END}

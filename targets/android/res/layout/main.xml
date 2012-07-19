@@ -6,6 +6,7 @@
 
 	<view class="com.monkey.MonkeyGame$MonkeyView"
     	android:id="@+id/monkeyview"
+		android:keepScreenOn="true"
   		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 	    />
