@@ -2,7 +2,7 @@
 Strict
 
 RebuildTrans
-RebuildMonk
+'RebuildMonk
 'RebuildMServer
 
 End

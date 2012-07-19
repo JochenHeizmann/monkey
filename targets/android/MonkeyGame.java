@@ -16,7 +16,7 @@ class MonkeyData{
 	static AssetManager getAssets(){
 		return MonkeyGame.activity.getAssets();
 	}
-	
+
 	static String toString( byte[] buf ){
 		int n=buf.length;
 		char tmp[]=new char[n];
@@ -69,7 +69,7 @@ class MonkeyData{
 		}
 		return out.toString();
 	}
-	
+
 	static String loadString( String path ){
 		path="monkey/"+path;
 		
@@ -86,8 +86,12 @@ class MonkeyData{
 
 			buf.flush();
 			stream.close();
-			
+
 			return loadString( buf.toByteArray() );
+			
+//			This doesn't appear to handle BOMs:
+//			return new String( buf.toByteArray() );	
+
 		}catch( IOException e ){
 		}
 		return "";		

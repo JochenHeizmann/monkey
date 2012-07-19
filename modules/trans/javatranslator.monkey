@@ -6,7 +6,7 @@
 
 Import trans
 
-Class JavaTranslator Extends Translator
+Class JavaTranslator Extends CTranslator
 
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
@@ -174,17 +174,16 @@ Class JavaTranslator Extends Translator
 			If IntType( src ) Return "String.valueOf"+texpr
 			If FloatType( src ) Return "String.valueOf"+texpr
 			If StringType( src ) Return texpr
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().ExtendsClass( dst.GetClass() )
+				Return texpr
+			Else
+				Local tmp:=New LocalDecl( "",0,src,Null )
+				MungDecl tmp
+				Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
+				Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
+			Endif
 		Endif
-		
-		If src.GetClass().ExtendsClass( dst.GetClass() )
-			Return texpr
-		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Local tmp:=New LocalDecl( "",0,src,Null )
-			MungDecl tmp
-			Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
-			Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
-		Endif
-
 		Err "Java translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -286,6 +285,7 @@ Class JavaTranslator Extends Translator
 
 		'string functions		
 		Case "fromchar" Return "String.valueOf"+Bra("(char)"+Bra( arg0 ) )
+		Case "fromchars" Return "bb_std_lang.fromChars"+Bra( arg0 )
 
 		'trig methods - degrees
 		Case "sin","cos","tan" Return "(float)Math."+id+Bra( Bra(arg0)+"*bb_std_lang.D2R" )

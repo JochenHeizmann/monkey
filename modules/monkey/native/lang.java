@@ -121,6 +121,15 @@ class bb_std_lang{
 		}
 	}
 	
+	static public String fromChars( int[] chars ){
+		int n=chars.length;
+		char[] chrs=new char[n];
+		for( int i=0;i<n;++i ){
+			chrs[i]=(char)chars[i];
+		}
+		return new String( chrs,0,n );
+	}
+	
 	//***** Array Stuff *****
 	
 	static Object sliceArray( Object arr,int from ){

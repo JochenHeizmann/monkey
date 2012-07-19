@@ -8,7 +8,7 @@ Import trans
 
 Const PROFILE?=True
 
-Class CppTranslator Extends Translator
+Class CppTranslator Extends CTranslator
 
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
@@ -162,11 +162,18 @@ Class CppTranslator Extends Translator
 			If IntType( src ) Return "String"+Bra( t )
 			If FloatType( src ) Return "String"+Bra( t )
 			If StringType( src ) Return t
-		Else If ObjectType( src ) And ObjectType( dst )
-			If src.GetClass().ExtendsClass( dst.GetClass() ) Return t
-			If dst.GetClass().ExtendsClass( src.GetClass() ) Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().IsInterface() And Not dst.GetClass().IsInterface()
+				'interface->object
+				Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+			Else  If src.GetClass().ExtendsClass( dst.GetClass() )
+				'upcast
+				Return t
+			Else
+				'downcast
+				Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+			Endif
 		Endif
-		
 		Err "C++ translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -283,6 +290,7 @@ Class CppTranslator Extends Translator
 		
 		'string functions
 		Case "fromchar" Return "String"+Bra( "(Char)"+Bra(arg0)+",1" )
+		Case "fromchars" Return "String::FromChars"+Bra( arg0 )
 
 		'trig functions - degrees
 		Case "sin","cos","tan" Return "(Float)"+id+Bra( Bra(arg0)+"*D2R" )
@@ -386,7 +394,7 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method EmitClassProto( classDecl:ClassDecl )
-
+	
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.munged
 		

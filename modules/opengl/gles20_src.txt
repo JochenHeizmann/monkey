@@ -469,8 +469,8 @@ Function glCopyTexSubImage2D:Void( target, level, xoffset, yoffset, x, y, width,
 
 Kludge glfw,ios,android
 Function glCreateBuffer:Int()
-Function glCreateFrameBuffer:Int()
-Function glCreateRenderBuffer:Int()
+Function glCreateFramebuffer:Int()
+Function glCreateRenderbuffer:Int()
 Function glCreateTexture:Int()
 
 Kludge none
@@ -595,7 +595,7 @@ Function glIsProgram:Bool( program )
 Function glIsRenderbuffer:Bool( renderbuffer )
 Function glIsShader:Bool( shader )
 Function glIsTexture:Bool( texture )
-Function glLineWidth:Bool( width# )
+Function glLineWidth:Void( width# )
 Function glLinkProgram:Void( program )
 Function glPixelStorei:Void( pname, param )
 Function glPolygonOffset:Void( factor#, units# )

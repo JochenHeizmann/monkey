@@ -357,8 +357,8 @@ Function glCompileShader:Void( shader )
 Function glCopyTexImage2D:Void( target, level, internalformat, x, y, width, height, border )
 Function glCopyTexSubImage2D:Void( target, level, xoffset, yoffset, x, y, width, height )
 Function glCreateBuffer:Int()="_glCreateBuffer"
-Function glCreateFrameBuffer:Int()="_glCreateFrameBuffer"
-Function glCreateRenderBuffer:Int()="_glCreateRenderBuffer"
+Function glCreateFramebuffer:Int()="_glCreateFramebuffer"
+Function glCreateRenderbuffer:Int()="_glCreateRenderbuffer"
 Function glCreateTexture:Int()="_glCreateTexture"
 Function glCreateProgram:Int()
 Function glCreateShader:Int( type )
@@ -418,7 +418,7 @@ Function glIsProgram:Bool( program )
 Function glIsRenderbuffer:Bool( renderbuffer )
 Function glIsShader:Bool( shader )
 Function glIsTexture:Bool( texture )
-Function glLineWidth:Bool( width# )
+Function glLineWidth:Void( width# )
 Function glLinkProgram:Void( program )
 Function glPixelStorei:Void( pname, param )
 Function glPolygonOffset:Void( factor#, units# )
@@ -503,8 +503,8 @@ Function glCompileShader:Void( shader )="GLES20.glCompileShader"
 Function glCopyTexImage2D:Void( target, level, internalformat, x, y, width, height, border )="GLES20.glCopyTexImage2D"
 Function glCopyTexSubImage2D:Void( target, level, xoffset, yoffset, x, y, width, height )="GLES20.glCopyTexSubImage2D"
 Function glCreateBuffer:Int()="bb_opengl_gles20._glCreateBuffer"
-Function glCreateFrameBuffer:Int()="bb_opengl_gles20._glCreateFrameBuffer"
-Function glCreateRenderBuffer:Int()="bb_opengl_gles20._glCreateRenderBuffer"
+Function glCreateFramebuffer:Int()="bb_opengl_gles20._glCreateFramebuffer"
+Function glCreateRenderbuffer:Int()="bb_opengl_gles20._glCreateRenderbuffer"
 Function glCreateTexture:Int()="bb_opengl_gles20._glCreateTexture"
 Function glCreateProgram:Int()="GLES20.glCreateProgram"
 Function glCreateShader:Int( type )="GLES20.glCreateShader"
@@ -564,7 +564,7 @@ Function glIsProgram:Bool( program )="GLES20.glIsProgram"
 Function glIsRenderbuffer:Bool( renderbuffer )="GLES20.glIsRenderbuffer"
 Function glIsShader:Bool( shader )="GLES20.glIsShader"
 Function glIsTexture:Bool( texture )="GLES20.glIsTexture"
-Function glLineWidth:Bool( width# )="GLES20.glLineWidth"
+Function glLineWidth:Void( width# )="GLES20.glLineWidth"
 Function glLinkProgram:Void( program )="GLES20.glLinkProgram"
 Function glPixelStorei:Void( pname, param )="GLES20.glPixelStorei"
 Function glPolygonOffset:Void( factor#, units# )="GLES20.glPolygonOffset"
@@ -649,8 +649,8 @@ Function glCompileShader:Void( shader )
 Function glCopyTexImage2D:Void( target, level, internalformat, x, y, width, height, border )
 Function glCopyTexSubImage2D:Void( target, level, xoffset, yoffset, x, y, width, height )
 Function glCreateBuffer:Int()="_glCreateBuffer"
-Function glCreateFrameBuffer:Int()="_glCreateFrameBuffer"
-Function glCreateRenderBuffer:Int()="_glCreateRenderBuffer"
+Function glCreateFramebuffer:Int()="_glCreateFramebuffer"
+Function glCreateRenderbuffer:Int()="_glCreateRenderbuffer"
 Function glCreateTexture:Int()="_glCreateTexture"
 Function glCreateProgram:Int()
 Function glCreateShader:Int( type )
@@ -710,7 +710,7 @@ Function glIsProgram:Bool( program )
 Function glIsRenderbuffer:Bool( renderbuffer )
 Function glIsShader:Bool( shader )
 Function glIsTexture:Bool( texture )
-Function glLineWidth:Bool( width# )
+Function glLineWidth:Void( width# )
 Function glLinkProgram:Void( program )
 Function glPixelStorei:Void( pname, param )
 Function glPolygonOffset:Void( factor#, units# )
@@ -793,8 +793,8 @@ Function glCompileShader:Void( shader )="gl.compileShader"
 Function glCopyTexImage2D:Void( target, level, internalformat, x, y, width, height, border )="gl.copyTexImage2D"
 Function glCopyTexSubImage2D:Void( target, level, xoffset, yoffset, x, y, width, height )="gl.copyTexSubImage2D"
 Function glCreateBuffer:Int()="gl.createBuffer"
-Function glCreateFrameBuffer:Int()="gl.createFrameBuffer"
-Function glCreateRenderBuffer:Int()="gl.createRenderBuffer"
+Function glCreateFramebuffer:Int()="gl.createFramebuffer"
+Function glCreateRenderbuffer:Int()="gl.createRenderbuffer"
 Function glCreateTexture:Int()="gl.createTexture"
 Function glCreateProgram:Int()="gl.createProgram"
 Function glCreateShader:Int( type )="gl.createShader"
@@ -854,7 +854,7 @@ Function glIsProgram:Bool( program )="gl.isProgram"
 Function glIsRenderbuffer:Bool( renderbuffer )="gl.isRenderbuffer"
 Function glIsShader:Bool( shader )="gl.isShader"
 Function glIsTexture:Bool( texture )="gl.isTexture"
-Function glLineWidth:Bool( width# )="gl.lineWidth"
+Function glLineWidth:Void( width# )="gl.lineWidth"
 Function glLinkProgram:Void( program )="gl.linkProgram"
 Function glPixelStorei:Void( pname, param )="gl.pixelStorei"
 Function glPolygonOffset:Void( factor#, units# )="gl.polygonOffset"

@@ -6,7 +6,7 @@
 
 Import trans
 
-Class JsTranslator Extends Translator
+Class JsTranslator Extends CTranslator
 
 	Method TransValue$( ty:Type,value$ )
 		If value
@@ -136,18 +136,15 @@ Class JsTranslator Extends Translator
 		Else If StringType( dst )
 			If NumericType( src ) Return "String"+texpr
 			If StringType( src )  Return texpr
-		Endif
-		
-		If src.GetClass().ExtendsClass( dst.GetClass() )
-			Return texpr
-		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			If dst.GetClass().IsInterface()
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().ExtendsClass( dst.GetClass() )
+				Return texpr
+			Else If dst.GetClass().IsInterface()
 				Return "object_implements"+Bra( texpr+",~q"+dst.GetClass.munged+"~q" )
 			Else
 				Return "object_downcast"+Bra( texpr+","+dst.GetClass().munged )
 			Endif
 		Endif
-
 		Err "JS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -260,6 +257,7 @@ Class JsTranslator Extends Translator
 
 		'string functions
 		Case "fromchar" Return "String.fromCharCode"+Bra( arg0 )
+		Case "fromchars" Return "string_from_chars"+Bra( arg0 )
 
 		'trig functions - degrees
 		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*D2R" )

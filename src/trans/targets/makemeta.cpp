@@ -6,7 +6,7 @@ int info_height;
 
 int get_info_png( String path ){
 
-	if( FILE *f=fopen( OS_STR(path),OS_STR("rb") ) ){
+	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 		unsigned char data[32];
 		int n=fread( data,1,24,f );
 		fclose( f );
@@ -21,7 +21,7 @@ int get_info_png( String path ){
 
 int get_info_gif( String path ){
 
-	if( FILE *f=fopen( OS_STR(path),OS_STR("rb") ) ){
+	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 		unsigned char data[32];
 		int n=fread( data,1,10,f );
 		fclose( f );
@@ -36,7 +36,7 @@ int get_info_gif( String path ){
 
 int get_info_jpg( String path ){
 
-	if( FILE *f=fopen( OS_STR(path),OS_STR("rb") ) ){
+	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 	
 		unsigned char buf[32];
 		

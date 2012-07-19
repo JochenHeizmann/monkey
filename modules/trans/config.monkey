@@ -40,6 +40,8 @@ Function PopErr()
 End
 
 Function Err( err$ )
+'	Print _errInfo+" : "+err
+'	Error _errInfo+" : "+err
 	Print _errInfo+" : Error : "+err
 	ExitApp -1
 End
@@ -49,28 +51,29 @@ Function InternalErr( err$="Internal error" )
 	Error _errInfo+" : "+err
 End
 
-Function Asc( str$ )
-	If str Return str[0]
-End
-
 Function IsSpace( ch )
-	Return ch<=Asc(" ")
+	Return ch<=32
+'	Return ch<=Asc(" ")
 End
 
 Function IsDigit( ch )
-	Return ch>=Asc("0") And ch<=Asc("9")
+	Return ch>=48 And ch<=57
+'	Return ch>=Asc("0") And ch<=Asc("9")
 End
 
 Function IsAlpha( ch )
-	Return (ch>=Asc("A") And ch<=Asc("Z")) Or (ch>=Asc("a") And ch<=Asc("z"))
+	Return (ch>=65 And ch<=90) Or (ch>=97 And ch<=122)
+'	Return (ch>=Asc("A") And ch<=Asc("Z")) Or (ch>=Asc("a") And ch<=Asc("z"))
 End
 
 Function IsBinDigit( ch )
-	Return ch=Asc("0") Or ch=Asc("1")
+	Return ch=48 Or ch=49
+'	Return ch=Asc("0") Or ch=Asc("1")
 End
 
 Function IsHexDigit( ch )
-	Return IsDigit(ch) Or (ch>=Asc("A") And ch<=Asc("F")) Or (ch>=Asc("a") And ch<=Asc("f"))
+	Return (ch>=48 And ch<=57) Or (ch>=65 And ch<=70) Or (ch>=97 And ch<=102)
+'	Return IsDigit(ch) Or (ch>=Asc("A") And ch<=Asc("F")) Or (ch>=Asc("a") And ch<=Asc("f"))
 End
 
 Function Todo() 

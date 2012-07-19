@@ -40,8 +40,6 @@ Class ForEachinStmt Extends Stmt
 	Field expr:Expr
 	Field block:BlockDecl
 	
-	Field stmts:List=New List
-	
 	Method New( varid$,varty:Type,varlocal,expr:Expr,block:BlockDecl )
 		Self.varid=varid
 		Self.varty=varty
@@ -116,7 +114,7 @@ Class ForEachinStmt Extends Stmt
 	End
 	
 	Method Trans$()
-		_trans.EmitBlock block
+		Return _trans.TransBlock( block )
 	End
 
 End
@@ -351,11 +349,12 @@ Class Parser
 	Field _blockStack:=New List<BlockDecl>
 	Field _errStack:=New StringList
 	
-	Field _app:AppDecl
-	Field _module:ModuleDecl
-	
 	Field _selTmpId
 		
+	Field _app:AppDecl
+	Field _module:ModuleDecl
+	Field _defattrs
+	
 	Method SetErr()
 		If _toker.Path _errInfo=_toker.Path+"<"+_toker.Line+">"
 	End
@@ -391,7 +390,8 @@ Class Parser
 		Case TOKE_KEYWORD
 			_toke=_toke.ToLower()
 		Case TOKE_SYMBOL
-			If _toke[0]=Asc("[") And _toke[_toke.Length-1]=Asc("]")
+			If _toke[0]=91 And _toke[_toke.Length-1]=93
+'			If _toke[0]=Asc("[") And _toke[_toke.Length-1]=Asc("]")
 				_toke="[]"
 			Endif
 		End
@@ -1290,14 +1290,14 @@ Class Parser
 	Method ParseFuncDecl:FuncDecl( attrs )
 
 		SetErr
-		Local toke:=_toke
 		
-		If CParse( "function" )
-		Else If CParse( "method" )
+		If CParse( "method" )
 			attrs|=FUNC_METHOD
-		Else
+		Else If Not CParse( "function" )
 			InternalErr
 		Endif
+		
+		attrs|=_defattrs
 	
 		Local id$
 		Local ty:Type
@@ -1378,8 +1378,12 @@ Class Parser
 		PopBlock
 
 		NextToke
-		
-		If toke CParse toke
+
+		If attrs & (FUNC_CTOR|FUNC_METHOD)
+			CParse "method"
+		Else
+			CParse "function"
+		Endif
 		
 		Return funcDecl
 	End
@@ -1389,11 +1393,10 @@ Class Parser
 		SetErr
 		Local toke:=_toke
 	
-		If CParse( "class" )
-		Else If CParse( "interface" )
+		If CParse( "interface" )
 			If attrs & DECL_EXTERN Err "Interfaces cannot be extern."
 			attrs|=CLASS_INTERFACE|DECL_ABSTRACT
-		Else
+		Else If Not CParse( "class" )
 			InternalErr
 		Endif
 		
@@ -1595,24 +1598,28 @@ Class Parser
 	
 		SkipEols
 
-		Local mattrs
-		If CParse( "strict" ) mattrs|=MODULE_STRICT
+		If Not _module
 		
-		Local path$=_toker.Path()
-		Local ident$=StripAll( path )
-		Local munged$	'="bb_"+ident
-
-		ValidateModIdent ident
-		
-		_module=New ModuleDecl( ident,mattrs,munged,path )
-		
-		_module.imported.Insert path,_module
-
-		_app.InsertModule _module
-		
-		ImportModule "monkey.lang",0
-		ImportModule "monkey",0
-		
+			Local attrs
+			If CParse( "strict" ) attrs|=MODULE_STRICT
+			
+			Local path$=_toker.Path()
+			Local ident$=StripAll( path )
+			Local munged$	'="bb_"+ident
+	
+			ValidateModIdent ident
+			
+			_module=New ModuleDecl( ident,attrs,munged,path )
+			
+			_module.imported.Insert path,_module
+	
+			_app.InsertModule _module
+			
+			ImportModule "monkey.lang",0
+			ImportModule "monkey",0
+			
+		Endif
+			
 		Local attrs
 		
 		'Parse header - imports etc.
@@ -1685,7 +1692,7 @@ Class Parser
 				Endif
 				NextToke
 				attrs=DECL_EXTERN
-				If CParse( "private" ) attrs=attrs|DECL_PRIVATE
+				If CParse( "private" ) attrs|=DECL_PRIVATE
 			Case "const","global"
 				_module.InsertDecls ParseDecls( _toke,attrs )
 			Case "class"
@@ -1702,15 +1709,44 @@ Class Parser
 		
 	End
 	
-	Method New( toker:Toker,app:AppDecl )
+	Method New( toker:Toker,app:AppDecl,mdecl:ModuleDecl=Null,defattrs=0 )
 		_toke="~n"
 		_toker=toker
 		_app=app
+		_module=mdecl
+		_defattrs=defattrs
 		SetErr
 		NextToke
 	End
+
 End
 
+Function Eval$( source$,ty:Type )
+
+	Local env:=New ScopeDecl
+	
+	For Local kv:=Eachin Env
+		env.InsertDecl New ConstDecl( kv.Key,0,Type.stringType,New ConstExpr( Type.stringType,kv.Value ) )
+	Next
+
+	PushEnv env
+	
+	Local toker:=New Toker( "",source )
+	
+	Local parser:=New Parser( toker,Null )
+	
+	Local expr:=parser.ParseExpr()
+	
+	expr=expr.Semant()
+	
+	If ty expr=expr.Cast( ty )
+	
+	Local val$=expr.Eval()
+	
+	PopEnv
+	
+	Return val
+End
 Function Eval$( toker:Toker,type:Type )
 	Local src$
 	While toker.Toke And toker.Toke<>"'" And toker.Toke<>"~n"
@@ -1842,63 +1878,53 @@ Function PreProcess$( path$ )
 	Return source.Join( "" )
 End
 
+'***** PUBLIC API ******
+
+Function ParseSource( source$,app:AppDecl,mdecl:ModuleDecl,defattrs=0 )
+
+'	source=PreProcess( source )
+	
+	Local toker:=New Toker( "$SOURCE",source )
+	
+	Local parser:=New Parser( toker,app,mdecl,defattrs )
+	
+	parser.ParseMain
+	
+End
+
 Function ParseModule:ModuleDecl( path$,app:AppDecl )
 
 '	Print "Parsing "+path
 
-	Local source$=PreProcess( path )
-	
-	Local toker:Toker=New Toker( path,source )
+	Env.Set "PARSER_FUNC_ATTRS","0"
 
-	Local parser:Parser=New Parser( toker,app )
+	Local source:=PreProcess( path )
+	
+	Local toker:=New Toker( path,source )
+
+	Local parser:=New Parser( toker,app )
 	
 	parser.ParseMain
 	
 	Return parser._module
 End
 
-'***** PUBLIC API ******
-
 Function ParseApp:AppDecl( path$ )
 
 '	Print "Parsing app:"+path
 
+	Env.Set "PARSER_FUNC_ATTRS","0"
+
 	Local app:AppDecl=New AppDecl
 	
-	Local source$=PreProcess( path )
+	Local source:=PreProcess( path )
 	
-	Local toker:Toker=New Toker( path,source )
+	Local toker:=New Toker( path,source )
 	
-	Local parser:Parser=New Parser( toker,app )
+	Local parser:=New Parser( toker,app )
 	
 	parser.ParseMain
 	
 	Return app
 End
 
-Function Eval$( source$,ty:Type )
-
-	Local env:=New ScopeDecl
-	
-	For Local kv:=Eachin Env
-		env.InsertDecl New ConstDecl( kv.Key,0,Type.stringType,New ConstExpr( Type.stringType,kv.Value ) )
-	Next
-
-	PushEnv env
-	
-	Local toker:=New Toker( "",source )
-	
-	Local parser:=New Parser( toker,Null )
-	
-	Local expr:=parser.ParseExpr()
-	
-	expr=expr.Semant()
-	
-	If ty expr=expr.Cast( ty )
-	
-	Local val$=expr.Eval()
-	
-	PopEnv
-	
-	Return val
-End

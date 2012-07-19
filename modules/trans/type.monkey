@@ -207,6 +207,7 @@ Class ObjectType Extends Type
 		If objty Return classDecl.ExtendsClass( objty.classDecl )
 		Local op$
 		If BoolType( ty )
+			Return False	'!!!!!
 			op="ToBool"
 		Else If IntType( ty ) 
 			op="ToInt"

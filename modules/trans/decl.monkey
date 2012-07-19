@@ -6,13 +6,18 @@
 
 Import trans
 
-Const DECL_EXTERN=		$010000
-Const DECL_PRIVATE=		$020000
-Const DECL_ABSTRACT=	$040000
-Const DECL_FINAL=		$080000
+Const DECL_EXTERN=		$000100
+Const DECL_PRIVATE=		$000200
+Const DECL_ABSTRACT=	$000400
+Const DECL_FINAL=		$000800
+
+Const CLASS_INTERFACE=	$001000
 
 Const DECL_SEMANTED=	$100000
 Const DECL_SEMANTING=	$200000
+
+Const DECL_NODEBUG=		$400000
+Const DECL_REFLECTOR=	$800000
 
 Global _env:ScopeDecl
 Global _envStack:=New List<ScopeDecl>
@@ -98,7 +103,11 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate() And ModuleScope()<>_env.ModuleScope() Return False
+		If IsPrivate() And ModuleScope()<>_env.ModuleScope()
+			Local fdecl:=_env.FuncScope()
+			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
+			Return False
+		Endif
 		Return True
 	End
 	
@@ -120,6 +129,8 @@ Class Decl
 		
 		If IsSemanting() Err "Cyclic declaration of '"+ident+"'."
 		
+		If ClassDecl( scope ) And ClassDecl( scope ).IsFinalized() InternalErr
+		
 		PushErr errInfo
 		
 		If scope
@@ -137,7 +148,11 @@ Class Decl
 		attrs|=DECL_SEMANTED
 
 		If scope 
-			If Not IsExtern()
+			If IsExtern()
+				If ModuleDecl( scope )
+					AppScope.allSemantedDecls.AddLast Self
+				Endif
+			Else
 
 				scope.semanted.AddLast Self
 				
@@ -147,6 +162,7 @@ Class Decl
 				
 				If ModuleDecl( scope )
 					AppScope.semanted.AddLast Self
+					AppScope.allSemantedDecls.AddLast Self
 				Endif
 			
 			Endif
@@ -598,7 +614,7 @@ Class BlockDecl Extends ScopeDecl
 	
 End
 
-Const FUNC_METHOD=1			'mutually exclusive with ctor
+Const FUNC_METHOD=1		'mutually exclusive with ctor
 Const FUNC_CTOR=2
 Const FUNC_PROPERTY=4
 Const FUNC_CALLSCTOR=8
@@ -635,8 +651,9 @@ Class FuncDecl Extends BlockDecl
 
 		'get cdecl, sclass
 		Local cdecl:=ClassScope(),sclass:ClassDecl
-		If cdecl sclass=ClassDecl( cdecl.superClass )
 		
+		If cdecl sclass=ClassDecl( cdecl.superClass )
+
 		'semant ret type
 		If IsCtor()
 			retType=cdecl.objectType
@@ -743,9 +760,9 @@ Class FuncDecl Extends BlockDecl
 
 End
 
-Const CLASS_INTERFACE=1
-Const CLASS_INSTANCED=2
-Const CLASS_EXTENDSOBJECT=4
+Const CLASS_INSTANCED=1
+Const CLASS_EXTENDSOBJECT=2
+Const CLASS_FINALIZED=4
 
 Class ClassDecl Extends ScopeDecl
 
@@ -841,10 +858,6 @@ Class ClassDecl Extends ScopeDecl
 			inst.InsertDecl decl.Copy()
 		Next
 
-		'A bit cheeky...
-'		inst.OnSemant
-'		inst.attrs|=DECL_SEMANTED
-		
 		Return inst
 	End
 
@@ -854,6 +867,10 @@ Class ClassDecl Extends ScopeDecl
 	
 	Method IsInstanced()
 		Return (attrs & CLASS_INSTANCED)<>0
+	End
+	
+	Method IsFinalized()
+		Return (attrs & CLASS_FINALIZED)<>0
 	End
 	
 	Method ExtendsObject()
@@ -1015,7 +1032,6 @@ Class ClassDecl Extends ScopeDecl
 				Exit
 			Next
 			If Not fdecl
-'				fdecl=New FuncDecl( "new",FUNC_CTOR,New ObjectType( Self ),[] )
 				fdecl=New FuncDecl( "new",FUNC_CTOR,objectType,[] )
 				fdecl.AddStmt New ReturnStmt( Null )
 				InsertDecl fdecl
@@ -1028,6 +1044,8 @@ Class ClassDecl Extends ScopeDecl
 	
 	'Ok, this dodgy looking beast 'resurrects' methods that may not currently be alive, but override methods that ARE.
 	Method UpdateLiveMethods()
+	
+		If IsFinalized() Return
 	
 		If IsInterface() Return
 
@@ -1086,6 +1104,10 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	Method FinalizeClass()
+	
+		If IsFinalized() Return
+		
+		attrs|=CLASS_FINALIZED
 	
 		If IsInterface() Return
 
@@ -1235,9 +1257,23 @@ Class ModuleDecl Extends ScopeDecl
 	Method OnSemant()
 	End
 
-End
+	Method SemantAll()	
+		For Local decl:=Eachin Decls()
+			If AliasDecl( decl ) Continue
+			Local cdecl:=ClassDecl( decl )
+			If cdecl And cdecl.args Continue
+'			Print decl.ident
+			decl.Semant
+			If cdecl
+				For Local decl:=Eachin cdecl.Decls()
+'					Print " "+decl.ident
+					decl.Semant
+				Next
+			Endif
+		Next
+	End	
 
-Const APP_SEMANTALL=1
+End
 
 Class AppDecl Extends ScopeDecl
 
@@ -1248,7 +1284,8 @@ Class AppDecl Extends ScopeDecl
 		
 	Field semantedClasses:=New List<ClassDecl>			'in-order (ie: base before derived) list of semanted classes
 	Field semantedGlobals:=New List<GlobalDecl>			'in-order (ie: dependancy sorted) list of semanted globals
-
+	Field allSemantedDecls:=New List<Decl>				'top-level decls including externs
+	
 	Field fileImports:=New StringList
 	
 	Method InsertModule( mdecl:ModuleDecl )
@@ -1271,22 +1308,13 @@ Class AppDecl Extends ScopeDecl
 			Err "Main function must be of type Main:Int()"
 		Endif
 		
-		If attrs & APP_SEMANTALL
-			For Local mdecl:=Eachin imported.Values()
-				For Local decl:=Eachin mdecl.Decls()
-					Print decl.ident
-					decl.Semant
-					Local cdecl:=ClassDecl( decl )
-					If cdecl And Not cdecl.args
-						For Local decl:=Eachin cdecl.Decls()
-							Print " "+decl.ident
-							decl.Semant
-						Next
-					Endif
-				Next
-			Next
-		Endif
+		FinalizeClasses
+	End
 	
+	Method FinalizeClasses()
+
+		_env=Null
+		
 		Repeat
 			Local more
 			For Local cdecl:=Eachin semantedClasses

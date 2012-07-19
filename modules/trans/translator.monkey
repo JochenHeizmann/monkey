@@ -1,21 +1,105 @@
 
-' Module trans.trans
-'
-' Placed into the public domain 24/02/2011.
-' No warranty implied; use at your own risk.
-
 Import trans
 
 Global _trans:Translator
 
 Class Translator
 
+	'***** Expressions *****
+	
+	Method TransConstExpr$( expr:ConstExpr ) Abstract
+	
+	Method TransNewObjectExpr$( expr:NewObjectExpr ) Abstract
+	
+	Method TransNewArrayExpr$( expr:NewArrayExpr ) Abstract
+	
+	Method TransSelfExpr$( expr:SelfExpr ) Abstract
+	
+	Method TransCastExpr$( expr:CastExpr ) Abstract
+	
+	Method TransUnaryExpr$( expr:UnaryExpr ) Abstract
+	
+	Method TransBinaryExpr$( expr:BinaryExpr ) Abstract
+	
+	Method TransIndexExpr$( expr:IndexExpr ) Abstract
+	
+	Method TransSliceExpr$( expr:SliceExpr ) Abstract
+	
+	Method TransArrayExpr$( expr:ArrayExpr ) Abstract
+	
+	Method TransStmtExpr$( expr:StmtExpr ) Abstract
+	
+	Method TransVarExpr$( expr:VarExpr ) Abstract
+	
+	Method TransMemberVarExpr$( expr:MemberVarExpr ) Abstract
+	
+	Method TransInvokeExpr$( expr:InvokeExpr ) Abstract
+	
+	Method TransInvokeMemberExpr$( expr:InvokeMemberExpr ) Abstract
+	
+	Method TransInvokeSuperExpr$( expr:InvokeSuperExpr ) Abstract
+	
+	'***** Statements *****
+	
+	Method TransExprStmt$( stmt:ExprStmt ) Abstract
+	
+	Method TransAssignStmt$( stmt:AssignStmt ) Abstract
+	
+	Method TransReturnStmt$( stmt:ReturnStmt ) Abstract
+	
+	Method TransContinueStmt$( stmt:ContinueStmt ) Abstract
+	
+	Method TransBreakStmt$( stmt:BreakStmt ) Abstract
+
+	Method TransDeclStmt$( stmt:DeclStmt ) Abstract
+	
+	Method TransIfStmt$( stmt:IfStmt ) Abstract
+	
+	Method TransWhileStmt$( stmt:WhileStmt ) Abstract
+
+	Method TransRepeatStmt$( stmt:RepeatStmt ) Abstract
+
+	Method TransForStmt$( stmt:ForStmt ) Abstract
+
+	'***** Decls *****
+		
+	Method TransBlock$( block:BlockDecl ) Abstract
+	
+	Method TransApp$( app:AppDecl ) Abstract
+	
+End
+
+'***** CTranslator for C based languages *****
+
+Class CTranslator Extends Translator
+
+	Field emitDebugInfo?
 	Field indent$
 	Field lines:=New StringList
 	Field unreachable,broken
 	Field funcMungs:=New StringMap<FuncDeclList>
 	Field mungedScopes:=New StringMap<StringSet>
 	
+	'***** Utility *****
+	
+	Method TransValue$( ty:Type,value$ ) Abstract
+
+	Method TransLocalDecl$( munged$,init:Expr ) Abstract
+	
+	'***** Declarations *****
+	
+	Method TransGlobal$( decl:GlobalDecl ) Abstract
+	
+	Method TransField$( decl:FieldDecl,lhs:Expr ) Abstract
+	
+	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr ) Abstract
+	
+	Method TransSuperFunc$( decl:FuncDecl,args:Expr[] ) Abstract
+	
+	'***** Expressions *****
+	
+	Method TransIntrinsicExpr$( decl:Decl,expr:Expr,args:Expr[] ) Abstract
+
 	Method BeginLocalScope()
 		mungedScopes.Set "$",New StringSet
 	End
@@ -75,8 +159,6 @@ Class Translator
 		
 		Local id:=decl.ident,munged$,scope$
 		
-		'id=id.Replace( "_","_1" )
-		
 		If LocalDecl( decl )
 			scope="$"
 			munged="t_"+id
@@ -97,6 +179,7 @@ Class Translator
 		Else If ModuleDecl( decl )
 			munged="bb_"+id
 		Else
+			Print "OOPS1"
 			InternalErr
 		Endif
 		
@@ -113,7 +196,10 @@ Class Translator
 				Forever
 			Endif
 		Else
-			If scope="$" InternalErr
+			If scope="$"
+				Print "OOPS2"
+				InternalErr
+			Endif
 			set=New StringSet
 			mungedScopes.Set scope,set
 		Endif
@@ -233,12 +319,6 @@ Class Translator
 		Return tmp.munged
 	End
 	
-	'***** Utility *****
-	
-	Method TransValue$( ty:Type,value$ ) Abstract
-
-	Method TransLocalDecl$( munged$,init:Expr ) Abstract
-	
 	Method EmitEnter( func$ )
 	End
 	
@@ -248,41 +328,6 @@ Class Translator
 	Method EmitLeave()
 	End
 	
-	'***** Declarations *****
-	
-	Method TransGlobal$( decl:GlobalDecl ) Abstract
-	
-	Method TransField$( decl:FieldDecl,lhs:Expr ) Abstract
-	
-	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr ) Abstract
-	
-	Method TransSuperFunc$( decl:FuncDecl,args:Expr[] ) Abstract
-	
-	
-	'***** Expressions *****
-	
-	Method TransConstExpr$( expr:ConstExpr ) Abstract
-	
-	Method TransNewObjectExpr$( expr:NewObjectExpr ) Abstract
-	
-	Method TransNewArrayExpr$( expr:NewArrayExpr ) Abstract
-	
-	Method TransSelfExpr$( expr:SelfExpr ) Abstract
-	
-	Method TransCastExpr$( expr:CastExpr ) Abstract
-	
-	Method TransUnaryExpr$( expr:UnaryExpr ) Abstract
-	
-	Method TransBinaryExpr$( expr:BinaryExpr ) Abstract
-	
-	Method TransIndexExpr$( expr:IndexExpr ) Abstract
-	
-	Method TransSliceExpr$( expr:SliceExpr ) Abstract
-	
-	Method TransArrayExpr$( expr:ArrayExpr ) Abstract
-	
-	Method TransIntrinsicExpr$( decl:Decl,expr:Expr,args:Expr[] ) Abstract
-	
 	'***** Simple statements *****
 	
 	'Expressions
@@ -291,10 +336,6 @@ Class Translator
 		If t Emit t+";"
 		Return expr.expr.Trans()
 	End
-	
-'	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
-'		Return expr
-'	End
 	
 	Method TransVarExpr$( expr:VarExpr )
 		Local decl:=VarDecl( expr.decl )
@@ -413,6 +454,10 @@ Class Translator
 		Return code
 	End
 	
+	Method TransBlock$( block:BlockDecl )
+		EmitBlock block
+	End
+	
 	'returns unreachable status!
 	Method EmitBlock( block:BlockDecl )
 	
@@ -420,26 +465,25 @@ Class Translator
 		
 		Local func:=FuncDecl( block )
 		
-		If func 
-			If func.IsAbstract() InternalErr
-			If ENV_CONFIG<>"release" EmitEnter func.scope.ident+"."+func.ident
+		If func
+			emitDebugInfo=ENV_CONFIG<>"release"
+			If func.attrs & DECL_NODEBUG emitDebugInfo=False
+			
+			If emitDebugInfo EmitEnter func.scope.ident+"."+func.ident
 		Endif
 
 		For Local stmt:Stmt=Eachin block.stmts
 		
 			_errInfo=stmt.errInfo
 			
-			If unreachable	' And ENV_LANG<>"as"
-				'If stmt.errInfo Print "Unreachable:"+stmt.errInfo
-				Exit
-			Endif
+			If unreachable Exit
 
-			If ENV_CONFIG<>"release"
+			If emitDebugInfo
 				Local rs:=ReturnStmt( stmt )
 				If rs
 					If rs.expr
 						EmitSetErr stmt.errInfo
-						Local t_expr:=TransExprNS( rs.expr )'.Trans()
+						Local t_expr:=TransExprNS( rs.expr )
 						EmitLeave
 						Emit "return "+t_expr+";"
 					Else
@@ -470,7 +514,7 @@ Class Translator
 					Endif
 				Endif
 			Else
-				If ENV_CONFIG<>"release" EmitLeave
+				If emitDebugInfo EmitLeave
 				
 				If Not VoidType( func.retType )
 					If func.IsCtor()
@@ -563,12 +607,8 @@ Class Translator
 		broken=nbroken
 	End
 	
-	'module
-	Method TransApp$( app:AppDecl ) Abstract
-
 	Method PostProcess$( source$ ) 
 		Return source
 	End
 	
 End
-

@@ -1,4 +1,7 @@
 
+//Enable this ONLY if you upgrade the Windows Phone project to 7.1!
+//#define MANGO
+
 using System;
 using System.IO;
 using System.IO.IsolatedStorage;
@@ -14,6 +17,11 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+
+#if WINDOWS_PHONE
+using Microsoft.Devices.Sensors;
+using Microsoft.Xna.Framework.Input.Touch;
+#endif
 
 public class MonkeyConfig{
 //${CONFIG_BEGIN}

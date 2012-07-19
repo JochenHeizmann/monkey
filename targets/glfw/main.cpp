@@ -1,23 +1,11 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-
-#include <GL/glfw.h>
-
-#include <al.h>
-#include <alc.h>
-
-#define STBI_HEADER_FILE_ONLY
-#include <stb_image.c>
-
-#undef LoadString
-
-//For monkey main to set...
-int (*runner)();
+#include "main.h"
 
 //${CONFIG_BEGIN}
 //${CONFIG_END}
+
+//For monkey main to set...
+int (*runner)();
 
 //${TRANSCODE_BEGIN}
 void GameMain(){

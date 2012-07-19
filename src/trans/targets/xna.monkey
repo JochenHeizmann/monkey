@@ -114,7 +114,7 @@ Class XnaTarget Extends Target
 			
 		If OPT_ACTION>=ACTION_BUILD
 		
-			Execute MSBUILD_PATH+" /p:Configuration="+CASED_CONFIG+" MonkeyGame.sln"
+			Execute MSBUILD_PATH+" /t:MonkeyGame /p:Configuration="+CASED_CONFIG+" MonkeyGame.sln"
 			
 			If OPT_ACTION>=ACTION_RUN
 				ChangeDir "MonkeyGame/MonkeyGame/bin/x86/"+CASED_CONFIG

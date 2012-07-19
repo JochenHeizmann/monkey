@@ -1,6 +1,49 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V54 *****
+
+Modules:
+
+reflection module added!
+
+mojo xna - added WP7 support for accelerometer.
+
+mojo graphics - DrawText alignment offsets now Floor()ed.
+
+xna mojo - music functions now disabled if MediaPlayer.GameHasControl is false at startup.
+
+xna mojo - added WP7 support for multitouch.
+
+cpp monkey.lang - fixed double fclose() in LoadString.
+
+monkey.lang - added String.FromChars( chars:Int[] )
+
+
+Targets:
+
+xna - Target solution now includes windows phone project.
+
+xna - Added XNA_ACCELEROMETER_ENABLED="true" to xna CONFIG.TXT
+
+glfw - tweaked compiler settings a bit so debug builds go a bit faster.
+
+stdcpp/glfw/ios - moved #includes to separate main.h files. Hoping to precompile these eventually...
+
+
+Trans (v1.30):
+
+Reflection support added!
+
+XNA builds now only build Windows version - much faster than building both Windows/XBOX!
+
+Added more flexible interface casting - interfaces can now be cast to and from ANY class/interface. I thought this choked AS, but now doesn't seem to...
+
+Fixed C++ cast-interface-to-object bug.
+
+Added String.FromChars( chars:Int[] )
+
+
 ***** V53 *****
 
 Monk:
@@ -21,7 +64,7 @@ opengl - Fixed non-multiple-of-4-length DataBuffers crashing on html5.
 
 Targets:
 
-mojo - loadString now uses java's String( byte[] ) ctor.
+mojo - loadString now uses java's String( byte[] ) ctor. (NOTE: DIDN"T MAKE IT TO RELEASE - JUST AS WELL AS IT DIDN'T WORK!)
 
 
 ***** V52(f) *****

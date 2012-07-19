@@ -6,7 +6,7 @@
 
 Import trans
 
-Class AsTranslator Extends Translator
+Class AsTranslator Extends CTranslator
 
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
@@ -160,14 +160,15 @@ Class AsTranslator Extends Translator
 		Else If StringType( dst )
 			If NumericType( src ) Return "String"+texpr
 			If StringType( src )  Return texpr
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().ExtendsClass( dst.GetClass() )
+				'upcast
+				Return texpr
+			Else
+				'downcast
+				Return Bra( texpr + " as "+TransType( dst ) )
+			Endif
 		Endif
-		
-		If src.GetClass().ExtendsClass( dst.GetClass() )
-			Return texpr
-		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Return Bra( texpr + " as "+TransType( dst ) )
-		Endif
-
 		Err "AS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -265,6 +266,7 @@ Class AsTranslator Extends Translator
 
 		'string functions
 		Case "fromchar" Return "String.fromCharCode"+Bra( arg0 )
+		Case "fromchars" Return "string_from_chars"+Bra( arg0 )
 
 		'trig functions - degrees
 		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*D2R" )

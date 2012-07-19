@@ -1,4 +1,6 @@
 
+#include "main.h"
+
 //${CONFIG_BEGIN}
 //${CONFIG_END}
 

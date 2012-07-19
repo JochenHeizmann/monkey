@@ -52,18 +52,20 @@ function stackTrace():String{
 	return str;
 }
 
-function print( str:String ):void{
+function print( str:String ):int{
 	var console:TextField=_getConsole();
-	if( !console ) return;
+	if( !console ) return 0;
 	console.appendText( str+"\n" );
+	return 0;
 }
 
 function showError( err:String ):void{
 	if( err.length ) print( "Monkey runtime error: "+err+"\n"+stackTrace() );
 }
 
-function error( err:String ):void{
+function error( err:String ):int{
 	throw err;
+	return 0;
 }
 
 function dbg_object( obj:Object ):Object{
@@ -187,3 +189,12 @@ function string_starts_with( str:String,sub:String ):Boolean{
 function string_ends_with( str:String,sub:String ):Boolean{
 	return sub.length<=str.length && str.slice(str.length-sub.length,str.length)==sub;
 }
+
+function string_from_chars( chars:Array ):String{
+	var str:String="",i:int;
+	for( i=0;i<chars.length;++i ){
+		str+=String.fromCharCode( chars[i] );
+	}
+	return str;
+}
+

@@ -6,7 +6,7 @@
 
 Import trans
 
-Class CsTranslator Extends Translator
+Class CsTranslator Extends CTranslator
 
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
@@ -170,17 +170,18 @@ Class CsTranslator Extends Translator
 			If IntType( src ) Return texpr+".ToString()"
 			If FloatType( src ) Return texpr+".ToString(CultureInfo.InvariantCulture)"
 			If StringType( src ) Return texpr
+		Else If ObjectType( dst ) And ObjectType( src )
+			If src.GetClass().ExtendsClass( dst.GetClass() )
+				'upcast
+				Return texpr
+			Else 
+				'downcast
+				Local tmp:=New LocalDecl( "",0,src,Null )
+				MungDecl tmp
+				Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
+				Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
+			Endif
 		Endif
-		
-		If src.GetClass().ExtendsClass( dst.GetClass() )
-			Return texpr
-		Else If dst.GetClass().ExtendsClass( src.GetClass() )
-			Local tmp:=New LocalDecl( "",0,src,Null )
-			MungDecl tmp
-			Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
-			Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
-		Endif
-
 		Err "CS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -258,6 +259,7 @@ Class CsTranslator Extends Translator
 				fn="resizeArrayArray"
 			Endif
 			Return "("+TransType( expr.exprType )+")bb_std_lang."+fn+Bra( texpr+","+arg0 )
+
 		'string methods
 		Case "compare" Return texpr+".CompareTo"+Bra( arg0 )
 		Case "find" Return texpr+".IndexOf"+Bra( arg0+","+arg1 )
@@ -272,8 +274,10 @@ Class CsTranslator Extends Translator
 		Case "contains" Return Bra( texpr+".IndexOf"+Bra( arg0 )+"!=-1" )
 		Case "startswith" Return texpr+".StartsWith"+Bra( arg0 )
 		Case "endswith" Return texpr+".EndsWith"+Bra( arg0 )
+
 		'string functions
 		Case "fromchar" Return "new String"+Bra("(char)"+Bra( arg0 )+",1")
+		Case "fromchars" Return "bb_std_lang.fromChars"+Bra( arg0 )
 
 		'trig functions - degrees
 		Case "sin","cos","tan" Return "(float)Math."+id2+Bra( Bra(arg0)+"*bb_std_lang.D2R" )

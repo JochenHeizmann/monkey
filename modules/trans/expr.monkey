@@ -518,7 +518,7 @@ Class SelfExpr Extends Expr
 		If exprType Return Self
 	
 		If _env.FuncScope().IsStatic() Err "Illegal use of Self within static scope."
-'		exprType=New ObjectType( _env.ClassScope() )
+
 		exprType=_env.ClassScope().objectType
 		Return Self
 	End
@@ -602,7 +602,7 @@ Class CastExpr Extends Expr
 			If  flags & CAST_EXPLICIT 
 				exprType=ty
 			Endif
-		
+			
 		Else If ty.ExtendsType( src )
 		
 			If flags & CAST_EXPLICIT
@@ -611,7 +611,17 @@ Class CastExpr Extends Expr
 				If (ObjectType(ty)<>Null)=(ObjectType(src)<>Null) exprType=ty
 
 			Endif
+'#rem			
+		Else If ObjectType( ty ) And ObjectType( src )
 		
+			If flags & CAST_EXPLICIT
+			
+				If src.GetClass().IsInterface() Or ty.GetClass().IsInterface
+					exprType=ty
+				Endif
+
+			Endif
+'#end			
 		Endif
 		
 		If Not exprType
@@ -689,6 +699,7 @@ Class UnaryExpr Extends Expr
 		End Select
 		
 		If ConstExpr( expr ) Return EvalConst()
+
 		Return Self
 	End
 	
@@ -954,8 +965,20 @@ Class IndexExpr Extends Expr
 		Else
 			Err "Only strings and arrays may be indexed."
 		Endif
+		
+		If StringType( expr.exprType ) And ConstExpr( expr ) And ConstExpr( index ) Return EvalConst()
 
 		Return Self
+	End
+	
+	Method Eval$()
+		If StringType( expr.exprType )
+			Local str:=expr.Eval()
+			Local idx:=Int( index.Eval() )
+			If idx<0 Or idx>=str.Length Err "String index out of range."
+			Return String( str[idx] )
+		Endif
+		InternalErr
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )

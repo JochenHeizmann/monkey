@@ -6,9 +6,11 @@
 
 #if _WIN32
 
+/*
 #include <windows.h>
 #include <direct.h>
 #include <sys/stat.h>
+*/
 
 #ifndef PATH_MAX
 #define PATH_MAX MAX_PATH
@@ -22,7 +24,7 @@ typedef struct _stat stat_t;
 #define remove _wremove
 #define rename _wrename
 #define stat _wstat
-#define fopen _wfopen
+#define _fopen _wfopen
 #define putenv _wputenv
 #define getenv _wgetenv
 #define system _wsystem
@@ -37,22 +39,30 @@ typedef struct _stat stat_t;
 
 #elif __APPLE__
 
+/*
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <copyfile.h>
+*/
 
 typedef char OS_CHAR;
 typedef struct stat stat_t;
+
+#define _fopen fopen
 
 #elif __linux
 
+/*
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
+*/
 
 typedef char OS_CHAR;
 typedef struct stat stat_t;
+
+#define _fopen fopen
 
 #endif
 
@@ -158,7 +168,7 @@ int FileTime( String path ){
 }
 
 String LoadString( String path ){
-	if( FILE *fp=fopen( OS_STR(path),OS_STR("rb") ) ){
+	if( FILE *fp=_fopen( OS_STR(path),OS_STR("rb") ) ){
 		String str=String::Load( fp );
 		fclose( fp );
 		return str;
@@ -168,7 +178,7 @@ String LoadString( String path ){
 }
 	
 int SaveString( String str,String path ){
-	if( FILE *fp=fopen( OS_STR(path),OS_STR("wb") ) ){
+	if( FILE *fp=_fopen( OS_STR(path),OS_STR("wb") ) ){
 		bool ok=str.Save( fp );
 		fclose( fp );
 		return ok ? 0 : -2;
@@ -236,9 +246,9 @@ int CopyFile( String srcpath,String dstpath ){
 #else
 
 	int err=-1;
-	if( FILE *srcp=fopen( OS_STR( srcpath ),OS_STR( T("rb") ) ) ){
+	if( FILE *srcp=_fopen( OS_STR( srcpath ),OS_STR( T("rb") ) ) ){
 		err=-2;
-		if( FILE *dstp=fopen( OS_STR( dstpath ),OS_STR( T("wb") ) ) ){
+		if( FILE *dstp=_fopen( OS_STR( dstpath ),OS_STR( T("wb") ) ) ){
 			err=0;
 			char buf[1024];
 			while( int n=fread( buf,1,1024,srcp ) ){
@@ -324,7 +334,7 @@ int Execute( String cmd ){
 #endif
 }
 
-void ExitApp( int retcode ){
+int ExitApp( int retcode ){
 	exit( retcode );
+	return 0;
 }
-

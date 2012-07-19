@@ -3,8 +3,9 @@
 //
 // Placed into the public domain 24/02/2011.
 // No warranty implied; use at your own risk.
+//
 
-/*
+/* There moved to main.h in target in the hope we can precompile some of it!
 #include <cmath>
 #include <cctype>
 #include <cstdio>
@@ -13,8 +14,13 @@
 #include <vector>
 #include <typeinfo>
 #include <signal.h>
+
 #if _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
 #endif
 */
 
@@ -593,8 +599,8 @@ public:
 	}
 
 	String( int n ){
-		char buf[256];
-		sprintf( buf,"%i",n );
+		char buf[64];
+		snprintf( buf,64,"%i",n );
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
@@ -1139,15 +1145,13 @@ String StackTrace(){
 	return str;
 }
 
-int Print( String t ){
+void Print( String t ){
 	puts( t.ToCString<char>() );
 	fflush( stdout );
-	return 0;
 }
 
-int Error( String err ){
+void Error( String err ){
 	throw err.ToCString<char>();
-	return 0;
 }
 
 int Compare( int x,int y ){

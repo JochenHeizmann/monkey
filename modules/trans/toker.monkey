@@ -21,19 +21,8 @@ Const TOKE_LINECOMMENT=9
 '***** Tokenizer *****
 Class Toker
 
-	Const _keywords$=";"+
-	"void;strict;"+
-	"public;private;property;"+
-	"bool;int;float;string;array;object;mod;continue;exit;"+
-	"include;import;module;extern;"+
-	"new;self;super;eachin;true;false;null;not;"+
-	"extends;abstract;final;select;case;default;"+
-	"const;local;global;field;method;function;class;"+
-	"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;"+
-	"for;to;step;next;return;"+
-	"interface;implements;inline;alias;"
-
-	Global _symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~~=" ]
+	Global _symbols:StringSet
+	Global _keywords:StringSet
 
 	Field _path$
 	Field _line
@@ -43,7 +32,40 @@ Class Toker
 	Field _tokeType
 	Field _tokePos
 	
+	Method _init()
+		If _keywords Return
+		
+		Const keywords:="void strict "+
+		"public private property "+
+		"bool int float string array object mod continue exit "+
+		"include import module extern "+
+		"new self super eachin true false null not "+
+		"extends abstract final select case default "+
+		"const local global field method function class "+
+		"and or shl shr end if then else elseif endif while wend repeat until forever "+
+		"for to step next return "+
+		"interface implements inline alias"
+
+'		Const symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~~=" ]
+
+		_keywords=New StringSet
+		For Local t:=Eachin keywords.Split( " " )
+			_keywords.Insert t
+		Next
+		_symbols=New StringSet
+		_symbols.Insert ".."
+		_symbols.Insert ":="
+		_symbols.Insert "*="
+		_symbols.Insert "/="
+		_symbols.Insert "+="
+		_symbols.Insert "-="
+		_symbols.Insert "|="
+		_symbols.Insert "&="
+		_symbols.Insert "~~="
+	End
+	
 	Method New( path$,source$ )
+		_init
 		_path=path
 		_line=1
 		_source=source
@@ -54,6 +76,7 @@ Class Toker
 	End
 	
 	Method New( toker:Toker )
+		_init
 		_path=toker._path
 		_line=toker._line
 		_source=toker._source
@@ -97,13 +120,12 @@ Class Toker
 			_tokeType=TOKE_IDENT
 			While _tokePos<_length
 				Local chr=_source[_tokePos]
-				If chr<>Asc("_") And Not IsAlpha( chr ) And Not IsDigit( chr ) Exit
+				If chr<>95 And Not IsAlpha( chr ) And Not IsDigit( chr ) Exit
+'				If chr<>Asc("_") And Not IsAlpha( chr ) And Not IsDigit( chr ) Exit
 				_tokePos+=1
 			Wend
 			_toke=_source[start.._tokePos]
-			If _keywords.Contains( ";"+_toke.ToLower()+";" )
-				_tokeType=TOKE_KEYWORD
-			Endif
+			If _keywords.Contains( _toke.ToLower() ) _tokeType=TOKE_KEYWORD
 		Else If IsDigit( chr ) Or str="." And IsDigit( TCHR() )
 			_tokeType=TOKE_INTLIT
 			If str="." _tokeType=TOKE_FLOATLIT
@@ -165,13 +187,7 @@ Class Toker
 			Wend
 		Else
 			_tokeType=TOKE_SYMBOL
-			For Local sym$=Eachin _symbols
-				If chr<>sym[0] Continue
-				If _source[_tokePos-1.._tokePos+sym.Length-1]=sym
-					_tokePos+=sym.Length-1
-					Exit
-				Endif
-			Next
+			If _symbols.Contains( _source[_tokePos-1.._tokePos+1] ) _tokePos+=1
 		Endif
 		
 		If Not _toke _toke=_source[start.._tokePos]
@@ -204,6 +220,5 @@ Private
 		i+=_tokePos
 		If i<_length Return _source[i..i+1]
 	End
-	
 	
 End

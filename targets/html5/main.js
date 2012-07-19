@@ -72,7 +72,7 @@ function loadString( path ){
 	var xhr=new XMLHttpRequest();
 	xhr.open( "GET","data/"+path,false );
 	xhr.send( null );
-	if( xhr.status==200 ) return xhr.responseText;
+	if( (xhr.status==200) || (xhr.status==0) ) return xhr.responseText;
 	return "";
 }
 

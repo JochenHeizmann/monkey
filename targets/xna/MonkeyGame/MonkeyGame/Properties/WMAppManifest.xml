@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2009/deployment" AppPlatformVersion="7.0">
-  <App xmlns="" ProductID="{b5f9da95-63a6-4016-8079-7543a8273b4a}" Title="MonkeyGame" RuntimeType="XNA" Version="1.0.0.0" Genre="Apps.Normal" Author="" Description="" Publisher="">
+  <App xmlns="" ProductID="{ba3a7c86-75f4-4e93-b296-ce5fd85b44cb}" Title="MonkeyGame" RuntimeType="XNA" Version="1.0.0.0" Genre="Apps.Normal" Author="" Description="" Publisher="">
     <IconPath IsRelative="true" IsResource="false"></IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_NETWORKING" />

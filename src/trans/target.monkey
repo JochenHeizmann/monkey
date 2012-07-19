@@ -1,6 +1,8 @@
 
 Import trans.trans
 
+Import reflection.reflector
+
 'from config file
 Global ANDROID_PATH$
 Global ANT_PATH$
@@ -41,7 +43,6 @@ Class Target
 		Translate
 
 		If OPT_ACTION>=ACTION_UPDATE
-
 			Print "Building..."
 		
 			Local buildPath:=StripExt( srcPath )+".build"
@@ -95,7 +96,7 @@ Class Target
 	Field IMAGE_FILES$
 	Field SOUND_FILES$
 	Field MUSIC_FILES$
-
+	
 	'actual data files
 	'
 	Field dataFiles:=New StringMap<String>	'maps real src path to virtual target path
@@ -122,8 +123,13 @@ Class Target
 			If OPT_ACTION>=ACTION_SEMANT
 				Print "Semanting..."
 				
-				app.Semant
-				
+				If Env.Get("REFLECTION_FILTER")
+					Local r:=New Reflector
+					r.Semant app
+				Else
+					app.Semant
+				Endif
+
 				If OPT_ACTION>=ACTION_TRANSLATE
 					Print "Translating..."
 			
@@ -132,10 +138,8 @@ Class Target
 							AddTransCode LoadString( file )
 						Endif
 					Next
-			
-					AddTransCode _trans.TransApp( app )
 					
-					transCode=_trans.PostProcess( transCode )
+					AddTransCode _trans.TransApp( app )
 					
 				Endif
 			Endif

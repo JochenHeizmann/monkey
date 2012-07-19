@@ -174,6 +174,15 @@ function string_ends_with( str,substr ){
 	return substr.length<=str.length && str.slice(str.length-substr.length,str.length)==substr;
 }
 
+function string_from_chars( chars ){
+	var str="",i;
+	for( i=0;i<chars.length;++i ){
+		str+=String.fromCharCode( chars[i] );
+	}
+	return str;
+}
+
+
 function object_downcast( obj,clas ){
 	if( obj instanceof clas ) return obj;
 	return null;

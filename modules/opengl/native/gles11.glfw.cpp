@@ -8,6 +8,11 @@ void (__stdcall* glActiveTexture)( GLenum texture );
 void (__stdcall* glClientActiveTexture)( GLenum texture );
 void (__stdcall* glCompressedTexImage2D)( GLenum target,GLint level,GLenum internalformat,GLsizei width,GLsizei height,GLint border,GLsizei imageSize,const GLvoid *data );
 void (__stdcall* glCompressedTexSubImage2D)( GLenum target,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLsizei imageSize,const GLvoid *data );
+void (__stdcall* glMultiTexCoord4f)( GLenum target,GLfloat s,GLfloat t,GLfloat r,GLfloat q );
+void (__stdcall* glSampleCoverage)( GLclampf value,GLboolean invert );
+
+//1.4
+void (__stdcall* glPointParameterf)( GLenum pname,GLfloat param );
 
 //1.5
 void (__stdcall* glGenBuffers)( GLsizei n,GLuint *buffers );
@@ -28,11 +33,20 @@ void Init_GL_Exts(){
 		(void*&)glClientActiveTexture=(void*)wglGetProcAddress( "glClientActiveTexture" );
 		(void*&)glCompressedTexImage2D=(void*)wglGetProcAddress( "glCompressedTexImage2D" );
 		(void*&)glCompressedTexSubImage2D=(void*)wglGetProcAddress( "glCompressedTexSubImage2D" );
+		(void*&)glMultiTexCoord4f=(void*)wglGetProcAddress( "glMultiTexCoord4f" );
+		(void*&)glSampleCoverage=(void*)wglGetProcAddress( "glSampleCoverage" );
 	}else{
 		(void*&)glActiveTexture=(void*)wglGetProcAddress( "glActiveTextureARB" );
 		(void*&)glClientActiveTexture=(void*)wglGetProcAddress( "glClientActiveTextureARB" );
 		(void*&)glCompressedTexImage2D=(void*)wglGetProcAddress( "glCompressedTexImage2DARB" );
 		(void*&)glCompressedTexSubImage2D=(void*)wglGetProcAddress( "glCompressedTexSubImage2DARB" );
+		(void*&)glMultiTexCoord4f=(void*)wglGetProcAddress( "glMultiTexCoord4fARB" );
+		(void*&)glSampleCoverage=(void*)wglGetProcAddress( "glSampleCoverageARB" );
+	}
+	if( v>=14 ){
+		(void*&)glPointParameterf=(void*)wglGetProcAddress( "glPointParameterf" );
+	}else{
+		(void*&)glPointParameterf=(void*)wglGetProcAddress( "glPointParameterfARB" );
 	}
 	if( v>=15 ){
 		(void*&)glGenBuffers=(void*)wglGetProcAddress( "glGenBuffers" );

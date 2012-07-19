@@ -454,7 +454,7 @@ Function glPushMatrix:Void()
 Function glSampleCoverage:Void( value#,invert? )
 Function glScissor:Void( x,y,width,height )
 Function glShadeModel:Void( mode )
-Function glStencilFunc:Void( func,refmask )
+Function glStencilFunc:Void( func,ref,mask )
 Function glStencilMask:Void( mask )
 Function glStencilOp:Void( fail,zfail,zpass )
 Function glTexEnvi:Void( target,pname,param )
@@ -568,7 +568,7 @@ Function glPushMatrix:Void()="GLES11.glPushMatrix"
 Function glSampleCoverage:Void( value#,invert? )="GLES11.glSampleCoverage"
 Function glScissor:Void( x,y,width,height )="GLES11.glScissor"
 Function glShadeModel:Void( mode )="GLES11.glShadeModel"
-Function glStencilFunc:Void( func,refmask )="GLES11.glStencilFunc"
+Function glStencilFunc:Void( func,ref,mask )="GLES11.glStencilFunc"
 Function glStencilMask:Void( mask )="GLES11.glStencilMask"
 Function glStencilOp:Void( fail,zfail,zpass )="GLES11.glStencilOp"
 Function glTexEnvi:Void( target,pname,param )="GLES11.glTexEnvi"
@@ -682,7 +682,7 @@ Function glPushMatrix:Void()
 Function glSampleCoverage:Void( value#,invert? )
 Function glScissor:Void( x,y,width,height )
 Function glShadeModel:Void( mode )
-Function glStencilFunc:Void( func,refmask )
+Function glStencilFunc:Void( func,ref,mask )
 Function glStencilMask:Void( mask )
 Function glStencilOp:Void( fail,zfail,zpass )
 Function glTexEnvi:Void( target,pname,param )

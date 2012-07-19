@@ -153,6 +153,9 @@ Class AssignStmt Extends Stmt
 			InternalErr
 		End
 		
+		'simple kludge for 'no lang!'
+		If ENV_LANG="" kludge=True
+		
 		If kludge
 			FixSideEffects
 			rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
@@ -167,6 +170,7 @@ Class AssignStmt Extends Stmt
 		If tmp2 tmp2.Semant
 		Return _trans.TransAssignStmt( Self )
 	End
+		
 End
 
 Class ExprStmt Extends Stmt

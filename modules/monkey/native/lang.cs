@@ -32,12 +32,14 @@ public class bb_std_lang{
 		return str;
 	}
 	
-	public static void Print( String str ){
+	public static int Print( String str ){
 		Console.WriteLine( str );
+		return 0;
 	}
 	
-	public static void Error( String str ){
+	public static int Error( String str ){
 		throw new Exception( str );
+		return 0;
 	}
 	
 	//***** String stuff *****
@@ -92,6 +94,15 @@ public class bb_std_lang{
 			}
 			return bits;
 		}
+	}
+	
+	static public String fromChars( int[] chars ){
+		int n=chars.Length;
+		char[] chrs=new char[n];
+		for( int i=0;i<n;++i ){
+			chrs[i]=(char)chars[i];
+		}
+		return new String( chrs,0,n );
 	}
 	
 	//***** Array stuff *****

@@ -1,19 +1,28 @@
 
 #import <UIKit/UIKit.h>
-
 #import <QuartzCore/QuartzCore.h>
-
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/EAGLDrawable.h>
-
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
-
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
+#import <OpenAL/al.h>
+#import <OpenAL/alc.h>
 
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
+#include <cmath>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+#include <typeinfo>
+#include <signal.h>
+
+#include <mach-o/dyld.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <copyfile.h>
 
 // ***** MonkeyView *****
 

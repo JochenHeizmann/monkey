@@ -242,7 +242,7 @@ Class Document Extends Node
 	'Method createDocumentFragment:DocumentFragment()
 	'Method createTextNode:Text( data$ )
 	'Method createComment:Comment( data$ )
-	Method createProcessingInstruction:ProcessingInstruction( target$,data$ )
+	'Method createProcessingInstruction:ProcessingInstruction( target$,data$ )
 	
 	Method importNode:Node( node:Node,deep? )
 	Method adoptNode:Node( node:Node )
@@ -291,7 +291,7 @@ Class HTMLDocument Extends Document
 	'special for some reason...?
 	Field anchors:HTMLCollection
 	Field applets:HTMLCollection
-	Field all:HTMLAllCollection
+	'Field all:HTMLAllCollection
 	
 	'attrs
 	Field fgColor$
@@ -415,7 +415,7 @@ Class HTMLLinkElement Extends HTMLElement
 	Field disabled?
 	Field href$
 	Field rel$
-	Field relList:DOMTokenList
+	'Field relList:DOMTokenList
 	Field media$
 	Field hreflang$
 	Field type$
@@ -1034,7 +1034,7 @@ Class HTMLSelectElement Extends HTMLElement
 	
 	Field type$
 	
-	Field options:HTMLOptionsCollection
+	'Field options:HTMLOptionsCollection
 	Field length
 	Method item:Object( index )
 	Method namedItem:Object( name$ )
@@ -1137,7 +1137,7 @@ Class HTMLKeygenElement Extends HTMLElement
 End
 
 Class HTMLOutputElement Extends HTMLElement
-	Field htmlFor:DOMSettableTokenList
+	'Field htmlFor:DOMSettableTokenList
 	Field form:HTMLFormElement
 	Field name$
 	
