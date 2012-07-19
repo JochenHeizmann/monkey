@@ -516,34 +516,3 @@ Class StringMap<V> Extends Map<String,V>
 	End
 
 End
-
-#rem
-
-'***** Box object versions *****
-
-Class IntMap<V> Extends Map<IntObject,V>
-
-	Method Compare( lhs:IntObject,rhs:IntObject )
-		Return lhs.value-rhs.value
-	End
-
-End
-
-Class FloatMap<V> Extends Map<FloatObject,V>
-
-	Method Compare( lhs:FloatObject,rhs:FloatObject )
-		If lhs.value<rhs.value Return -1
-		Return lhs.value>rhs.value
-	End
-
-End
-
-Class StringMap<V> Extends Map<StringObject,V>
-
-	Method Compare( lhs:StringObject,rhs:StringObject )
-		Return lhs.value.Compare( rhs.value )
-	End
-
-End
-
-#end

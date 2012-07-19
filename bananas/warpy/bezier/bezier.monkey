@@ -105,6 +105,8 @@ Class BezierApp Extends App
 	End
 	
 	Method OnUpdate()
+	
+		If JoyHit( JOY_BACK ) Error ""
 		
 		'when the user clicks, place a control point
 		If TouchHit(0)

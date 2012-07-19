@@ -65,6 +65,11 @@ Class AndroidTarget Extends Target
 
 			If Not r
 				Die "Android build failed."
+			Else
+				If OPT_RUN
+					Execute "adb shell am start -n "+app_package+"/"+app_package+".MonkeyGame",False
+					Execute "adb kill-server",False
+				End				
 			Endif
 	
 		Endif

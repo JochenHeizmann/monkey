@@ -1,7 +1,8 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V47c *****
+***** V47d *****
+
 
 * YOU MUST UPDATE ANDROID SDK TO LATEST VERSION - currently this is Android SDK tools rev 14, Android SDK platform tools rev 8 according to SDK manager.
 
@@ -14,19 +15,23 @@ mojo.graphics - Changed XNA PlayMusic to use MediaPlayer.
 
 ios mojo - Changed touch handling to only process touches for view.
 
+xna mojo - Fixed windows phone back button bug.
+
 
 Monk (0.35)
 
 Applied MaxIDE tab width & SaveText fixes and recompiled with new MaxGUI.
 
 
-Trans (1.23)
+Trans (1.24)
+
+Added app auto-run for Android.
 
 Fixed/cleaned up name mangling issues. Still not perfect, probably never will be given range of targets.
 
 Fixed android target and android trans to work with latest android version.
 
-Fixed Select 'tmp' bug with multipe selects in same block.
+Fixed Select 'tmp' bug with multiple selects in same block.
 
 Fixed object cast bug with new generics.
 

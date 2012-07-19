@@ -69,25 +69,3 @@ Class StringSet Extends Set<String>
 		Super.New( New StringMap<Object> )
 	End
 End
-
-#rem
-
-Class IntSet Extends Set<IntObject>
-	Method New()
-		Super.New( New IntMap<Object> )
-	End
-End
-
-Class FloatSet Extends Set<FloatObject>
-	Method New()
-		Super.New( New FloatMap<Object> )
-	End
-End
-
-Class StringSet Extends Set<StringObject>
-	Method New()
-		Super.New( New StringMap<Object> )
-	End
-End
-
-#end
