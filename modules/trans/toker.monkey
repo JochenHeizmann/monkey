@@ -66,69 +66,75 @@ Class Toker
 			_tokeType=TOKE_EOF
 			Return _toke
 		Endif
+				
+		Local chr=_source[_tokePos]
+		Local str$=String.FromChar( chr )
 		
-		Local ch=_source[_tokePos]
 		Local start=_tokePos
 		_tokePos+=1
 		_toke=""
 		
-		If ch=Asc( "~n" )
+		If str="~n"
 			_line+=1
 			_tokeType=TOKE_SYMBOL
-		Else If IsSpace( ch )
-			While _tokePos<_source.Length And IsSpace( _source[_tokePos] ) And _source[_tokePos]<>Asc( "~n" )
+		Else If IsSpace( chr )
+			While _tokePos<_source.Length And IsSpace( TCHR() ) And TSTR()<>"~n"
 				_tokePos+=1
 			Wend
 			_tokeType=TOKE_SPACE
-		Else If ch=Asc("_") Or IsAlpha( ch )
+		Else If str="_" Or IsAlpha( chr )
 			_tokeType=TOKE_IDENT
 			While _tokePos<_source.Length
-				Local ch=_source[_tokePos]
-				If ch<>Asc("_") And Not IsAlpha( ch ) And Not IsDigit( ch ) Exit
+				Local chr=_source[_tokePos]
+				If chr<>Asc("_") And Not IsAlpha( chr ) And Not IsDigit( chr ) Exit
 				_tokePos+=1
 			Wend
 			_toke=_source[start.._tokePos]
 			If _keywords.Contains( ";"+_toke.ToLower()+";" )
 				_tokeType=TOKE_KEYWORD
-			EndIf
-		Else If IsDigit( ch )
+			Endif
+		Else If IsDigit( chr ) Or str="." And IsDigit( TCHR() )
 			_tokeType=TOKE_INTLIT
-			While _tokePos<_source.Length And IsDigit( _source[_tokePos] )
+			If str="." _tokeType=TOKE_FLOATLIT
+			While IsDigit( TCHR() )
 				_tokePos+=1
 			Wend
-			If _tokePos<_source.Length-1 And _source[_tokePos]=Asc(".") And IsDigit( _source[_tokePos+1] )
-				_tokePos+=2
+			If _tokeType=TOKE_INTLIT And TSTR()="." And IsDigit( TCHR(1) )
 				_tokeType=TOKE_FLOATLIT
-				While _tokePos<_source.Length And IsDigit( _source[_tokePos] )
+				_tokePos+=2
+				While IsDigit( TCHR() )
 					_tokePos+=1
 				Wend
-			EndIf
-		Else If ch=Asc(".") And _tokePos<_source.Length And IsDigit( _source[_tokePos] )
-			_tokeType=TOKE_FLOATLIT
-			While _tokePos<_source.Length And IsDigit( _source[_tokePos] )
+			Endif
+			If TSTR().ToLower()="e"
+				_tokeType=TOKE_FLOATLIT
 				_tokePos+=1
-			Wend
-		Else If ch=Asc("%") And _tokePos<_source.Length And IsBinDigit( _source[_tokePos] )
+				If TSTR()="+" Or TSTR()="-" _tokePos+=1
+				While IsDigit( TCHR() )
+					_tokePos+=1
+				Wend
+			Endif
+		Else If str="%" And IsBinDigit( TCHR() )
 			_tokeType=TOKE_INTLIT
 			_tokePos+=1
-			While _tokePos<_source.Length And IsBinDigit( _source[_tokePos] )
+			While IsBinDigit( TCHR() )
 				_tokePos+=1
 			Wend
-		Else If ch=Asc("$") And _tokePos<_source.Length And IsHexDigit( _source[_tokePos] )
+		Else If str="$" And IsHexDigit( TCHR() )
 			_tokeType=TOKE_INTLIT
 			_tokePos+=1
-			While _tokePos<_source.Length And IsHexDigit( _source[_tokePos] )
+			While IsHexDigit( TCHR() )
 				_tokePos+=1
 			Wend
-		Else If ch=Asc("~q")
+		Else If str="~q"
 			_tokeType=TOKE_STRINGLIT
-			While _tokePos<_source.Length And _source[_tokePos]<>Asc("~q")
+			While TSTR()<>"~q"
 				_tokePos+=1
 			Wend
 			If _tokePos<_source.Length _tokePos+=1 Else _tokeType=TOKE_STRINGLITEX
-		Else If ch=Asc("'")
+		Else If str="'"
 			_tokeType=TOKE_LINECOMMENT
-			While _tokePos<_source.Length And _source[_tokePos]<>Asc("~n")
+			While TSTR()<>"~n"
 				_tokePos+=1
 			Wend
 			If _tokePos<_source.Length
@@ -137,14 +143,14 @@ Class Toker
 			Endif
 		Else
 			_tokeType=TOKE_SYMBOL
-			For Local sym$=EachIn _symbols
-				If ch<>sym[0] Continue
+			For Local sym$=Eachin _symbols
+				If chr<>sym[0] Continue
 				If _source[_tokePos-1.._tokePos+sym.Length-1]=sym
 					_tokePos+=sym.Length-1
 					Exit
-				EndIf
+				Endif
 			Next
-		EndIf
+		Endif
 		
 		If Not _toke _toke=_source[start.._tokePos]
 		
@@ -164,5 +170,16 @@ Class Toker
 			NextToke
 		Wend
 	End
+	
+Private
+
+	Method TCHR( i=0 )
+		If _tokePos+i<_source.Length Return _source[_tokePos+i]
+	End
+	
+	Method TSTR$( i=0 )
+		If _tokePos+i<_source.Length Return String.FromChar( _source[_tokePos+i] )
+	End
+	
 	
 End

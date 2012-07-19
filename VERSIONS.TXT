@@ -1,6 +1,30 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V35 ***** 
+
+Modules:
+
+Mojo iOS sample loader now uses audio toolbox for mp3 support.
+
+Mojo Html5 SetScissor fixed.
+
+Added Mojo Music commands - see mojo.audio
+
+Mojo Android volume control now always sets media volume.
+
+
+Trans (1.06):
+
+Fixed float literal 'e' notation.
+
+Fixed BalanceTypes to generate an error instead of returning null.
+
+Rearranged and tidied up post semant class validation code.
+
+Fixed ObjectType.EqualsType to use new ClassDecl.EqualsClass method for generic class comparison fix.
+
+
 ***** V34b *****
 
 Quick fix release for nasty return stmt bug!

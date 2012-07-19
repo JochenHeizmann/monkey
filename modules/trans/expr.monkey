@@ -80,8 +80,8 @@ Class Expr
 		
 		If lhs.ExtendsType( rhs ) Return rhs
 		If rhs.ExtendsType( lhs ) Return lhs
-
-		Return Null
+		
+		Err "Can't balance types "+lhs.ToString()+" and "+rhs.ToString()
 	End
 	
 	Method CastArgs:Expr[]( args:Expr[],funcDecl:FuncDecl )
@@ -97,7 +97,7 @@ Class Expr
 				args[i]=funcDecl.argDecls[i].init	
 			Else
 				Err "Missing function argument '"+funcDecl.argDecls[i].ident+"'."
-			EndIf
+			Endif
 		Next
 		Return args
 	End
@@ -319,13 +319,13 @@ Class NewObjectExpr Extends Expr
 		Local objTy:ObjectType=ObjectType( ty )
 		If Not objTy
 			Err "Expression is not a class."
-		EndIf
+		Endif
 
 		classDecl=objTy.classDecl
 		
 		If classDecl.IsTemplateArg()
 			Err "Cannot create instance of template class."
-		EndIf
+		Endif
 		
 		If classDecl.IsAbstract()
 			Err "Cannot create instance of abstract class."
@@ -385,7 +385,6 @@ Class InvokeSuperExpr Extends Expr
 	Method New( ident$,args:Expr[] )
 		Self.ident=ident
 		Self.args=args
-		
 	End
 	
 	Method Semant:Expr()
@@ -461,7 +460,7 @@ Class CastExpr Extends Expr
 		If (flags & CAST_TEMPLATE)
 			ty=ty.Actual()
 			src=src.Actual()
-		EndIf
+		Endif
 		
 		'equal?
 		If src.EqualsType( ty ) Return expr
@@ -473,7 +472,7 @@ Class CastExpr Extends Expr
 			'
 			If ArrayType(src) And VoidType( ArrayType(src).elemType )
 				Return New ConstExpr( ty,"" ).Semant()
-			EndIf
+			Endif
 		
 			'Box/unbox?...
 			If ObjectType( ty ) And Not ObjectType( src )
@@ -495,10 +494,10 @@ Class CastExpr Extends Expr
 					op="ToString"
 				Else
 					InternalErr
-				EndIf
+				Endif
 				Local fdecl:FuncDecl=src.GetClass().FindFuncDecl( op,[] )
 				expr=New InvokeMemberExpr( expr,fdecl,[] ).Semant()
-			EndIf
+			Endif
 			exprType=ty
 
 		Else If BoolType( ty )
@@ -514,12 +513,12 @@ Class CastExpr Extends Expr
 				'or both NOT objects
 				If Not ObjectType( ty ) And Not ObjectType( src ) exprType=ty
 
-			EndIf
-		EndIf
+			Endif
+		Endif
 		
 		If Not exprType
 			Err "Cannot convert from type "+src.ToString()+" to type "+ty.ToString()+"."
-		EndIf
+		Endif
 		
 		If ConstExpr( expr ) Return EvalConst()
 		
@@ -539,18 +538,18 @@ Class CastExpr Extends Expr
 			Else If StringType( expr.exprType )
 				If val.Length Return "1"
 				Return ""
-			EndIf
+			Endif
 		Else If IntType( exprType )
 			If BoolType( expr.exprType )
 				If val Return "1"
 				Return "0"
-			EndIf
+			Endif
 			Return Int( val )
 		Else If FloatType( exprType )
 			Return Float( val )
 		Else If StringType( exprType )
 			Return String( val )
-		EndIf
+		Endif
 		Return Super.Eval()
 	End
 	
@@ -650,10 +649,10 @@ Class BinaryMathExpr Extends BinaryExpr
 			If StringType( exprType )
 				If op<>"+" 
 					Err "Illegal string operator."
-				EndIf
+				Endif
 			Else If Not NumericType( exprType )
 				Err "Illegal expression type."
-			EndIf
+			Endif
 		End Select
 		
 		lhs=lhs.CastTo( exprType )
@@ -693,7 +692,7 @@ Class BinaryMathExpr Extends BinaryExpr
 			Select op
 			Case "+" Return lhs+rhs
 			End
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -716,9 +715,6 @@ Class BinaryCompareExpr Extends BinaryExpr
 		rhs=rhs.Semant()
 
 		ty=BalanceTypes( lhs.exprType,rhs.exprType )
-		If Not ty
-			Err "Illegal expression type."
-		EndIf
 
 		lhs=lhs.CastTo( ty )
 		rhs=rhs.CastTo( ty )
@@ -765,7 +761,7 @@ Class BinaryCompareExpr Extends BinaryExpr
 			Case ">"  r=(lhs> rhs)
 			Case ">=" r=(lhs>=rhs)
 			End Select
-		EndIf
+		Endif
 		If r=1 Return "1"
 		If r=0 Return ""
 		InternalErr
@@ -825,7 +821,7 @@ Class IndexExpr Extends Expr
 			exprType=ArrayType( expr.exprType ).elemType
 		Else
 			Err "Only strings and arrays may be indexed."
-		EndIf
+		Endif
 
 		Return Self
 	End
@@ -867,7 +863,7 @@ Class SliceExpr Extends Expr
 			exprType=expr.exprType
 		Else
 			Err "Slices can only be used on strings or arrays."
-		EndIf
+		Endif
 		
 '		If ConstExpr( expr ) And ConstExpr( from ) And ConstExpr( term ) Return EvalConst()
 
@@ -881,7 +877,7 @@ Class SliceExpr Extends Expr
 			Return expr.Eval()[ from..term ]
 		Else If ArrayType( expr.exprType )
 			Todo
-		EndIf
+		Endif
 	End
 	
 	Method Trans$()

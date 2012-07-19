@@ -95,7 +95,7 @@ Class ForEachinStmt Extends Stmt
 
 		Else
 			SyntaxErr
-		EndIf
+		Endif
 		
 		block.Semant
 	End
@@ -128,7 +128,7 @@ Class IdentExpr Extends Expr
 			expr=expr.Semant()
 			scope=expr.exprType.GetClass()
 			If Not scope Err "Expression has no scope."
-		EndIf
+		Endif
 		Return scope
 	End
 	
@@ -155,7 +155,7 @@ Class IdentExpr Extends Expr
 	End
 	
 	Method Semant:Expr()
-		Return SemantSet( "",null )
+		Return SemantSet( "",Null )
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
@@ -172,10 +172,10 @@ Class IdentExpr Extends Expr
 				If expr Return New MemberVarExpr( expr,VarDecl( vdecl ) ).Semant()
 				
 				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
-			EndIf
+			Endif
 
 			Return New VarExpr( VarDecl( vdecl ) ).Semant()
-		EndIf
+		Endif
 		
 		If op And op<>"="
 
@@ -193,7 +193,7 @@ Class IdentExpr Extends Expr
 				lhs=New StmtExpr( New DeclStmt( tmp ),lhs )
 			Else
 				Return Null
-			EndIf
+			Endif
 			
 			Local bop$=op[..1]
 			Select bop
@@ -203,7 +203,7 @@ Class IdentExpr Extends Expr
 				InternalErr
 			End Select
 			rhs=rhs.Semant()
-		EndIf
+		Endif
 		
 		Local args:Expr[]
 		If rhs args=[rhs]
@@ -216,7 +216,7 @@ Class IdentExpr Extends Expr
 		If Not fdecl.IsStatic()
 			If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
 			If scope<>_env Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
-		EndIf
+		Endif
 
 		Return New InvokeExpr( fdecl,args ).Semant()
 	End
@@ -230,9 +230,9 @@ Class IdentExpr Extends Expr
 			If Not fdecl.IsStatic()
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
 				If scope<>_env Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
-			EndIf
+			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
-		EndIf
+		Endif
 		
 		If args.Length=1 And args[0] And ObjectType( args[0].exprType )
 			Local cdecl:ClassDecl=ClassDecl( scope.FindScopeDecl( ident ) )
@@ -289,7 +289,7 @@ Class Parser
 	Method SetErr()
 		If _toker.Path
 			_errInfo=_toker.Path+"<"+_toker.Line()+">"
-		EndIf
+		Endif
 	End
 	
 	Method PushBlock( block:BlockDecl )
@@ -377,7 +377,7 @@ Class Parser
 			Until Not CParse(",")
 			args=args[..nargs]
 			Parse ">"
-		EndIf
+		Endif
 		Return New IdentType( id,args )
 	End
 	
@@ -434,7 +434,7 @@ Class Parser
 				If AtEos() Exit
 				Parse ","
  			Forever
-		EndIf
+		Endif
 		Return args[..nargs]
 	End
 	
@@ -454,7 +454,7 @@ Class Parser
 				If _toke=")" Exit
 				Parse ","
  			Forever
-  		EndIf
+  		Endif
 		Parse ")"
 		Return args[..nargs]
 	End
@@ -501,7 +501,7 @@ Class Parser
 				expr=New NewArrayExpr( ty,len )
 			Else
 				expr=New NewObjectExpr( ty,ParseArgs( stmt ) )
-			EndIf
+			Endif
 		Case "null"
 			NextToke
 			expr=New ConstExpr( Type.nullObjectType,"" )
@@ -520,7 +520,7 @@ Class Parser
 				expr=New CastExpr( ty,expr,CAST_EXPLICIT )
 			Else
 				expr=New IdentExpr( id )
-			EndIf
+			Endif
 		Case "self"
 			NextToke
 			expr=New SelfExpr
@@ -529,7 +529,7 @@ Class Parser
 			Parse "."
 			If _toke="new"
 				Err "Call to super class constructor must be first statement in a constructor."
-			EndIf
+			Endif
 			Local id$=ParseIdent()
 			expr=New InvokeSuperExpr( id,ParseArgs( stmt ) )
 		Default
@@ -547,10 +547,10 @@ Class Parser
 							val=val Shl 4 | (ch & 15)
 						Else
 							val=val Shl 4 | ((ch & 15)+9)
-						EndIf
+						Endif
 					Next
 					t=String( val )
-				EndIf
+				Endif
 				expr=New ConstExpr( Type.intType,t )
 				NextToke
 			Case TOKE_FLOATLIT
@@ -578,7 +578,7 @@ Class Parser
 						expr=New SliceExpr( expr,Null,Null )
 					Else
 						expr=New SliceExpr( expr,Null,ParseExpr() )
-					EndIf
+					Endif
 				Else
 					Local from:Expr=ParseExpr()
 					If CParse( ".." )
@@ -586,11 +586,11 @@ Class Parser
 							expr=New SliceExpr( expr,from,Null )
 						Else
 							expr=New SliceExpr( expr,from,ParseExpr() )
-						EndIf
+						Endif
 					Else
 						expr=New IndexExpr( expr,from )
-					EndIf
-				EndIf
+					Endif
+				Endif
 				Parse "]"
 			Default
 				Return expr
@@ -686,7 +686,7 @@ Class Parser
 				Else If op="<" And (_toke="=" Or _toke=">")
 					op+=_toke
 					NextToke
-				EndIf
+				Endif
 				Local rhs:Expr=ParseBitorExpr()
 				expr=New BinaryCompareExpr( op,expr,rhs )
 			Default
@@ -705,7 +705,7 @@ Class Parser
 				expr=New BinaryLogicExpr( op,expr,rhs )
 			Else
 				Return expr
-			EndIf
+			Endif
 		Forever
 	End
 	
@@ -719,7 +719,7 @@ Class Parser
 				expr=New BinaryLogicExpr( op,expr,rhs )
 			Else
 				Return expr
-			EndIf
+			Endif
 		Forever
 	End
 	
@@ -743,7 +743,7 @@ Class Parser
 		If Not term
 			If _toke="~n" term="end" Else term="~n"
 			eatTerm=True
-		EndIf
+		Endif
 
 		PushBlock thenBlock
 		While _toke<>term
@@ -756,12 +756,12 @@ Class Parser
 				NextToke
 				If _block=elseBlock
 					SyntaxErr
-				EndIf
+				Endif
 				PopBlock
 				PushBlock elseBlock
 				If elif Or _toke="if"
 					ParseIfStmt term
-				EndIf
+				Endif
 			Default
 				ParseStmt
 			End
@@ -824,7 +824,7 @@ Class Parser
 		Else
 			Parse "forever"
 			expr=New ConstExpr( Type.boolType,"" )
-		EndIf
+		Endif
 		
 		Local stmt:RepeatStmt=New RepeatStmt( block,expr )
 		
@@ -868,7 +868,7 @@ Class Parser
 			
 			_block.AddStmt stmt
 			Return
-		EndIf
+		Endif
 		
 		Local from:Expr=ParseExpr()
 		
@@ -879,7 +879,7 @@ Class Parser
 			op="<"
 		Else
 			Err "Expecting 'To' or 'Until'."
-		EndIf
+		Endif
 		
 		Local term:Expr=ParseExpr()
 		
@@ -889,7 +889,7 @@ Class Parser
 			stp=ParseExpr()
 		Else
 			stp=New ConstExpr( Type.intType,"1" )
-		EndIf
+		Endif
 		
 		Local init:Stmt,expr:Expr,incr:Stmt
 		
@@ -964,7 +964,7 @@ Class Parser
 						comp=New BinaryLogicExpr( "or",comp,expr )
 					Else
 						comp=expr
-					EndIf
+					Endif
 				Until Not CParse(",")
 				
 				Local thenBlock:BlockDecl=New BlockDecl( _block )
@@ -1000,7 +1000,7 @@ Class Parser
 				ParseStmt
 			Wend
 			PopBlock
-		EndIf
+		Endif
 		
 		SetErr
 		Parse "end"
@@ -1051,11 +1051,17 @@ Class Parser
 			End
 			
 			If IdentExpr( expr ) 
+			
 				expr=New FuncCallExpr( expr,ParseStmtArgs() )
+				
 			Else If FuncCallExpr( expr) Or InvokeSuperExpr( expr ) Or NewObjectExpr( expr )
+			
 			Else
+			
 				SyntaxErr
+				
 			Endif
+			
 			_block.AddStmt New ExprStmt( expr )
 
 		End Select
@@ -1086,8 +1092,8 @@ Class Parser
 				init=New ConstExpr( ty,"" )
 			Else
 				Err "Constants must be initialized."
-			EndIf
-		EndIf
+			Endif
+		Endif
 		
 		Local decl:ValDecl
 		
@@ -1103,8 +1109,8 @@ Class Parser
 				decl.munged=ParseStringLit()
 			Else
 				decl.munged=decl.ident
-			EndIf
-		EndIf
+			Endif
+		Endif
 	
 		Return decl
 	End
@@ -1147,11 +1153,11 @@ Class Parser
 			Else
 				id=ParseIdent()
 				ty=ParseDeclType()
-			EndIf
+			Endif
 		Else
 			id=ParseIdent()
 			ty=ParseDeclType()
-		EndIf
+		Endif
 		
 		Local args:ArgDecl[]
 		If CParse( "()" )
@@ -1173,7 +1179,7 @@ Class Parser
 					Parse ","
 				Forever
 				args=args[..nargs]
-			EndIf
+			Endif
 			Parse ")"
 		Endif
 
@@ -1187,10 +1193,10 @@ Class Parser
 					attrs|=FUNC_PROPERTY
 				Else
 					Err "Only methods can be properties."
-				EndIf
+				Endif
 			Else
 				Exit
-			EndIf
+			Endif
 		Forever
 		
 		Local funcDecl:FuncDecl=New FuncDecl( id,ty,args,attrs )
@@ -1207,7 +1213,7 @@ Class Parser
 				
 			Endif
 			Return funcDecl
-		EndIf
+		Endif
 		
 		If funcDecl.IsAbstract() Return funcDecl
 		
@@ -1224,12 +1230,13 @@ Class Parser
 				Else
 					Local id$=ParseIdent()
 					funcDecl.AddStmt New ExprStmt( New InvokeSuperExpr( id,ParseArgs( True ) ) )
-				EndIf
-			Else	'Invoke super default ctor
+				Endif
+			Else
+					'Invoke super default ctor
 					'funcDecl.superCtor=New InvokeSuperExpr( "new",[] )
 					'funcDecl.AddStmt New ExprStmt( funcDecl.superCtor )
-			EndIf
-		EndIf
+			Endif
+		Endif
 
 		PushBlock funcDecl
 		While _toke<>"end"
@@ -1254,7 +1261,7 @@ Class Parser
 		If CParse( "<" )
 			If attrs & DECL_EXTERN
 				Err "Extern classes cannot be templates."
-			EndIf
+			Endif
 '			args=New ClassDecl[]
 			Local nargs
 			Repeat
@@ -1265,7 +1272,7 @@ Class Parser
 			Until Not CParse(",")
 			args=args[..nargs]
 			Parse ">"
-		EndIf
+		Endif
 		
 		If CParse( "extends" )
 			If CParse( "null" )
@@ -1273,13 +1280,13 @@ Class Parser
 					superTy=Null
 				Else
 					Err "Only extern objects can extend null."
-				EndIf
+				Endif
 			Else
 				superTy=ParseIdentType()
-			EndIf
+			Endif
 		Else
 			superTy=New IdentType( "object",[] )
-		EndIf
+		Endif
 		
 		Repeat
 			If CParse( "final" )
@@ -1288,7 +1295,7 @@ Class Parser
 				attrs|=DECL_ABSTRACT
 			Else
 				Exit
-			EndIf
+			Endif
 		Forever
 
 		Local classDecl:ClassDecl=New ClassDecl( id,superTy,args,attrs )
@@ -1296,7 +1303,7 @@ Class Parser
 		If classDecl.IsExtern() 
 			classDecl.munged=classDecl.ident
 			If CParse( "=" ) classDecl.munged=ParseStringLit()
-		EndIf
+		Endif
 		
 		If classDecl.IsTemplateArg() Return classDecl
 
@@ -1367,7 +1374,7 @@ Class Parser
 		
 		If FileType( filepath )<>FILETYPE_FILE
 			Err "File '"+filepath+"' not found."
-		EndIf
+		Endif
 		
 		_app.fileImports.AddLast filepath
 		
@@ -1403,26 +1410,6 @@ Class Parser
 		
 		If Not filepath Err "Module '"+modpath+"' not found."
 		
-		#rem
-		filepath=RealPath( _toker.Path() )+modfile
-
-		If FileType( path )<>FILETYPE_FILE
-		
-			filepath=ENV_PROJPATH+modfile
-			
-			If FileType( filepath )<>FILETYPE_FILE
-		
-				filepath=ENV_MODPATH+modfile
-			
-				If FileType( filepath )<>FILETYPE_FILE
-					Err "Module '"+modpath+"' not found."
-				Endif
-				
-			Endif
-			
-		Endif
-		#end
-
 		'Note: filepath needs to be an *exact* match.
 		'
 		'Would be nice to have a version of realpath that fixed case and normalized separators for this.
@@ -1481,7 +1468,7 @@ Class Parser
 		
 		ImportModule "monkey.lang",False
 		ImportModule "monkey",False
-
+		
 		Local attrs
 		
 		'Parse header - imports etc.
@@ -1502,7 +1489,7 @@ Class Parser
 					ImportFile PreProcessPath( ParseStringLit() )
 				Else
 					ImportModule ParseModPath(),(attrs & DECL_PRIVATE)=0
-				EndIf
+				Endif
 			Default
 				Exit
 			End Select

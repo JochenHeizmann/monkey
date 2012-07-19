@@ -38,7 +38,7 @@ End
 
 Class Game Extends App
 
-	Global FPS:Int = 100
+	Global FPS:Int = 60
 	
 	' Position/speed of example rects...
 	

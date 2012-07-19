@@ -39,7 +39,7 @@ Class Translator
 			Local fdecl:FuncDecl=FuncDecl( decl )
 			If ModuleDecl( decl.scope ) Or GlobalDecl( decl ) Or (fdecl And Not fdecl.IsMethod())
 				munged=decl.ModuleScope().munged+id
-			EndIf
+			Endif
 		Case "as"
 			If ModuleDecl( decl.scope )
 				munged=decl.ModuleScope().munged+id
@@ -75,7 +75,7 @@ Class Translator
 	Method Bra$( str$ )
 		If str.StartsWith( "(" ) And str.EndsWith( ")" )
 			If str.FindLast("(")<str.Find(")") Return str
-		EndIf
+		Endif
 		Return "("+str+")"
 	End
 	
@@ -145,7 +145,7 @@ Class Translator
 			Case "or" Return 13
 			End
 			InternalErr
-		EndIf
+		Endif
 		Return 2
 	End
 	
@@ -306,12 +306,12 @@ Class Translator
 		If Not t Return
 		If t.StartsWith( "}" )
 			indent=indent[..indent.Length-1]
-		EndIf
+		Endif
 		lines.AddLast indent+t
 		'code+=indent+t+"~n"
 		If t.EndsWith( "{" )
 			indent+="~t"
-		EndIf
+		Endif
 	End
 	
 	Method JoinLines$()
@@ -329,7 +329,7 @@ Class Translator
 		
 		PushEnv block
 
-		For Local stmt:Stmt=EachIn block.stmts
+		For Local stmt:Stmt=Eachin block.stmts
 
 			If unreachable And ENV_LANG<>"as"
 				'If stmt.errInfo Print "Unreachable:"+stmt.errInfo

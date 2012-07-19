@@ -182,7 +182,10 @@ Class ArrayType Extends Type
 	End
 	
 	Method ToString$()
-		Return "Array"	'elemType.ToString()+"[]"
+		Return "array of "+elemType.ToString()
+'		Return "Array:"+elemType.ToString()
+'		Return "Array"	'elemType.ToString()+"[]"
+'		Return elemType.ToString()+"[]"
 	End
 End
 
@@ -200,7 +203,7 @@ Class ObjectType Extends Type
 	
 	Method EqualsType( ty:Type )
 		Local objty:ObjectType=ObjectType( ty )
-		Return objty And classDecl=objty.classDecl
+		Return objty And classDecl.EqualsClass( objty.classDecl )
 	End
 	
 	Method ExtendsType( ty:Type )

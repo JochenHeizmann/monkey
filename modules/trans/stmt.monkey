@@ -64,7 +64,7 @@ Class AssignStmt Extends Stmt
 			rhs=Null
 		Else
 			rhs=rhs.CastTo( lhs.exprType )
-		EndIf
+		Endif
 	End
 	
 	Method Trans$()
@@ -78,11 +78,11 @@ Class ExprStmt Extends Stmt
 	
 	Method New( expr:Expr )
 		Self.expr=expr
-		
 	End
 	
 	Method OnSemant()
 		expr=expr.Semant()
+		If Not expr InternalErr
 	End
 
 	Method Trans$()
@@ -109,7 +109,7 @@ Class ReturnStmt Extends Stmt
 		Else If Not VoidType( fdecl.retType )
 			If _env.ModuleScope().IsStrict() Err "Missing return expression."
 			expr=New ConstExpr( fdecl.retType,"" ).Semant()
-		EndIf
+		Endif
 	End
 	
 	Method Trans$()
@@ -242,7 +242,7 @@ Class ForStmt Extends Stmt
 			Case "<" bexpr.op=">"
 			Case "<=" bexpr.op=">="
 			End Select
-		EndIf
+		Endif
 		
 	End
 	

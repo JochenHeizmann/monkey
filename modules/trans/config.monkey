@@ -35,7 +35,9 @@ Function SyntaxErr()
 End
 
 Function InternalErr()
-	Error "Internal error."
+	Local t$=_errInfo+" : Error : Internal error"
+	Print t
+	Error t
 End
 
 Function Asc( str$ )

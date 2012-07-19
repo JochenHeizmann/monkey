@@ -19,6 +19,9 @@ Class MyApp Extends App
 #Else If TARGET="android"
 		shoot=LoadSound( "shoot.ogg" )
 		tinkle=LoadSound( "tinkle.ogg" )
+#Else If TARGET="ios"
+		shoot=LoadSound( "shoot.mp3" )
+		tinkle=LoadSound( "tinkle.mp3" )
 #Else
 		shoot=LoadSound( "shoot.wav" )
 		tinkle=LoadSound( "tinkle.wav" )

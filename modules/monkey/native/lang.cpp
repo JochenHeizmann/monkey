@@ -295,15 +295,15 @@ public:
 	}
 
 	String( int n ){
-		char buf[16];
-		snprintf( buf,16,"%i",n );
+		char buf[64];
+		snprintf( buf,64,"%i",n );
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
 
 	String( float n ){
-		char buf[16];
-		snprintf( buf,16,"%f",n );
+		char buf[64];
+		snprintf( buf,64,"%f",n );
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}

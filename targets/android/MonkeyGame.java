@@ -31,5 +31,17 @@ class MonkeyData{
 		}
 		return 0;
 	}
+	
+	static MediaPlayer openMedia( String path ){
+		path="monkey/"+path;
+		try{
+			MediaPlayer mp=new MediaPlayer();
+			mp.setDataSource( MonkeyGame.activity.getAssets().openFd( path ).getFileDescriptor() );
+			mp.prepare();
+			return mp;
+		}catch( IOException e ){
+		}
+		return null;
+	}
 
 };
