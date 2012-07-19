@@ -977,9 +977,13 @@ public:
 	}
 };
 
+class ThrowableObject : public Object{
+};
+
 struct gc_interface{
 	virtual ~gc_interface(){}
 };
+
 
 //***** Debugger *****
 
@@ -987,35 +991,26 @@ int Print( String t );
 
 #define dbg_stream stderr
 
-const char *dbg_info;
-String dbg_exstack;
+#if _MSC_VER
+#define dbg_typeof decltype
+#else
+#define dbg_typeof __typeof__
+#endif 
 
-struct dbg_var;
 struct dbg_func;
+struct dbg_var_type;
 
 static int dbg_suspend;
 static int dbg_stepmode;
 
-static std::vector<dbg_var*> dbg_vars;
-static std::vector<dbg_func*> dbg_funcs;
+const char *dbg_info;
+String dbg_exstack;
 
-static std::vector<void*> free_dbg_vars;
+static void *dbg_var_buf[65536*3];
+static void **dbg_var_ptr=dbg_var_buf;
 
-int dbg_print( String t ){
-	static char *buf;
-	static int len;
-	int n=t.Length();
-	if( n+100>len ){
-		len=n+100;
-		free( buf );
-		buf=(char*)malloc( len );
-	}
-	buf[n]='\n';
-	for( int i=0;i<n;++i ) buf[i]=t[i];
-	fwrite( buf,n+1,1,dbg_stream );
-	fflush( dbg_stream );
-	return 0;
-}
+static dbg_func *dbg_func_buf[1024];
+static dbg_func **dbg_func_ptr=dbg_func_buf;
 
 String dbg_type( bool *p ){
 	return "Bool";
@@ -1074,57 +1069,39 @@ template<class T> String dbg_value( Array<T> *p ){
 	return t+"]";
 }
 
-struct dbg_var{
-	virtual String ident(){ return "?ident?"; }
-	virtual String type(){ return "?type?"; }
-	virtual String value(){ return "?value?"; }
+template<class T> String dbg_decl( const char *id,T *ptr ){
+	return String( id )+":"+dbg_type(ptr)+"="+dbg_value(ptr)+"\n";
+}
+
+struct dbg_var_type{
+	virtual String type( void *p )=0;
+	virtual String value( void *p )=0;
 };
 
-template<class T> struct t_dbg_var : public dbg_var{
-	const char *id;
-	T *ptr;
+template<class T> struct dbg_var_type_t : public dbg_var_type{
 
-	t_dbg_var( const char *id,T *ptr ):id(id),ptr(ptr){
+	String type( void *p ){
+		return dbg_type( (T*)p );
 	}
 	
-	String ident(){
-		return id;
+	String value( void *p ){
+		return dbg_value( (T*)p );
 	}
 	
-	String type(){
-		return dbg_type( ptr );
-	}
-	
-	String value(){
-		return dbg_value( ptr );
-	}
-	
-	void *operator new( size_t size ){
-		if( free_dbg_vars.empty() ) return malloc( size );
-		void *p=free_dbg_vars.back();
-		free_dbg_vars.pop_back();
-		return p;
-	}
-	
-	void operator delete( void *p ){
-		free_dbg_vars.push_back( p );
-	}
+	static dbg_var_type_t<T> info;
 };
+template<class T> dbg_var_type_t<T> dbg_var_type_t<T>::info;
 
 struct dbg_blk{
-	int vars;
+	void **var_ptr;
 	
-	dbg_blk(){
-		vars=dbg_vars.size();
+	dbg_blk():var_ptr(dbg_var_ptr){
 		if( dbg_stepmode=='l' ) --dbg_suspend;
 	}
 	
 	~dbg_blk(){
-		while( dbg_vars.size()!=vars ){
-			delete dbg_vars.back();
-			dbg_vars.pop_back();
-		}
 		if( dbg_stepmode=='l' ) ++dbg_suspend;
+		dbg_var_ptr=var_ptr;
 	}
 };
 
@@ -1133,46 +1110,63 @@ struct dbg_func : public dbg_blk{
 	const char *info;
 
 	dbg_func( const char *p ):id(p),info(dbg_info){
-		dbg_funcs.push_back( this );
+		*dbg_func_ptr++=this;
 		if( dbg_stepmode=='s' ) --dbg_suspend;
 	}
 	
 	~dbg_func(){
 		if( dbg_stepmode=='s' ) ++dbg_suspend;
-//		if( dbg_funcs.back()!=this ){ puts( "~dbg_func() ERR!" );exit(-1); }
-		dbg_funcs.pop_back();
+		--dbg_func_ptr;
 		dbg_info=info;
 	}
 };
 
-template<class T> void dbg_pushvar( const char *id,T *ptr ){
-	dbg_vars.push_back( new t_dbg_var<T>( id,ptr ) );
+int dbg_print( String t ){
+	static char *buf;
+	static int len;
+	int n=t.Length();
+	if( n+100>len ){
+		len=n+100;
+		free( buf );
+		buf=(char*)malloc( len );
+	}
+	buf[n]='\n';
+	for( int i=0;i<n;++i ) buf[i]=t[i];
+	fwrite( buf,n+1,1,dbg_stream );
+	fflush( dbg_stream );
+	return 0;
 }
 
 void dbg_callstack(){
-	int f=0;
-	for( int i=0;i<dbg_vars.size();++i ){
-		while( f<dbg_funcs.size() && i==dbg_funcs[f]->vars ){
-			const char *id=dbg_funcs[f++]->id;
-			const char *info=f<dbg_funcs.size() ? dbg_funcs[f]->info : dbg_info;
+
+	void **var_ptr=dbg_var_buf;
+	dbg_func **func_ptr=dbg_func_buf;
+	
+	while( var_ptr!=dbg_var_ptr ){
+		while( func_ptr!=dbg_func_ptr && var_ptr==(*func_ptr)->var_ptr ){
+			const char *id=(*func_ptr++)->id;
+			const char *info=func_ptr!=dbg_func_ptr ? (*func_ptr)->info : dbg_info;
 			fprintf( dbg_stream,"+%s;%s\n",id,info );
 		}
-		dbg_var *v=dbg_vars[i];
-		String t=v->ident()+":"+v->type()+"="+v->value();
-		dbg_print( t );
+		void *vp=*var_ptr++;
+		const char *nm=(const char*)*var_ptr++;
+		dbg_var_type *ty=(dbg_var_type*)*var_ptr++;
+		dbg_print( String(nm)+":"+ty->type(vp)+"="+ty->value(vp) );
 	}
-	while( f<dbg_funcs.size() ){
-		const char *id=dbg_funcs[f++]->id;
-		const char *info=f<dbg_funcs.size() ? dbg_funcs[f]->info : dbg_info;
+	while( func_ptr!=dbg_func_ptr ){
+		const char *id=(*func_ptr++)->id;
+		const char *info=func_ptr!=dbg_func_ptr ? (*func_ptr)->info : dbg_info;
 		fprintf( dbg_stream,"+%s;%s\n",id,info );
 	}
 }
 
 String dbg_stacktrace(){
-	if( !dbg_funcs.size() ) return "";
+	if( !dbg_info || !dbg_info[0] ) return "";
 	String str=String( dbg_info )+"\n";
-	for( int i=dbg_funcs.size()-1;i>0;--i ){
-		str+=String( dbg_funcs[i]->info )+"\n";
+	dbg_func **func_ptr=dbg_func_ptr;
+	if( func_ptr==dbg_func_buf ) return str;
+	while( --func_ptr!=dbg_func_buf ){
+		str+=String( (*func_ptr)->info )+"\n";
 	}
 	return str;
 }
@@ -1256,16 +1250,18 @@ void dbg_error( const char *err ){
 	}
 }
 
-template<class T> String dbg_decl( const char *id,T *ptr ){
-	return String( id )+":"+dbg_type(ptr)+"="+dbg_value(ptr)+"\n";
-}
+#define DBG_INFO(X) dbg_info=(X);if( dbg_suspend>0 ) dbg_stop();
 
-#define DBG_GLOBAL(ID,PTR)
-#define DBG_LOCAL(ID,PTR) dbg_pushvar(ID,PTR)
-#define DBG_INFO(X) {dbg_info=(X);if( dbg_suspend>0 ) dbg_stop();}
-#define DBG_ENTER(P) dbg_func _func(P)
-#define DBG_BLOCK(T) dbg_blk _blk
-#define DBG_LEAVE()
+#define DBG_ENTER(P) dbg_func _dbg_func(P);
+
+#define DBG_BLOCK(T) dbg_blk _dbg_blk;
+
+#define DBG_GLOBAL( ID,NAME )	//TODO!
+
+#define DBG_LOCAL( ID,NAME )\
+*dbg_var_ptr++=&ID;\
+*dbg_var_ptr++=(void*)NAME;\
+*dbg_var_ptr++=&dbg_var_type_t<dbg_typeof(ID)>::info;
 
 //**** main ****
 
@@ -1312,9 +1308,9 @@ int bbMain();
 
 #if _MSC_VER
 
-static void _cdecl seTranslator( unsigned int u,EXCEPTION_POINTERS* pExp ){
+static void _cdecl seTranslator( unsigned int ex,EXCEPTION_POINTERS *p ){
 
-	switch( u ){
+	switch( ex ){
 	case EXCEPTION_ACCESS_VIOLATION:dbg_error( "Memory access violation" );
 	case EXCEPTION_ILLEGAL_INSTRUCTION:dbg_error( "Illegal instruction" );
 	case EXCEPTION_INT_DIVIDE_BY_ZERO:dbg_error( "Integer divide by zero" );
@@ -1342,7 +1338,7 @@ void sighandler( int sig  ){
 //entry point call by target main()...
 //
 int bb_std_main( int argc,const char **argv ){
-	
+
 	::argc=argc;
 	::argv=argv;
 	

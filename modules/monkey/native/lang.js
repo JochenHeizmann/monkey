@@ -42,7 +42,7 @@ function print( str ){
 
 function alertError( err ){
 	if( typeof(err)=="string" && err=="" ) return;
-	alert( "Monkey Runtime Error : "+err+"\n\n"+stackTrace() );
+	alert( "Monkey Runtime Error : "+err.toString()+"\n\n"+stackTrace() );
 }
 
 function error( err ){
@@ -199,4 +199,11 @@ function extend_class( clas ){
 	var tmp=function(){};
 	tmp.prototype=clas.prototype;
 	return new tmp;
+}
+
+function ThrowableObject(){
+}
+
+ThrowableObject.prototype.toString=function(){ 
+	return "Uncaught Monkey Exception"; 
 }

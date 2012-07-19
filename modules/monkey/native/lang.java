@@ -215,3 +215,9 @@ class bb_std_lang{
 	}
 
 }
+
+class ThrowableObject extends RuntimeException{
+	ThrowableObject(){
+		super( "Uncaught Throwable Object" );
+	}
+}

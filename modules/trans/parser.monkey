@@ -433,8 +433,7 @@ Class Parser
 		Select _toke
 		Case "@" 
 			NextToke
-		Case "object"
-'		Case "string","object","array"
+		Case "object","throwable"
 			'			
 		Default	
 			If _tokeType<>TOKE_IDENT Err "Syntax error - expecting identifier."
@@ -451,6 +450,7 @@ Class Parser
 		If CParse( "float" ) Return Type.floatType
 		If CParse( "string" ) Return Type.stringType
 		If CParse( "object" ) Return Type.objectType
+		If CParse( "throwable" ) Return Type.throwableType
 	End	
 	
 	Method ParseType:Type()
@@ -641,7 +641,7 @@ Class Parser
 		Case "false"
 			NextToke
 			expr=New ConstExpr( Type.boolType,"" )
-		Case "bool","int","float","string","object"
+		Case "bool","int","float","string","object","throwable"
 			Local id$=_toke
 			Local ty:Type=ParseType()
 			If CParse( "(" )
@@ -1090,6 +1090,41 @@ Class Parser
 		_block.AddStmt New ContinueStmt
 	End
 	
+	Method ParseTryStmt()
+		Parse "try"
+		
+		Local block:=New BlockDecl( _block )
+		Local catches:=New Stack<CatchStmt>
+		
+		PushBlock block
+		While _toke<>"end"
+			If CParse( "catch" )
+				Local id:=ParseIdent()
+				Parse ":"
+				Local ty:=ParseType()
+				Local init:=New LocalDecl( id,0,ty,Null )
+				Local block:=New BlockDecl( _block )
+				catches.Push New CatchStmt( init,block )
+				PopBlock
+				PushBlock block
+			Else
+				ParseStmt
+			Endif
+		Wend
+		If Not catches.Length Err "Try block must have at least one catch block"
+		PopBlock
+		NextToke
+		CParse "try"
+
+		_block.AddStmt New TryStmt( block,catches.ToArray() )
+	End
+	
+	Method ParseThrowStmt()
+		Parse "throw"
+		
+		_block.AddStmt New ThrowStmt( ParseExpr() )
+	End
+	
 	Method ParseSelectStmt()
 		Parse "select"
 		
@@ -1185,6 +1220,10 @@ Class Parser
 			ParseForStmt()
 		Case "select"
 			ParseSelectStmt()
+		Case "try"
+			ParseTryStmt()
+		Case "throw"
+			ParseThrowStmt()
 		Default
 			Local expr:Expr=ParsePrimaryExpr( True )
 			

@@ -69,7 +69,7 @@ Class IosTarget Extends Target
 	
 					're-start emulator
 					'
-					Execute "killall ~qiPhone Simulator~q",False
+					Execute "killall ~qiPhone Simulator~q 2>/dev/null",False
 					Execute "open ~q"+p1+"~q"
 				
 				'Old XCode in /Developer?
@@ -96,7 +96,7 @@ Class IosTarget Extends Target
 	
 					're-start emulator
 					'
-					Execute "killall ~qiPhone Simulator~q",False
+					Execute "killall ~qiPhone Simulator~q 2>/dev/null",False
 					Execute "open ~q"+p2+"~q"
 				
 				Endif

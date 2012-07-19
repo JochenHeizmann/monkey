@@ -33,6 +33,8 @@ Class GlfwTarget Extends Target
 
 		Case "winnt"
 		
+'			Local CASED_CONFIG:="Release"
+		
 			CreateDir "vc2010/"+CASED_CONFIG
 			
 			CreateDataDir "vc2010/"+CASED_CONFIG+"/data"
@@ -54,9 +56,12 @@ Class GlfwTarget Extends Target
 					ChangeDir CASED_CONFIG
 					Execute "MonkeyGame"
 				Endif
+				
 			Endif
 		
 		Case "macos"
+		
+'			Local CASED_CONFIG:="Release"
 		
 			CreateDataDir "xcode/data"
 
@@ -75,13 +80,11 @@ Class GlfwTarget Extends Target
 				
 				If OPT_ACTION>=ACTION_RUN
 					ChangeDir "build/"+CASED_CONFIG
-
-					'Execute "open MonkeyGame.app"
 					ChangeDir "MonkeyGame.app/Contents/MacOS"
 					Execute "./MonkeyGame"
 				Endif
+				
 			Endif
-			
 		End
 	End
 End

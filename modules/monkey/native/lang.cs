@@ -184,3 +184,8 @@ public class bb_std_lang{
 		return arr!=null ? arr.Length : 0;
 	}
 }
+
+class ThrowableObject : Exception{
+	public ThrowableObject() : base( "Uncaught Monkey Exception" ){
+	}
+};

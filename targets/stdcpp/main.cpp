@@ -13,8 +13,11 @@ int main( int argc,const char **argv ){
 	
 		bb_std_main( argc,argv );
 		
+	}catch( ThrowableObject *ex ){
+	
+		Print( "Monkey Runtime Error : Uncaught Monkey Exception" );
+	
 	}catch( const char *err ){
 	
-//		Print( String("Monkey runtime error: ")+err+"\n"+StackTrace() );
 	}
 }

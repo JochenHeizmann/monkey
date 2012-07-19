@@ -72,10 +72,10 @@ Class CppTranslator Extends CTranslator
 	Method EmitEnter( func:FuncDecl )
 		Local id:=func.ident
 		If ClassDecl( func.scope ) id=func.scope.ident+"."+id
-		Emit "DBG_ENTER(~q"+id+"~q);"
+		Emit "DBG_ENTER(~q"+id+"~q)"
 		If func.IsCtor() Or func.IsMethod()
 			Emit func.scope.munged+" *self=this;"
-			Emit "DBG_LOCAL(~qSelf~q,&self);"
+			Emit "DBG_LOCAL(self,~qSelf~q)"
 		Endif
 	End
 	
@@ -87,7 +87,7 @@ Class CppTranslator Extends CTranslator
 		If info=lastDbgInfo Return
 		lastDbgInfo=info
 		For Local decl:=Eachin dbgLocals
-			If decl.ident Emit "DBG_LOCAL(~q"+decl.ident+"~q,&"+decl.munged+");"
+			If decl.ident Emit "DBG_LOCAL("+decl.munged+",~q"+decl.ident+"~q)"
 		Next
 		dbgLocals.Clear
 		Emit "DBG_INFO(~q"+info.Replace( "\","/" )+"~q);"
@@ -97,10 +97,6 @@ Class CppTranslator Extends CTranslator
 		dbgLocals.Clear
 	End
 	
-	Method EmitLeave()
-		Emit "DBG_LEAVE();"
-	End
-
 	'***** Declarations *****
 	
 	Method TransStatic$( decl:Decl )
@@ -319,6 +315,18 @@ Class CppTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+TransType( c.init.type )+" "+c.init.munged+"){"
+			dbgLocals.Push c.init
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 	
 	Method TransDeclStmt$( stmt:DeclStmt )
 		Local decl:=LocalDecl( stmt.decl )
@@ -592,7 +600,6 @@ Class CppTranslator Extends CTranslator
 		Next
 
 		For Local decl:=Eachin app.Semanted
-		
 			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )

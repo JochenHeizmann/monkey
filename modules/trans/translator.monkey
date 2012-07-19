@@ -60,7 +60,11 @@ Class Translator
 	Method TransRepeatStmt$( stmt:RepeatStmt ) Abstract
 
 	Method TransForStmt$( stmt:ForStmt ) Abstract
+	
+	Method TransTryStmt$( stmt:TryStmt ) Abstract
 
+	Method TransThrowStmt$( stmt:ThrowStmt ) Abstract
+	
 	'***** Decls *****
 		
 	Method TransBlock$( block:BlockDecl ) Abstract
@@ -83,6 +87,9 @@ Class CTranslator Extends Translator
 	'***** Utility *****
 	
 	Method TransValue$( ty:Type,value$ ) Abstract
+	
+	Method TransCatchVar$( init:LocalDecl )
+	End
 
 	Method TransLocalDecl$( munged$,init:Expr ) Abstract
 	
@@ -546,33 +553,7 @@ Class CTranslator Extends Translator
 			If emitDebugInfo And realBlock EmitLeaveBlock
 
 		Endif
-#rem
-		If func
-			If unr
-				'Actionscript's reachability analysis ain't so hot...tack on a return just in case.
-				If ENV_LANG="as" And Not VoidType( func.retType )
-					If block.stmts.IsEmpty() Or Not ReturnStmt( block.stmts.Last() )
-						Emit "return "+TransValue( func.retType,"" )+";"
-					Endif
-				Endif
-			Else
 
-				If emitDebugInfo EmitLeave
-				
-				If Not VoidType( func.retType )
-					If func.IsCtor()
-						Emit "return this;"
-					Else
-						If func.ModuleScope().IsStrict()
-							_errInfo=func.errInfo
-							Err "Missing return statement."
-						Endif
-						Emit "return "+TransValue( func.retType,"" )+";"
-					Endif
-				Endif
-			Endif
-		Endif
-#end
 		PopEnv
 		
 		Return unr
@@ -592,7 +573,6 @@ Class CTranslator Extends Translator
 	End
 	
 	Method TransIfStmt$( stmt:IfStmt )
-		
 		If ConstExpr( stmt.expr )
 			If ConstExpr( stmt.expr ).value
 				If Not stmt.thenBlock.stmts.IsEmpty()
@@ -656,6 +636,15 @@ Class CTranslator Extends Translator
 		
 		If broken=nbroken And ConstExpr( stmt.expr ) And ConstExpr( stmt.expr ).value unreachable=True
 		broken=nbroken
+	End
+
+	Method TransTryStmt$( stmt:TryStmt )
+		Err "TODO!"
+	End
+	
+	Method TransThrowStmt$( stmt:ThrowStmt )
+		unreachable=True
+		Return "throw "+stmt.expr.Trans()
 	End
 	
 	Method PostProcess$( source$ ) 

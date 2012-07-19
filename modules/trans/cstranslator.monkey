@@ -308,6 +308,17 @@ Class CsTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+TransType( c.init.type )+" "+c.init.munged+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	'***** Declarations *****
 
@@ -351,8 +362,7 @@ Class CsTranslator Extends CTranslator
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
 	
-		Local classid$=classDecl.munged
-		Local superid$=classDecl.superClass.munged
+		Local classid:=classDecl.munged
 		
 		If classDecl.IsInterface() 
 		
@@ -372,6 +382,8 @@ Class CsTranslator Extends CTranslator
 			Return
 		Endif
 	
+		Local superid:=classDecl.superClass.munged
+
 		Local bases$=" : "+superid
 		
 		For Local iface:=Eachin classDecl.implments

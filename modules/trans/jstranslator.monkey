@@ -196,6 +196,35 @@ Class JsTranslator Extends CTranslator
 	
 	'***** Statements *****
 	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+
+		Local unr:=EmitBlock( stmt.block )
+
+		Emit "}catch(_eek_){"
+
+		For Local i=0 Until stmt.catches.Length
+		
+			Local c:=stmt.catches[i]
+			
+			MungDecl c.init
+			
+			If i
+				Emit "}else if("+c.init.munged+"=object_downcast(_eek_,"+c.init.type.GetClass().munged+")){"
+			Else
+				Emit "if("+c.init.munged+"=object_downcast(_eek_,"+c.init.type.GetClass().munged+")){"
+			Endif
+			
+			Local unr:=EmitBlock( c.block )
+		Next
+		
+		Emit "}else{"
+		Emit "throw _eek_;"
+		Emit "}"
+		
+		Emit "}"
+	End
+	
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If ENV_CONFIG="debug"
 			Local ie:=IndexExpr( stmt.lhs )

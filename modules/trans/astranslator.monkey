@@ -290,6 +290,17 @@ Class AsTranslator Extends CTranslator
 	End
 	
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+c.init.munged+":"+TransType( c.init.type )+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If ENV_CONFIG="debug"

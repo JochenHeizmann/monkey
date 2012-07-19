@@ -223,6 +223,10 @@ int main( int argc,const char *argv[] ){
 		bb_std_main( argc,argv );
 
 		if( runner ) runner();
+		
+	}catch( ThrowableObject *ex ){
+	
+		Print( "Monkey Runtime Error : Uncaught Monkey Exception" );
 
 	}catch( const char *err ){
 

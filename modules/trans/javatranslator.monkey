@@ -309,6 +309,17 @@ Class JavaTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+TransType( c.init.type )+" "+c.init.munged+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	'***** Declarations *****
 	

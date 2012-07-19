@@ -44,9 +44,7 @@ Class Toker
 		"const local global field method function class "+
 		"and or shl shr end if then else elseif endif while wend repeat until forever "+
 		"for to step next return "+
-		"interface implements inline alias"
-
-'		Const symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~~=" ]
+		"interface implements inline alias try catch throw throwable"
 
 		_keywords=New StringSet
 		For Local t:=Eachin keywords.Split( " " )

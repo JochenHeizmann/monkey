@@ -22,8 +22,8 @@ Const mserver$="..\bin\mserver_winnt.exe"
 Const QUICKTRANS=False
 
 Const trans$="../bin/trans_macos"
-'Const trans2$=trans
-Const trans2$="../bin/trans_macos_bak"
+Const trans2$=trans
+'Const trans2$="../bin/trans_macos_bak"
 Const newtrans$="trans/trans.build/stdcpp/main_macos"
 Const mserver$="../bin/mserver_macos"
 

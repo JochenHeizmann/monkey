@@ -57,9 +57,10 @@ function print( str:String ):int{
 	return 0;
 }
 
-function printError( err:String ):void{
-	if( !err.length ) return;
-	print( "Monkey Runtime Error : "+err );
+function printError( err:Object ):void{
+	var msg:String=err.toString();
+	if( !msg.length ) return;
+	print( "Monkey Runtime Error : "+msg );
 	print( "" );
 	print( stackTrace() );
 }
@@ -208,3 +209,8 @@ function string_from_chars( chars:Array ):String{
 	return str;
 }
 
+class ThrowableObject{
+	internal function toString():String{
+		return "Uncaught Monkey Exception";
+	}
+}

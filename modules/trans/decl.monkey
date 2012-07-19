@@ -12,6 +12,7 @@ Const DECL_ABSTRACT=	$000400
 Const DECL_FINAL=		$000800
 
 Const CLASS_INTERFACE=	$001000
+Const CLASS_THROWABLE=	$002000
 
 Const DECL_SEMANTED=	$100000
 Const DECL_SEMANTING=	$200000
@@ -895,6 +896,10 @@ Class ClassDecl Extends ScopeDecl
 		Return (attrs & CLASS_FINALIZED)<>0
 	End
 	
+	Method IsThrowable()
+		Return (attrs & CLASS_THROWABLE)<>0
+	End
+	
 	Method ExtendsObject()
 		Return (attrs & CLASS_EXTENDSOBJECT)<>0
 	End
@@ -981,12 +986,13 @@ Class ClassDecl Extends ScopeDecl
 		If args Return
 	
 		PushEnv Self
-
+		
 		'Semant superclass		
 		If superTy
 			superClass=superTy.SemantClass()
 			If superClass.IsFinal() Err "Cannot extend final class."
 			If superClass.IsInterface() Err "Cannot extend an interface."
+			If munged="ThrowableObject" Or superClass.IsThrowable() attrs|=CLASS_THROWABLE
 			If superClass.ExtendsObject() attrs|=CLASS_EXTENDSOBJECT
 		Else
 			If munged="Object" attrs|=CLASS_EXTENDSOBJECT
@@ -1061,7 +1067,7 @@ Class ClassDecl Extends ScopeDecl
 				InsertDecl fdecl
 			Endif
 		Endif
-
+		
 		'NOTE: do this AFTER super semant so UpdateAttrs order is cool.
 		AppScope.semantedClasses.AddLast Self
 	End

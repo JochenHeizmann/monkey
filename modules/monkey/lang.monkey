@@ -50,3 +50,7 @@ End
 Class @Object Extends Null="Object"
 
 End
+
+Class @Throwable="ThrowableObject"
+
+End
