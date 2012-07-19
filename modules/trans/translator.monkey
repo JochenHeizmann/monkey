@@ -146,17 +146,20 @@ Class Translator
 
 	Method TransUnaryOp$( op$ )
 		Select op
-		Case "+" Return " +"
-		Case "-" Return " -"
+		Case "+" Return "+"
+		Case "-" Return "-"
 		Case "~~" Return op
 		Case "not" Return "!"
 		End Select
 		InternalErr
 	End
 	
-	Method TransBinaryOp$( op$ )
+	Method TransBinaryOp$( op$,rhs$ )
 		Select op
-		Case "+","-","*","/" Return op
+		Case "+","-"
+			If rhs.StartsWith( op ) Return op+" "
+			Return op
+		Case "*","/" Return op
 		Case "shl" Return "<<"
 		Case "shr" Return ">>"
 		Case "mod" Return " % "
@@ -404,7 +407,7 @@ Class Translator
 		For Local stmt:Stmt=Eachin block.stmts
 		
 			_errInfo=stmt.errInfo
-
+			
 			If unreachable And ENV_LANG<>"as"
 				'If stmt.errInfo Print "Unreachable:"+stmt.errInfo
 				Exit

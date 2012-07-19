@@ -197,12 +197,13 @@ Class IdentExpr Extends Expr
 			If Not fdecl IdentErr scope
 
 			If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
+			
 			Local lhs:Expr
 			
 			If fdecl.IsStatic() Or (scope=_env And Not _env.FuncScope().IsStatic())
 				lhs=New InvokeExpr( fdecl,[] )
 			Else If expr
-				Local tmp:LocalDecl=New LocalDecl( "",Null,expr )
+				Local tmp:=New LocalDecl( "",Null,expr )
 				lhs=New InvokeMemberExpr( New VarExpr( tmp ),fdecl,[] )
 				lhs=New StmtExpr( New DeclStmt( tmp ),lhs )
 			Else
@@ -330,7 +331,7 @@ Class Parser
 	Method RealPath$( path$ )	
 		Local popDir$=CurrentDir()
 		ChangeDir ExtractDir( _toker.Path() )
-		path=system.RealPath( path )
+		path=os.RealPath( path )
 		ChangeDir popDir
 		Return path
 	End
@@ -369,7 +370,7 @@ Class Parser
 	End
 	
 	Method AtEos()
-		Return _toke="" Or _toke="~n" Or _toke="else"
+		Return _toke="" Or _toke=";" Or _toke="~n" Or _toke="else"
 	End
 	
 	Method SkipEols()
@@ -496,7 +497,7 @@ Class Parser
 						toker.NextToke
 						toker.SkipSpace
 						Select toker.Toke().ToLower()
-						Case ".","(","[","","~n","else"
+						Case ".","(","[","",";","~n","else"
 							eat=True
 						End
 						Exit
@@ -1054,6 +1055,8 @@ Class Parser
 	Method ParseStmt()
 		SetErr
 		Select _toke
+		Case ";","~n"
+			NextToke
 		Case "const","local"
 			ParseDeclStmts
 		Case "return"
@@ -1072,8 +1075,6 @@ Class Parser
 			ParseForStmt()
 		Case "select"
 			ParseSelectStmt()
-		Case "~n"
-			NextToke
 		Default
 			Local expr:Expr=ParsePrimaryExpr( True )
 			

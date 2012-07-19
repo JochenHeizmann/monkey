@@ -14,7 +14,7 @@ Import jstranslator
 Import parser
 Import config
 Import stmt
-Import system
+Import os	'system
 Import toker
 Import translator
 Import type

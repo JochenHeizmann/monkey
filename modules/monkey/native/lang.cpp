@@ -152,18 +152,6 @@ void gc_collect(){
 #endif
 }
 
-void gc_mark( char t ){
-}
-
-void gc_mark( wchar_t t ){
-}
-
-void gc_mark( int t ){
-}
-
-void gc_mark( float t ){
-}
-
 void gc_mark( gc_object *p ){
 	if( !p || (p->flags & 1)==gc_markbit ) return;
 	p->flags^=1;
@@ -176,15 +164,6 @@ void gc_mark_q( gc_object *p ){
 	p->flags^=1;
 	++gc_marked;
 	gc_marked_queue.push_back( p );
-}
-
-//array of values
-template<class T> void gc_mark( int n,T *p ){
-}
-
-//array of objects/interfaces
-template<class T> void gc_mark( int n,T **p ){
-	for( int i=0;i<n;++i ) gc_mark( p[i] );
 }
 
 // ***** Monkey Types *****
@@ -217,19 +196,20 @@ template<class T> int t_strlen( const T *p ){
 }
 
 template<class T> T *t_create( int n,T *p ){
-//	for( int i=0;i<n;++i ) new( &p[i] ) T();
 	t_memset( p,0,n );
 	return p+n;
 }
 
 template<class T> T *t_create( int n,T *p,const T *q ){
-//	for( int i=0;i<n;++i ) new( &p[i] ) T( q[i] );
 	t_memcpy( p,q,n );
 	return p+n;
 }
 
 template<class T> void t_destroy( int n,T *p ){
-//	for( int i=0;i<n;++i ) p[i].~String();
+}
+
+//for int, float etc arrays...needs to go before Array<> decl to shut xcode 4.0.2 up.
+template<class T> void gc_mark_array( int n,T *p ){
 }
 
 template<class T> class Array{
@@ -327,9 +307,9 @@ public:
 		}
 		
 		void mark(){
-			gc_mark( length,data );
+			gc_mark_array( length,data );
 		}
-
+		
 		static Rep *alloc( int length ){
 			void *p=gc_malloc( sizeof(Rep)+length*sizeof(T) );
 			return ::new(p) Rep( length );
@@ -347,6 +327,20 @@ template<class T> void gc_mark( Array<T> &t ){
 	gc_mark( t.rep );
 }
 
+//for int, float etc arrays...
+//template<class T> void gc_mark_array( int n,T *p ){
+//}
+
+//for object arrays....
+template<class T> void gc_mark_array( int n,T **p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i] );
+}
+
+//for array arrays...
+template<class T> void gc_mark_array( int n,Array<T> *p ){
+	for( int i=0;i<n;++i ) gc_mark( p[i] );
+}
+		
 // ***** String *****
 
 class String{
@@ -685,12 +679,6 @@ private:
 	}
 };
 
-void gc_mark( String &t ){
-}
-
-void gc_mark( int n,String *p ){
-}
-
 String *t_create( int n,String *p ){
 	for( int i=0;i<n;++i ) new( &p[i] ) String();
 	return p+n;
@@ -735,34 +723,23 @@ struct gc_interface{
 	virtual ~gc_interface(){}
 };
 
-//holds a pointer to an interface
 template<class T>
 struct gc_iptr{
 	T *p;
-	
-	gc_iptr(T *p=0):p(p){}
-	
-	gc_iptr &operator=(T*p){ this->p=p;return *this; }
-	
-	operator T*(){ return p; }
-	
-	T *operator->(){ return p; }
-	
-	operator Object*(){ return dynamic_cast<Object*>(p); }
 };
 
-//mark iptr value
-template<class T> void gc_mark( gc_iptr<T> &i ){
-	gc_mark(i.p);
+template<class T> void gc_mark( gc_iptr<T> i ){
+	gc_mark( dynamic_cast<gc_object*>(i.p) );
+}
+
+template<class T> void gc_mark_q( gc_iptr<T> i ){
+	gc_mark_q( dynamic_cast<gc_object*>(i.p) );
 }
 
 //mark array of iptrs
-template<class T> void gc_mark( int n,gc_iptr<T> *p ){
-	for( int i=0;i<n;++i ) gc_mark( p[i].p );
+template<class T> void gc_mark_array( int n,gc_iptr<T> *p ){
+	for( int i=0;i<n;++i ) gc_mark( dynamic_cast<gc_object*>( p[i].p ) );
 }
-
-//create tmp iptr - yuck, fix!
-template<class T> gc_iptr<T> GC_IPTR( T *p ){ return gc_iptr<T>(p); }
 
 //**** main ****
 

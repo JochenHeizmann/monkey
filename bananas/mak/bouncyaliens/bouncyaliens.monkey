@@ -98,7 +98,7 @@ Class MyApp Extends App
 		Scale DeviceWidth/WIDTH,DeviceHeight/HEIGHT
 		
 		For Local sprite:=Eachin sprites
-			DrawImage image,sprite.x,sprite.y,0,5,5,sprite.f
+			DrawImage image,sprite.x,sprite.y,0,3,3,sprite.f
 		Next
 		
 		PopMatrix

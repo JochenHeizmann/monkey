@@ -87,7 +87,10 @@ Class Test Extends App
 		SetAlpha Sin(Millisecs*.3)*.5+.5
 		DrawImage image,320,240,0
 		SetAlpha 1
-		
+
+		SetColor 255,0,128
+		DrawPoly( [ 160.0,232.0, 320.0,224.0, 480.0,232.0, 480.0,248.0, 320.0,256.0, 160.0,248.0 ] )
+				
 		SetColor 255,255,255
 		DrawText "The Quick Brown Fox Jumps Over The Lazy Dog",320,240,.5,.5
 		

@@ -1115,6 +1115,20 @@ Class ClassDecl Extends ScopeDecl
 		
 		If Not IsInterface()
 			'
+			'check for duplicate fields!
+			'
+			For Local decl:=Eachin Semanted
+				Local fdecl:=FieldDecl( decl )
+				If Not fdecl Continue
+				Local cdecl:=superClass
+				While cdecl
+					For Local decl:=Eachin cdecl.Semanted
+						If decl.ident=fdecl.ident Err "Field '"+fdecl.ident+"' in class "+ToString()+" overrides existing declaration in class "+cdecl.ToString()
+					Next
+					cdecl=cdecl.superClass
+				Wend
+			Next
+			'
 			'Check we implement all abstract methods!
 			'
 			If IsInstanced()

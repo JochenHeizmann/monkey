@@ -34,7 +34,7 @@ Class CppTranslator Extends Translator
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
 			If StringType( ty ) Return "String()"
-			If ArrayType( ty ) Return "Array<"+TransType( ArrayType(ty).elemType )+" >()"
+			If ArrayType( ty ) Return "Array<"+TransRefType( ArrayType(ty).elemType )+" >()"
 			If ObjectType( ty ) Return "0"
 		Endif
 		InternalErr
@@ -158,7 +158,7 @@ Class CppTranslator Extends Translator
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
 		Local texpr$=expr.expr.Trans()
 		'
-		Return "Array<"+TransType( expr.ty )+" >"+Bra( expr.expr.Trans() )
+		Return "Array<"+TransRefType( expr.ty )+" >"+Bra( expr.expr.Trans() )
 	End
 		
 	Method TransSelfExpr$( expr:SelfExpr )
@@ -209,19 +209,22 @@ Class CppTranslator Extends Translator
 		Local pri=ExprPri( expr )
 		Local t_lhs$=TransSubExpr( expr.lhs,pri )
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
-		Return t_lhs+TransBinaryOp( expr.op )+t_rhs
+		Return t_lhs+TransBinaryOp( expr.op,t_rhs )+t_rhs
 	End
 	
 	Method TransIndexExpr$( expr:IndexExpr )
+	
 		Local t_expr:=TransSubExpr( expr.expr )
 		Local t_index:=expr.index.Trans()
-		If StringType( expr.expr.exprType ) 
-			Return "(int)"+t_expr+"["+t_index+"]"		
-		Else If ENV_CONFIG="debug"
-			Return t_expr+".At("+t_index+")"
-		Else
-			Return t_expr+"["+t_index+"]"
-		Endif
+		
+		If StringType( expr.expr.exprType ) Return "(int)"+t_expr+"["+t_index+"]"
+		
+		Local swiz$
+		If ObjectType( expr.exprType )And expr.exprType.GetClass().IsInterface() swiz=".p"
+		
+		If ENV_CONFIG="debug" Return t_expr+".At("+t_index+")"+swiz
+		
+		Return t_expr+"["+t_index+"]"+swiz
 	End
 	
 	Method TransSliceExpr$( expr:SliceExpr )
@@ -249,7 +252,7 @@ Class CppTranslator Extends Translator
 
 		Emit tt+TransType( elemType )+" "+tmp.munged+"[]={"+t+"};"
 		
-		Return "Array<"+TransType( elemType )+" >("+tmp.munged+","+expr.exprs.Length+")"
+		Return "Array<"+TransRefType( elemType )+" >("+tmp.munged+","+expr.exprs.Length+")"
 	End
 
 	Method TransIntrinsicExpr$( decl:Decl,expr:Expr,args:Expr[] )
@@ -311,9 +314,9 @@ Class CppTranslator Extends Translator
 		Local rhs:=stmt.rhs.Trans()
 		Local lhs:=stmt.lhs.TransVar()
 		
-		If ObjectType( stmt.rhs.exprType )
-			If stmt.rhs.exprType.GetClass().IsInterface() rhs="GC_IPTR"+Bra(rhs)
-		Endif
+'		If ObjectType( stmt.rhs.exprType )
+'			If stmt.rhs.exprType.GetClass().IsInterface() rhs="GC_IPTR"+Bra(rhs)
+'		Endif
 
 		Return lhs+TransAssignOp( stmt.op )+rhs
 	End
@@ -474,8 +477,15 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method EmitMark( id$,ty:Type,queue? )
+	
 		If ObjectType( ty )
-			If id.EndsWith( ".p" ) id=id[..-2]
+		
+			If id.EndsWith( ".p" )
+				If ty.GetClass().IsInterface() id=id[..-2] Else InternalErr
+			Else 
+				If ty.GetClass().IsInterface() InternalErr
+			Endif
+
 			If queue
 				Emit "gc_mark_q("+id+");"
 			Else
@@ -505,7 +515,7 @@ Class CppTranslator Extends Translator
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
 			If Not fdecl Continue
-			Emit fdecl.munged+"="+fdecl.init.Trans()+";"
+			Emit TransField(fdecl,Null)+"="+fdecl.init.Trans()+";"
 		Next
 		Emit "}"
 		
@@ -530,9 +540,9 @@ Class CppTranslator Extends Translator
 		If classDecl.superClass 
 			Emit classDecl.superClass.actual.munged+"::mark();"
 		Endif
-		For Local tdecl:=Eachin classDecl.Semanted
-			Local decl:=FieldDecl( tdecl )
-			If decl EmitMark decl.munged,decl.ty,True
+		For Local decl:=Eachin classDecl.Semanted
+			Local fdecl:=FieldDecl( decl )
+			If fdecl EmitMark TransField(fdecl,Null),fdecl.ty,True
 		Next
 		Emit "}"
 	

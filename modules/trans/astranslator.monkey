@@ -190,7 +190,7 @@ Class AsTranslator Extends Translator
 		Local pri=ExprPri( expr )
 		Local t_lhs$=TransSubExpr( expr.lhs,pri )
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
-		Local t_expr$=t_lhs+TransBinaryOp( expr.op )+t_rhs
+		Local t_expr$=t_lhs+TransBinaryOp( expr.op,t_rhs )+t_rhs
 		If expr.op="/" And IntType( expr.exprType ) t_expr=Bra( Bra(t_expr)+"|0" )
 		Return t_expr
 	End

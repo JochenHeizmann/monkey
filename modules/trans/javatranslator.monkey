@@ -140,6 +140,8 @@ Class JavaTranslator Extends Translator
 		Local texpr$=expr.expr.Trans()
 		Local elemTy:=ArrayType( expr.exprType ).elemType
 		'
+		If StringType( elemTy ) Return "bb_std_lang.stringArray"+Bra(texpr)
+		'		
 		Local t$="["+texpr+"]"
 		While ArrayType( elemTy )
 			elemTy=ArrayType( elemTy ).elemType
@@ -206,13 +208,13 @@ Class JavaTranslator Extends Translator
 		
 		'String compare
 		If BinaryCompareExpr( expr ) And StringType( expr.lhs.exprType ) And StringType( expr.rhs.exprType )
-			Return Bra( lhs+".compareTo"+Bra(rhs)+TransBinaryOp( expr.op )+"0" )
+			Return Bra( lhs+".compareTo"+Bra(rhs)+TransBinaryOp( expr.op,"" )+"0" )
 		Endif
 		
 		Local pri=ExprPri( expr )
 		If ExprPri( expr.lhs )>pri lhs=Bra( lhs )
 		If ExprPri( expr.rhs )>=pri rhs=Bra( rhs )
-		Return lhs+TransBinaryOp( expr.op )+rhs
+		Return lhs+TransBinaryOp( expr.op,rhs )+rhs
 	End
 	
 	Method TransIndexExpr$( expr:IndexExpr )

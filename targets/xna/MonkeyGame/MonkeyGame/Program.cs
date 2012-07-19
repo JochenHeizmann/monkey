@@ -48,11 +48,19 @@ public class MonkeyData{
 	}
 	
 	public static Texture2D LoadTexture2D( String path,ContentManager content ){
-		return content.Load<Texture2D>( "Content/"+path );
+		try{
+			return content.Load<Texture2D>( "Content/"+path );
+		}catch( Exception ){
+		}
+		return null;
 	}
 
 	public static SoundEffect LoadSoundEffect( String path,ContentManager content ){
-		return content.Load<SoundEffect>( "Content/"+path );
+		try{
+			return content.Load<SoundEffect>( "Content/"+path );
+		}catch( Exception ){
+		}
+		return null;
 	}
 	
 };

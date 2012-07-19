@@ -137,6 +137,8 @@ Class CsTranslator Extends Translator
 		Local texpr$=expr.expr.Trans()
 		Local elemTy:=ArrayType( expr.exprType ).elemType
 		'
+		If StringType( elemTy ) Return "bb_std_lang.stringArray"+Bra(texpr)
+		'		
 		Local t$="["+texpr+"]"
 		While ArrayType( elemTy )
 			elemTy=ArrayType( elemTy ).elemType
@@ -197,12 +199,12 @@ Class CsTranslator Extends Translator
 	
 	Method TransBinaryExpr$( expr:BinaryExpr )
 		If BinaryCompareExpr( expr ) And StringType( expr.lhs.exprType ) And StringType( expr.rhs.exprType )
-			Return Bra( TransSubExpr( expr.lhs )+".CompareTo("+expr.rhs.Trans()+")"+TransBinaryOp( expr.op )+"0" )
+			Return Bra( TransSubExpr( expr.lhs )+".CompareTo("+expr.rhs.Trans()+")"+TransBinaryOp( expr.op,"" )+"0" )
 		Endif
 		Local pri=ExprPri( expr )
 		Local t_lhs$=TransSubExpr( expr.lhs,pri )
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
-		Return t_lhs+TransBinaryOp( expr.op )+t_rhs
+		Return t_lhs+TransBinaryOp( expr.op,t_rhs )+t_rhs
 
 	End
 	

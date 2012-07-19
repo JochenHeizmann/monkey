@@ -1,6 +1,50 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V43 *****
+
+Modules:
+
+Added os module - see docs.
+
+Added DrawPoly( xy_verts#[] ).
+
+Android mojo now requires GL1.1.
+
+Implemented VBOs in android mojo.
+
+Changed lang.java print 'log tag' to [Monkey] - ie: removed WS.
+
+iOS mojo back to using imageNamed for image loading.
+
+
+Trans (1.16):
+
+Added 'uses feature gl1.1' to android manifest.
+
+Added user edittable HICOLOR_TEXTURES global bool var to MonkeyGame.java for android target.
+
+Another fix for issues with ++, -- in output code.
+
+Fields cannot override existing field of same name.
+
+Fixed +=, -= etc crash with properties.
+
+New C#/Java string arrays now inited with empty strings, not nulls.
+
+More fixes for c++ interfaces.
+
+Unicode comments now allowed in Monkey source.
+
+XNA target now handles Content.Load<T> exceptions and returns null.
+
+Added ; statement separator - use to separate multiple statements on the same line.
+
+
+***** V42b *****
+
+Fixed C++ array of arrays GC issue in monkey lang.cpp
+
 
 ***** V42 *****
 

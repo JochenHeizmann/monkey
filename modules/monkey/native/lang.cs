@@ -42,6 +42,12 @@ public class bb_std_lang{
 	
 	//***** String stuff *****
 	
+	static public String[] stringArray( int n ){
+		String[] t=new String[n];
+		for( int i=0;i<n;++i ) t[i]="";
+		return t;
+	}
+	
 	static public String slice( String str,int from ){
 		return slice( str,from,str.Length );
 	}

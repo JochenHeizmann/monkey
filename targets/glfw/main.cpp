@@ -29,7 +29,11 @@ void GameMain(){
 //${TRANSCODE_END}
 
 FILE *fopenFile( String path,const char *mode ){
+#if _WIN32
+	return _wfopen( (String("data/")+path).ToCString<wchar_t>(),L"rb" );
+#else
 	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+#endif
 }
 
 unsigned char *loadImage( String path,int *width,int *height,int *depth ){

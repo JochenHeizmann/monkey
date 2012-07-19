@@ -238,10 +238,12 @@ Class VarExpr Extends Expr
 	End
 	
 	Method Trans$()
+		Semant
 		Return _trans.TransTemplateCast( exprType,VarDecl(decl.actual).ty,_trans.TransVarExpr( Self ) )
 	End
 	
 	Method TransVar$()
+		Semant
 		Return _trans.TransVarExpr( Self )
 	End
 	

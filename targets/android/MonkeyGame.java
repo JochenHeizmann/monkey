@@ -8,7 +8,8 @@ package com.monkey;
 
 class MonkeyData{
 
-	//should have setAssets...
+	static final boolean HICOLOR_TEXTURES=true;		//true=32 bit textures, false=16 bit
+
 	static AssetManager getAssets(){
 		return MonkeyGame.activity.getAssets();
 	}

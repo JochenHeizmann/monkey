@@ -101,7 +101,7 @@ Class Target
 		If FileType( targetPath )=FILETYPE_NONE
 			If FileType( buildPath )=FILETYPE_NONE CreateDir buildPath
 			If FileType( buildPath )<>FILETYPE_DIR Die "Failed to create build dir: "+buildPath
-			If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath ) Die "Failed to copy target dir"
+			If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath,True,False ) Die "Failed to copy target dir"
 		Endif
 
 		If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
@@ -117,7 +117,7 @@ Class Target
 		DeleteDir dir,True
 		CreateDir dir
 		If FileType( dataPath )=FILETYPE_DIR
-			CopyDir dataPath,dir,False		'false=don't copy hidden files...
+			CopyDir dataPath,dir,True,False
 		Endif
 		
 		For Local file$=Eachin app.fileImports
@@ -150,7 +150,7 @@ Class Target
 		
 		If Not embedTextFiles Return
 		
-		For Local f$=Eachin LoadDir( dir,True )
+		For Local f$=Eachin LoadDir( dir,True,False )
 
 			Local p$=dir+"/"+f
 			If FileType(p)<>FILETYPE_FILE Continue
@@ -192,7 +192,7 @@ Class Target
 	'Execute a shell cmd
 	'
 	Method Execute( cmd$,failHard=True )
-		Local r=system.Execute( cmd )
+		Local r=os.Execute( cmd )
 		If Not r Return True
 		If failHard Die "TRANS Failed to execute '"+cmd+"', return code="+r
 		Return False
