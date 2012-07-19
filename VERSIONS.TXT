@@ -1,12 +1,14 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V56 *****
+***** V56b *****
 
 Added app config var MOJO_AUTO_SUSPEND_ENABLED (defaults to false) to auto suspend app if it loses input focus. Apps always auto-suspend if minimized. Doesn't apply to ios/android.
 
 
 Trans (v1.32)
+
+Fixed monk not going to compile error line.
 
 Fixed iOS target so it's xcode 4.3.1 aware - NOTE: you will also have to run this from the command line after installing xcode 4.3.1:
 

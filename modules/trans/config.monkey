@@ -40,10 +40,10 @@ Function PopErr()
 End
 
 Function Err( err$ )
-	Print _errInfo+" : "+err
-	Error _errInfo+" : "+err
-'	Print _errInfo+" : Error : "+err
-'	ExitApp -1
+'	Print _errInfo+" : "+err
+'	Error _errInfo+" : "+err
+	Print _errInfo+" : Error : "+err
+	ExitApp -1
 End
 
 Function InternalErr( err$="Internal error" )
