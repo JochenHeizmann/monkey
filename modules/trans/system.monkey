@@ -211,6 +211,10 @@ Function CopyDir( srcpath$,dstpath$,hidden=True )
 	If FileType( srcpath )<>FILETYPE_DIR
 		Return False
 	Endif
+
+	'do this before create of destdir to allow a dir to be copy into itself!
+	'
+	Local files:=LoadDir( srcpath )
 	
 	Select FileType( dstpath )
 	Case FILETYPE_NONE 
@@ -219,7 +223,7 @@ Function CopyDir( srcpath$,dstpath$,hidden=True )
 		Return False
 	End
 	
-	For Local f$=Eachin LoadDir( srcpath )
+	For Local f$=Eachin files
 		If hidden
 			If f="." Or f=".." Continue
 		Else

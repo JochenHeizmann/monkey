@@ -1,6 +1,43 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V33 *****
+
+Modules:
+
+Added experimental DOM module - see gldemo.monkey in modules/dom.
+
+Tweaked html5 update rate timing code - shouldn't 'leak' time anymore and may be smoother on some browsers? More work needed here...
+
+Only Chrome/Safari use localStorage for LoadState/SaveState, others now use cookies. IE9 doesn't like localStorage at all, and FF doesn't like it with file:// documents.
+
+iOS accelerometer now tries to compensate for UI orientation - you should still lock accelerometer 
+games to a single orientation though.
+
+Fixed iOS screen saver with accelerometer based games.
+
+Changed some android defaults in manifest - fullscreen theme + no reset on orientation change.
+
+Fixed glPixelStorei unpack alignment for GLFW target. Added fox to iOS too.
+
+Fixed line thickness scaling in Flash.
+
+Added checks to mojo graphics to ensure rendering commands are only performed inside OnRender.
+
+Fixed xna mojo reach mode additive blending.
+
+
+Trans:
+
+Android manifest and various other files moved to .build/android/templates - edit these, not the generated copies in .build/android.
+
+Android app renamer added - see .build/android/CONFIG.TXT after first build.
+
+Split trans.monkey driver into target-per-file layout.
+
+Fixed array indices not being int-ized.
+
+
 ***** V32 *****
 
 Modules:

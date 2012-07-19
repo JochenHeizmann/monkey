@@ -258,9 +258,10 @@ Class JsTranslator Extends Translator
 		Case "fromchar" Return "String.fromCharCode"+Bra( arg0 )
 		'
 		'math functions
-		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*0.0174532925" )
-		Case "asin","acos","atan" Return Bra( "Math."+id+Bra( arg0 )+"*57.2957795" )
-		Case "atan2" Return Bra( "Math."+id+Bra( arg0+","+arg1 )+"*57.2957795" )
+		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*D2R" )
+		Case "asin","acos","atan" Return Bra( "Math."+id+Bra( arg0 )+"*R2D" )
+		Case "atan2" Return Bra( "Math."+id+Bra( arg0+","+arg1 )+"*R2D" )
+		'
 		Case "sqrt","floor","ceil","log" Return "Math."+id+Bra( arg0 )
 		Case "pow" Return "Math."+id+Bra( arg0+","+arg1 )
 		'

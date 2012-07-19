@@ -4,12 +4,12 @@
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
 
-	<view class="com.monkey.MonkeyGame$MonkeyView"
+	<view class="${APP_PACKAGE}.MonkeyGame$MonkeyView"
     	android:id="@+id/monkeyview"
 		android:keepScreenOn="true"
   		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-	    />
+		/>
 	
 </LinearLayout>
 

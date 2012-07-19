@@ -289,9 +289,10 @@ Class JavaTranslator Extends Translator
 		Case "fromchar" Return "String.valueOf"+Bra("(char)"+Bra( arg0 ) )
 		'
 		'math methods
-		Case "sin","cos","tan" Return "(float)Math."+id+Bra( Bra(arg0)+"*0.0174532925" )
-		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id+Bra(arg0)+"*57.2957795" )
-		Case "atan2" Return "(float)"+Bra( "Math."+id+Bra(arg0+","+arg1)+"*57.2957795" )
+		Case "sin","cos","tan" Return "(float)Math."+id+Bra( Bra(arg0)+"*bb_std_lang.D2R" )
+		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id+Bra(arg0)+"*bb_std_lang.R2D" )
+		Case "atan2" Return "(float)"+Bra( "Math."+id+Bra(arg0+","+arg1)+"*bb_std_lang.R2D" )
+		'
 		Case "sqrt","floor","ceil","log" Return "(float)Math."+id+Bra(arg0)
   		Case "pow" Return "(float)Math."+id+Bra( arg0+","+arg1 )
 		'

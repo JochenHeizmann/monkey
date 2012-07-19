@@ -649,6 +649,9 @@ const char **argv;
 const char *errInfo="";
 std::vector<const char*> errStack;
 
+float D2R=0.017453292519943295f;
+float R2D=57.29577951308232f;
+
 void pushErr(){
 	errStack.push_back( errInfo );
 }

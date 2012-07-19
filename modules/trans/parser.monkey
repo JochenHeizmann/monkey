@@ -1679,6 +1679,7 @@ Function Eval$( source$,ty:Type )
 	env.InsertDecl New ConstDecl( "HOST",Type.stringType,New ConstExpr( Type.stringType,ENV_HOST ),0 )
 	env.InsertDecl New ConstDecl( "LANG",Type.stringType,New ConstExpr( Type.stringType,ENV_LANG ),0 )
 	env.InsertDecl New ConstDecl( "TARGET",Type.stringType,New ConstExpr( Type.stringType,ENV_TARGET ),0 )
+	env.InsertDecl New ConstDecl( "CONFIG",Type.stringType,New ConstExpr( Type.stringType,ENV_CONFIG ),0 )
 	
 	PushEnv env
 	

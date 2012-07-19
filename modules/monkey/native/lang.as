@@ -8,7 +8,9 @@
 
 var err_info:String="";
 var err_stack:Array=[];
-var _console:TextField=null;
+
+var D2R:Number=0.017453292519943295;
+var R2D:Number=57.29577951308232;
 
 function push_err():void{
 	err_stack.push( err_info );

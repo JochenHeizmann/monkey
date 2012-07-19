@@ -267,9 +267,9 @@ Class CppTranslator Extends Translator
 		Case "fromchar" Return "String"+Bra( "(Char)"+Bra(arg0)+",1" )
 
 		'math methods
-		Case "sin","cos","tan" Return "(float)"+id+Bra( Bra(arg0)+"*0.0174532925" )
-		Case "asin","acos","atan" Return "(float)"+Bra( id+Bra(arg0)+"*57.2957795" )
-		Case "atan2" Return "(float)"+Bra( id+Bra(arg0+","+arg1)+"*57.2957795" )
+		Case "sin","cos","tan" Return "(float)"+id+Bra( Bra(arg0)+"*D2R" )
+		Case "asin","acos","atan" Return "(float)"+Bra( id+Bra(arg0)+"*R2D" )
+		Case "atan2" Return "(float)"+Bra( id+Bra(arg0+","+arg1)+"*R2D" )
 		Case "sqrt","floor","ceil","log" Return "(float)"+id+Bra( arg0 )
 		Case "pow" Return "(float)"+id+Bra( arg0+","+arg1 )
 		'

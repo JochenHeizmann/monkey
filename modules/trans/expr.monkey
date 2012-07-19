@@ -48,7 +48,13 @@ Class Expr
 	Method TransVar$()
 		InternalErr
 	End
-	
+
+	'semant and cast
+	Method Semant:Expr( ty:Type,castFlags=0 )
+		If exprType.EqualsType( ty ) Return Self
+		Return New CastExpr( ty,Self,castFlags ).Semant()
+	End
+
 	'expr and ty already semanted!
 	Method CastTo:Expr( ty:Type,castFlags=0 )
 		If exprType.EqualsType( ty ) Return Self
@@ -811,7 +817,7 @@ Class IndexExpr Extends Expr
 		If exprType Return Self
 	
 		expr=expr.Semant()
-		index=index.Semant()
+		index=index.Semant().CastTo( Type.intType )
 		
 		If StringType( expr.exprType )
 			exprType=Type.intType

@@ -12,6 +12,9 @@ public class bb_std_lang{
 	public static String errInfo="";
 	public static List<String> errStack=new List<String>();
 	
+	public const float D2R=0.017453292519943295f;
+	public const float R2D=57.29577951308232f;
+	
 	public static void pushErr(){
 		errStack.Add( errInfo );
 	}

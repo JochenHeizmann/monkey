@@ -15,6 +15,9 @@ class bb_std_lang{
 	static String errInfo="";
 	static Vector errStack=new Vector();
 	
+	static float D2R=0.017453292519943295f;
+	static float R2D=57.29577951308232f;
+	
 	static void pushErr(){
 		errStack.addElement( errInfo );
 	}

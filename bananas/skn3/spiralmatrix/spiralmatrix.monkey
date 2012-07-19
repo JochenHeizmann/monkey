@@ -7,6 +7,7 @@ End
 
 Class MyApp Extends App
 	Method OnCreate()
+		
 		Local segment:Segment
 		
 		segment = New Segment(20,460,255,0,0,Null)

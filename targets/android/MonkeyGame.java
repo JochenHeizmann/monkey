@@ -1,4 +1,8 @@
 
+//${PACKAGE_BEGIN}
+import com.monkey;
+//${PACKAGE_END}
+
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
 

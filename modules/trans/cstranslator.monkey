@@ -295,9 +295,10 @@ Class CsTranslator Extends Translator
 		Case "fromchar" Return "new String"+Bra("(char)"+Bra( arg0 )+",1")
 		'
 		'math functions
-		Case "sin","cos","tan" Return "(float)Math."+id2+Bra( Bra(arg0)+"*0.0174532925" )
-		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id2+Bra(arg0)+"*57.2957795" )
-		Case "atan2" Return "(float)"+Bra( "Math."+id2+Bra(arg0+","+arg1)+"*57.2957795" )
+		Case "sin","cos","tan" Return "(float)Math."+id2+Bra( Bra(arg0)+"*bb_std_lang.D2R" )
+		Case "asin","acos","atan" Return "(float)"+Bra( "Math."+id2+Bra(arg0)+"*bb_std_lang.R2D" )
+		Case "atan2" Return "(float)"+Bra( "Math."+id2+Bra(arg0+","+arg1)+"*bb_std_lang.R2D" )
+		'
 		Case "sqrt","floor","log" Return "(float)Math."+id2+Bra(arg0)
 		Case "ceil" Return "(float)Math.Ceiling"+Bra(arg0)
 		Case "pow" Return "(float)Math."+id2+Bra( arg0+","+arg1 )

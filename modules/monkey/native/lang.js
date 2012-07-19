@@ -9,6 +9,9 @@
 var err_info="";
 var err_stack=[];
 
+var D2R=0.017453292519943295;
+var R2D=57.29577951308232;
+
 function push_err(){
 	err_stack.push( err_info );
 }

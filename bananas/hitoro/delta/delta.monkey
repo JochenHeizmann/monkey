@@ -38,7 +38,7 @@ End
 
 Class Game Extends App
 
-	Global FPS:Int = 60
+	Global FPS:Int = 100
 	
 	' Position/speed of example rects...
 	
@@ -49,7 +49,7 @@ Class Game Extends App
 	Field dt:DeltaTimer				' A handle for the delta timer (to be created in OnCreate)
 	
 	Method OnCreate ()
-		dt = New DeltaTimer (60)	'  Gameplay update rate...
+		dt = New DeltaTimer ( FPS )	'  Gameplay update rate...
 		SetUpdateRate FPS			' ... may be different to device/app update rate!
 	End
 	

@@ -14,27 +14,24 @@ Extern
 Function Sin#( n# )="$sin"
 Function Cos#( n# )="$cos"
 Function Tan#( n# )="$tan"
-
 Function ASin#( n# )="$asin"
 Function ACos#( n# )="$acos"
 Function ATan#( n# )="$atan"
 Function ATan2#( x#,y# )="$atan2"
 
-'TODO: radian version
-'Function Sinr#( n# )="$sin"
-'Function Cosr#( n# )="$cos"
-'Function Tanr#( n# )="$tan"
-
-'Function ASinr#( n# )="$asin"
-'Function ACosr#( n# )="$acos"
-'Function ATanr#( n# )="$atan"
-'Function ATan2r#( x#,y# )="$atan2"
+'These version in radians...
+'Function Sinr#( n# )="$sinr"
+'Function Cosr#( n# )="$cosr"
+'Function Tanr#( n# )="$tanr"
+'Function ASinr#( n# )="$asinr"
+'Function ACosr#( n# )="$acosr"
+'Function ATanr#( n# )="$atanr"
+'Function ATan2r#( x#,y# )="$atan2r"
 
 Function Sqrt#( n# )="$sqrt"
 Function Floor#( n# )="$floor"
 Function Ceil#( n# )="$ceil"
 Function Log#( n# )="$log"
-
 Function Pow#( x#,y# )="$pow"
 
 Public
