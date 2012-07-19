@@ -64,25 +64,25 @@ int main( int argc,const char *argv[] ){
 		puts( "glfwInit failed" );
 		exit( -1 );
 	}
-	
+
 	GLFWvidmode desktopMode;
 	glfwGetDesktopMode( &desktopMode );
 	
-	int w=CFG_WINDOW_WIDTH;
+	int w=CFG_GLFW_WINDOW_WIDTH;
 	if( !w ) w=desktopMode.Width;
 	
-	int h=CFG_WINDOW_HEIGHT;
+	int h=CFG_GLFW_WINDOW_HEIGHT;
 	if( !h ) h=desktopMode.Height;
 	
-	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,CFG_WINDOW_RESIZABLE ? GL_FALSE : GL_TRUE );
+	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,CFG_GLFW_WINDOW_RESIZABLE ? GL_FALSE : GL_TRUE );
 	
-	if( !glfwOpenWindow( w,h, 0,0,0,0,CFG_DEPTH_BUFFER_ENABLED ? 32 : 0,0,CFG_WINDOW_FULLSCREEN ? GLFW_FULLSCREEN : GLFW_WINDOW  ) ){
+	if( !glfwOpenWindow( w,h, 0,0,0,0,CFG_OPENGL_DEPTH_BUFFER_ENABLED ? 32 : 0,0,CFG_GLFW_WINDOW_FULLSCREEN ? GLFW_FULLSCREEN : GLFW_WINDOW  ) ){
 		fail( "glfwOpenWindow failed" );
 	}
 
 	glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );	
 
-	glfwSetWindowTitle( CFG_WINDOW_TITLE );
+	glfwSetWindowTitle( CFG_GLFW_WINDOW_TITLE );
 	
 	if( (alcDevice=alcOpenDevice( 0 )) ){
 		if( (alcContext=alcCreateContext( alcDevice,0 )) ){
@@ -97,6 +97,10 @@ int main( int argc,const char *argv[] ){
 	}else{
 		warn( "alcOpenDevice failed" );
 	}
+	
+#ifdef INITGLES20
+	InitGLES20();
+#endif
 	
 	try{
 	

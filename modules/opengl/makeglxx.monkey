@@ -103,17 +103,21 @@ End
 
 Function MakeGL20()
 
+	Local kludge_glfw,kludge_android,kludge_ios,kludge_html5
+
 	Local const_decls:=New StringStack
-	Local html5_decls:=New StringStack
 	Local glfw_decls:=New StringStack
-	Local ios_decls:=New StringStack
 	Local android_decls:=New StringStack
+	Local ios_decls:=New StringStack
+	Local html5_decls:=New StringStack
 
 	Print "Parsing gles20_src.txt"
 		
 	Local src:=LoadString( "gles20_src.txt" )
 	
 	Local lines:=src.Split( "~n" )
+	
+	Local last_id$,rep_id
 	
 	For Local line:=Eachin lines
 	
@@ -123,6 +127,25 @@ Function MakeGL20()
 		
 			const_decls.Push( line )
 			
+		Else If line.StartsWith( "Kludge " )
+		
+			kludge_glfw=False
+			kludge_android=False
+			kludge_ios=False
+			kludge_html5=False
+
+			If line.Contains( "all" )
+				kludge_glfw=True
+				kludge_android=True
+				kludge_ios=True
+				kludge_html5=True
+			Else
+				If line.Contains( "glfw" ) kludge_glfw=True
+				If line.Contains( "android" ) kludge_android=True
+				If line.Contains( "ios" ) kludge_ios=True
+				If line.Contains( "html5" ) kludge_html5=True
+			Endif
+
 		Else If line.StartsWith( "Function " )
 			Local i=line.Find( "(" )
 			If i<>-1
@@ -130,13 +153,41 @@ Function MakeGL20()
 				Local i2=id.Find( ":" )
 				If i2<>-1 id=id[..i2]
 				
-				html5_decls.Push line+"=~qgl."+id[2..3].ToLower()+id[3..]+"~q"
+				'GLFW!
+				If kludge_glfw
+					glfw_decls.Push line+"=~q_"+id+"~q"
+				Else
+					glfw_decls.Push line
+				Endif
 				
-				glfw_decls.Push line
+				'Android!
+				If kludge_android
+					android_decls.Push line+"=~qbb_opengl_gles20._"+id+"~q"
+				Else
+					android_decls.Push line+"=~qGLES20."+id+"~q"
+				Endif
 				
-				ios_decls.Push line
+				'ios!
+				If kludge_ios
+					ios_decls.Push line+"=~q_"+id+"~q"
+				Else
+					ios_decls.Push line
+				Endif
 				
-				android_decls.Push line+"=~qGLES20."+id+"~q"
+				'html5!
+				If kludge_html5
+					If id=last_id
+						rep_id+=1
+						html5_decls.Push line+"=~q_"+id+rep_id+"~q"
+					Else
+						last_id=id
+						rep_id=1
+						html5_decls.Push line+"=~q_"+id+"~q"
+					Endif
+				Else
+					last_id=""
+					html5_decls.Push line+"=~qgl."+id[2..3].ToLower()+id[3..]+"~q"
+				Endif
 				
 			Endif
 		Endif
@@ -148,10 +199,10 @@ Function MakeGL20()
 	Local dst:=LoadString( "gles20.monkey" )
 	
 	dst=ReplaceBlock( dst,"'${CONST_DECLS}","'${END}",const_decls.Join( "~n" ) )
-	dst=ReplaceBlock( dst,"'${HTML5_DECLS}","'${END}",html5_decls.Join( "~n" ) )
 	dst=ReplaceBlock( dst,"'${GLFW_DECLS}","'${END}",glfw_decls.Join( "~n" ) )
-	dst=ReplaceBlock( dst,"'${IOS_DECLS}","'${END}",ios_decls.Join( "~n" ) )
 	dst=ReplaceBlock( dst,"'${ANDROID_DECLS}","'${END}",android_decls.Join( "~n" ) )
+	dst=ReplaceBlock( dst,"'${IOS_DECLS}","'${END}",ios_decls.Join( "~n" ) )
+	dst=ReplaceBlock( dst,"'${HTML5_DECLS}","'${END}",html5_decls.Join( "~n" ) )
 
 '	Print dst	
 	SaveString dst,"gles20.monkey"
@@ -159,12 +210,85 @@ Function MakeGL20()
 	Print "Done!"
 End
 
+Function Toke$( text$ )
+	Local i=text.Find( " " )
+	If i=-1 Return text
+	Return text[..i]
+End
+
+Function Bump$( text$ )
+	Local i=text.Find( " " )
+	If i=-1 Return ""
+	Return text[i+1..].Trim()
+End
+
+Function MakeGL20_cpp()
+
+	Local gl:=LoadString( "GL.h" )
+	Local gl2:=LoadString( "gles20.h" )
+
+	Local decls:=New StringStack
+	Local inits:=New StringStack
+	
+	decls.Push "typedef char GLchar;"
+	decls.Push "typedef size_t GLintptr;"
+	decls.Push "typedef size_t GLsizeiptr;"
+	decls.Push "#define INITGLES20 1"
+		
+	For Local line:=Eachin gl2.Split( "~n" )
+	
+		line=line.Trim()
+		If Not line Continue
+		
+		Local tline:=line
+		
+		If Toke( line )="#define"
+			line=Bump( line )
+			Local id:=Toke( line )
+			If gl.Find( "#define "+id )=-1
+				line=Bump( line )
+				Local val:=Toke( line )
+				decls.Push "#define "+id+" "+val
+			Else
+				'Print "//"+tline
+			Endif
+		Else If Toke( line )="GL_APICALL"
+			line=Bump( line )
+			Local ret:=Toke( line )
+			line=Bump( line )
+			If Toke( line )="GL_APIENTRY"
+				line=Bump( line )
+				Local id:=Toke( line )
+				If gl.Find( "APIENTRY "+id )=-1
+					line=Bump( line )
+					Local args:=line
+					
+					decls.Push ret+"(__stdcall*"+id+")"+args
+					inits.Push "(void*&)"+id+"=wglGetProcAddress(~q"+id+"~q);"
+
+				Else
+					'Print "//"+tline
+				Endif
+			Endif
+		Endif
+	Next
+	
+	Local t:="#if _WIN32~n"+decls.Join("~n")+"~nvoid InitGLES20(){~n~t"+inits.Join( "~n~t" )+"~n}~n#endif~n"
+	
+	SaveString t,"native/gles20_win32_exts.cpp"
+		
+End
+
 Function Main()
 
 	ChangeDir "../../"
 
-	MakeGL11
+'	MakeGL11
 	
-'	MakeGL20
-	
+	MakeGL20
+
+'	MakeGL20_cpp
+
+	Print "Bye!"
+		
 End

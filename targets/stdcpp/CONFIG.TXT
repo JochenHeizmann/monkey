@@ -1,6 +1,3 @@
 
-' Garbage collection mode.
-'
-' Set to 1 for incremental GC, 0 for mark-and-sweep.
-'
-INCREMENTAL_GC=0
+CPP_INCREMENTAL_GC=1
+CPP_DOUBLE_PRECISION_FLOATS=1

@@ -10,19 +10,39 @@ static int  (__stdcall* glIsBuffer)( GLuint buffer );
 static void (__stdcall* glGetBufferParameteriv)( GLenum target,GLenum pname,GLint *params );
 static void (__stdcall* glCompressedTexImage2D)( GLenum target,GLint level,GLenum internalformat,GLsizei width,GLsizei height,GLint border,GLsizei imageSize,const GLvoid *data );
 static void (__stdcall* glCompressedTexSubImage2D)( GLenum target,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLsizei imageSize,const GLvoid *data );
+
 static int _init_gl_exts_done;
 
 static void _init_gl_exts(){
 	_init_gl_exts_done=1;
-	(void*&)glGenBuffers=wglGetProcAddress( "glGenBuffers" );
-	(void*&)glDeleteBuffers=wglGetProcAddress( "glDeleteBuffers" );
-	(void*&)glBufferData=wglGetProcAddress( "glBufferData" );
-	(void*&)glBufferSubData=wglGetProcAddress( "glBufferSubData" );
-	(void*&)glBindBuffer=wglGetProcAddress( "glBindBuffer" );
-	(void*&)glIsBuffer=wglGetProcAddress( "glIsBuffer" );
-	(void*&)glGetBufferParameteriv=wglGetProcAddress( "glGetBufferParameteriv" );
-	(void*&)glCompressedTexImage2D=wglGetProcAddress( "glCompressedTexImage2D" );
-	(void*&)glCompressedTexSubImage2D=wglGetProcAddress( "glCompressedTexSubImage2D" );
+	
+	const char *p=(const char*)glGetString( GL_VERSION );
+	int v=(p[0]-'0')*10+(p[2]-'0');
+	
+	if( v>=15 ){
+		(void*&)glGenBuffers=wglGetProcAddress( "glGenBuffers" );
+		(void*&)glDeleteBuffers=wglGetProcAddress( "glDeleteBuffers" );
+		(void*&)glBufferData=wglGetProcAddress( "glBufferData" );
+		(void*&)glBufferSubData=wglGetProcAddress( "glBufferSubData" );
+		(void*&)glBindBuffer=wglGetProcAddress( "glBindBuffer" );
+		(void*&)glIsBuffer=wglGetProcAddress( "glIsBuffer" );
+		(void*&)glGetBufferParameteriv=wglGetProcAddress( "glGetBufferParameteriv" );
+	}else{
+		(void*&)glGenBuffers=wglGetProcAddress( "glGenBuffersARB" );
+		(void*&)glDeleteBuffers=wglGetProcAddress( "glDeleteBuffersARB" );
+		(void*&)glBufferData=wglGetProcAddress( "glBufferDataARB" );
+		(void*&)glBufferSubData=wglGetProcAddress( "glBufferSubDataARB" );
+		(void*&)glBindBuffer=wglGetProcAddress( "glBindBufferARB" );
+		(void*&)glIsBuffer=wglGetProcAddress( "glIsBufferARB" );
+		(void*&)glGetBufferParameteriv=wglGetProcAddress( "glGetBufferParameterivARB" );
+	}
+	if( v>=13 ){
+		(void*&)glCompressedTexImage2D=wglGetProcAddress( "glCompressedTexImage2D" );
+		(void*&)glCompressedTexSubImage2D=wglGetProcAddress( "glCompressedTexSubImage2D" );
+	}else{
+		(void*&)glCompressedTexImage2D=wglGetProcAddress( "glCompressedTexImage2DARB" );
+		(void*&)glCompressedTexSubImage2D=wglGetProcAddress( "glCompressedTexSubImage2DARB" );
+	}
 }
 
 #define INIT_GL_EXTS if( !_init_gl_exts_done ) _init_gl_exts();
@@ -179,11 +199,11 @@ void _glColorPointer( int size,int type,int stride,int offset ){
 	glColorPointer( size,type,stride,(const void*)offset );
 }
 
-void _glNormalPointer( int size,int type,int stride,DataBuffer *pointer ){
+void _glNormalPointer( int type,int stride,DataBuffer *pointer ){
 	glNormalPointer( type,stride,pointer->ReadPointer() );
 }
 
-void _glNormalPointer( int size,int type,int stride,int offset ){
+void _glNormalPointer( int type,int stride,int offset ){
 	glNormalPointer( type,stride,(const void*)offset );
 }
 

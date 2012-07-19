@@ -30,8 +30,6 @@ Class XnaTarget Extends Target
 
 		For Local kv:=Eachin dataFiles
 		
-			Print kv.Key+"->"+kv.Value
-
 			Local p:=kv.Key
 			Local r:=kv.Value
 			Local f:=StripDir( r )
@@ -64,7 +62,7 @@ Class XnaTarget Extends Target
 			Else If MatchPath( r,SOUND_FILES )
 				Select ext
 				Case "wav","mp3","wma"
-					Local imp:=ext[..1].ToUpper()+ext[2..]+"Importer"	'eg: wav->WavImporter
+					Local imp:=ext[..1].ToUpper()+ext[1..]+"Importer"	'eg: wav->WavImporter
 					cont.Push "  <ItemGroup>"
 					cont.Push "    <Compile Include=~q"+t+"~q>"
 					cont.Push "      <Name>"+f+"</Name>"
@@ -78,13 +76,13 @@ Class XnaTarget Extends Target
 			Else If MatchPath( r,MUSIC_FILES )
 				Select ext
 				Case "wav","mp3","wma"
-					Local imp:=ext[..1].ToUpper()+ext[2..]+"Importer"	'eg: wav->WavImporter
+					Local imp:=ext[..1].ToUpper()+ext[1..]+"Importer"	'eg: wav->WavImporter
 					cont.Push "  <ItemGroup>"
 					cont.Push "    <Compile Include=~q"+t+"~q>"
 					cont.Push "      <Name>"+f+"</Name>"
 					cont.Push "      <Importer>"+imp+"</Importer>"
 					cont.Push "      <Processor>SongProcessor</Processor>"
-					cont.Push "	  </Compile>"
+					cont.Push "	   </Compile>"
 					cont.Push "  </ItemGroup>"
 				Default
 					Die "Invalid music file type"

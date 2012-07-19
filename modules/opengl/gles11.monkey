@@ -1,8 +1,6 @@
 
 #If TARGET<>"glfw" And TARGET<>"android" And TARGET<>"ios"
-
 #Error "The opengl module is not avaiable for the ${TARGET} target."
-
 #Endif
 
 Import databuffer

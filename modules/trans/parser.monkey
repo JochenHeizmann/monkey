@@ -1758,7 +1758,10 @@ Function PreProcess$( path$ )
 			Continue
 		Endif
 		
-		Local stm$=toker.NextToke.ToLower()
+		Local toke:=toker.NextToke
+		Local stm:=toke.ToLower()
+		Local ty:=toker.TokeType()
+		
 		toker.NextToke
 	
 		If stm="end" Or stm="else"
@@ -1817,7 +1820,21 @@ Function PreProcess$( path$ )
 			Endif
 
 		Default
-			Err "Unrecognized preprocessor directive '"+stm+"'."
+			If ty=TOKE_IDENT
+				If toker.Toke()="="
+					toker.NextToke
+					Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
+					If Env.Contains( toke )
+					Else
+						Env.Set toke,val
+					Endif
+				Else
+					Err "Syntax error - expecting assignement"
+				Endif
+			
+			Else
+				Err "Unrecognized preprocessor directive '"+toke+"'"
+			Endif
 		End
 
 	Forever

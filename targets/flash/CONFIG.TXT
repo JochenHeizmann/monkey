@@ -1,20 +1,7 @@
 
-' True to enable image filtering, false to disable
-'
-IMAGE_FILTERING_ENABLED=true
+MOJO_IMAGE_FILTERING_ENABLED=true
 
-
-' Data file filters - these decide what data gets included in the target project.
-'
-' Image file types supported by Flash: .png, .jpg
-'
-' Audio file types supported by Flash: .mp3
-'
 TEXT_FILES=*.txt|*.xml|*.json
-
 IMAGE_FILES=*.png|*.jpg
-
 SOUND_FILES=*.mp3
-
 MUSIC_FILES=*.mp3
-

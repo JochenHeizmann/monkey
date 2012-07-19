@@ -16,10 +16,8 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 public class MonkeyConfig{
-
 //${CONFIG_BEGIN}
 //${CONFIG_END}
-
 }
 
 public class MonkeyData{

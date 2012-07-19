@@ -37,29 +37,53 @@ int get_info_gif( String path ){
 int get_info_jpg( String path ){
 
 	if( FILE *f=fopen( OS_STR(path),OS_STR("rb") ) ){
-		unsigned char data[32];
+	
+		unsigned char buf[32];
 		
-		if( fread( data,1,11,f )==11 && 
-			data[0]==0xff && data[1]==0xd8 && data[2]==0xff && data[3]==0xe0 &&
-			data[6]=='J' && data[7]=='F' && data[8]=='I' && data[9]=='F' && data[10]==0 ){
-			
-			int i=2,block_length=(data[4]<<8)|data[5];
-			
+		if( fread( buf,1,2,f )==2 && buf[0]==0xff && buf[1]==0xd8 ){
+		
 			for(;;){
-				i+=block_length+2;
+		
+				while( fread( buf,1,1,f )==1 && buf[0]!=0xff ){}
+				if( feof( f ) ) break;
 				
-				if( fseek( f,i,SEEK_SET )<0 ) break;
+				while( fread( buf,1,1,f )==1 && buf[0]==0xff ){}
+				if( feof( f ) ) break;
 				
-				if( fread( data,1,4,f )!=4 || data[0]!=0xff ) break;
+				int marker=buf[0];
 				
-				if( data[1]==0xc0 ){
-					if( fread( data,1,5,f )!=5 ) break;
-					info_width=(data[1]<<8)|data[2];
-					info_height=(data[3]<<8)|data[4];
-					fclose( f );
-					return 0;
+				switch( marker ){
+				case 0xD0:case 0xD1:case 0xD2:case 0xD3:case 0xD4:case 0xD5:
+				case 0xD6:case 0xD7:case 0xD8:case 0xD9:case 0x00:case 0xFF:
+
+					break;
+					
+				default:
+					if( fread( buf,1,2,f )==2 ){
+					
+						int datalen=((buf[0]<<8)|buf[1])-2;
+						
+						switch( marker ){
+						case 0xC0:case 0xC1:case 0xC2:case 0xC3:
+							if( datalen && fread( buf,1,5,f )==5 ){
+								int bpp=buf[0];
+								info_height=(buf[1]<<8)|buf[2];
+								info_width=(buf[3]<<8)|buf[4];
+								fclose( f );
+								return 0;
+							}
+						}
+						
+						if( fseek( f,datalen,SEEK_CUR )<0 ){
+							fclose( f );
+							return -1;
+						}
+						
+					}else{
+						fclose( f );
+						return -1;
+					}
 				}
-				block_length=(data[2]<<8)|data[3];
 			}
 		}
 		fclose( f );

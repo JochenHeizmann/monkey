@@ -32,45 +32,45 @@ Class Target
 		Begin
 		
 		srcPath=path
-		dataPath=StripExt( srcPath )+".data"
-		buildPath=StripExt( srcPath )+".build"
-		targetPath=buildPath+"/"+ENV_TARGET
 		
-		If OPT_CLEAN
-			DeleteDir targetPath,True
-			If FileType( targetPath )<>FILETYPE_NONE Die "Failed to clean target dir"
-		Endif
-
-		If FileType( targetPath )=FILETYPE_NONE
-			If FileType( buildPath )=FILETYPE_NONE CreateDir buildPath
-			If FileType( buildPath )<>FILETYPE_DIR Die "Failed to create build dir: "+buildPath
-			If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath,True,False ) Die "Failed to copy target dir"
-		Endif
-
-		If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
-
 		Env.Set "HOST",ENV_HOST
 		Env.Set "LANG",ENV_LANG
 		Env.Set "TARGET",ENV_TARGET
 		Env.Set "CONFIG",ENV_CONFIG
 		
-		Local cfgPath:=targetPath+"/CONFIG.TXT"
-		If FileType( cfgPath )=FILETYPE_FILE LoadEnv cfgPath
-		
-		TEXT_FILES=Env.Get( "TEXT_FILES" )
-		IMAGE_FILES=Env.Get( "IMAGE_FILES" )
-		SOUND_FILES=Env.Get( "SOUND_FILES" )
-		MUSIC_FILES=Env.Get( "MUSIC_FILES" )
-		
-		DATA_FILES=TEXT_FILES
-		If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
-		If SOUND_FILES DATA_FILES+="|"+SOUND_FILES
-		If MUSIC_FILES DATA_FILES+="|"+MUSIC_FILES
-
 		Translate
-		
+
 		If OPT_ACTION>=ACTION_UPDATE
+
 			Print "Building..."
+		
+			Local buildPath:=StripExt( srcPath )+".build"
+			Local targetPath:=buildPath+"/"+ENV_TARGET
+
+			If OPT_CLEAN
+				DeleteDir targetPath,True
+				If FileType( targetPath )<>FILETYPE_NONE Die "Failed to clean target dir"
+			Endif
+	
+			If FileType( targetPath )=FILETYPE_NONE
+				If FileType( buildPath )=FILETYPE_NONE CreateDir buildPath
+				If FileType( buildPath )<>FILETYPE_DIR Die "Failed to create build dir: "+buildPath
+				If Not CopyDir( ExtractDir( AppPath )+"/../targets/"+ENV_TARGET,targetPath,True,False ) Die "Failed to copy target dir"
+			Endif
+	
+			If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
+
+			Local cfgPath:=targetPath+"/CONFIG.TXT"
+			If FileType( cfgPath )=FILETYPE_FILE LoadEnv cfgPath
+			
+			TEXT_FILES=Env.Get( "TEXT_FILES" )
+			IMAGE_FILES=Env.Get( "IMAGE_FILES" )
+			SOUND_FILES=Env.Get( "SOUND_FILES" )
+			MUSIC_FILES=Env.Get( "MUSIC_FILES" )
+			DATA_FILES=TEXT_FILES
+			If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
+			If SOUND_FILES DATA_FILES+="|"+SOUND_FILES
+			If MUSIC_FILES DATA_FILES+="|"+MUSIC_FILES
 		
 			Local cd:=CurrentDir
 
@@ -85,10 +85,7 @@ Class Target
 '***** Protected *****
 	
 	Field srcPath$		'Main .monkey file
-	Field dataPath$		'The app .data dir
-	Field buildPath$	'The app .build dir
-	Field targetPath$	'The app .build/target dir
-	
+
 	Field app:AppDecl	'The app
 	Field transCode$	'translated output code
 	
@@ -166,6 +163,8 @@ Class Target
 	
 		DeleteDir dir,True
 		CreateDir dir
+		
+		Local dataPath:=StripExt( srcPath )+".data"
 		
 		If FileType( dataPath )=FILETYPE_DIR
 		
@@ -285,11 +284,12 @@ Function LoadEnv( path$ )
 		If i=-1 Die "Error in config file, path="+path+", line="+line
 		
 		Local lhs$=line[..i].Trim()
-		Local rhs$=line[i+1..].Trim()
 		
-		rhs=ReplaceEnv( rhs )
+		If Not Env.Contains( lhs )
+			Local rhs$=line[i+1..].Trim()
+			Env.Set lhs,ReplaceEnv( rhs )
+		Endif
 		
-		Env.Set lhs,rhs
 	Next
 End
 

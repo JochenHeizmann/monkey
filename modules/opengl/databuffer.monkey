@@ -1,10 +1,12 @@
 
-#If LANG="cpp" Or LANG="java"
+#If LANG="cpp" Or LANG="java" Or LANG="js"
 
 #If LANG="cpp"
 Import "native/databuffer.cpp"
 #ElseIf LANG="java"
 Import "native/databuffer.java"
+#ElseIf LANG="js"
+Import "native/databuffer.js"
 #Endif
 
 Extern
@@ -27,6 +29,8 @@ Class DataBuffer
 	Function Create:DataBuffer( size )="DataBuffer::Create"
 #ElseIf LANG="java"
 	Function Create:DataBuffer( size )="DataBuffer.Create"
+#ElseIf LANG="js"
+	Function Create:DataBuffer( size )="createDataBuffer"
 #Endif
 
 End

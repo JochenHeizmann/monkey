@@ -180,11 +180,11 @@ void _glColorPointer( int size,int type,int stride,int offset ){
 	glColorPointer( size,type,stride,(const void*)offset );
 }
 
-void _glNormalPointer( int size,int type,int stride,DataBuffer *pointer ){
+void _glNormalPointer( int type,int stride,DataBuffer *pointer ){
 	glNormalPointer( type,stride,pointer->ReadPointer() );
 }
 
-void _glNormalPointer( int size,int type,int stride,int offset ){
+void _glNormalPointer( int type,int stride,int offset ){
 	glNormalPointer( type,stride,(const void*)offset );
 }
 

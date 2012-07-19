@@ -1,7 +1,29 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V52 *****
+***** V52(c) *****
+
+Modules
+
+opengl - added GLES2.0!
+
+android - monkey.lang now uses System.out.println for 'Print' and  Mojo redirects stdout to android Log.
+
+android mojo.graphics - added auto padding for simple single frame images to prevent crud on right/bottom side.
+
+opengl - added fallbacks to extensions for VBOs and compressed textures to gles11.glfw.cpp.
+
+opengl - fixed gles11 glNormalPointer wrapper.
+
+
+Trans (1.29)
+
+Added the ability to set config vars in preprocessor land.
+
+Converted html5 makemeta.cpp to James' version.
+
+
+***** V52(b) *****
 
 Modules
 

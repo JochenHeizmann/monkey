@@ -1,42 +1,15 @@
 
-'Application label
-'
-APP_LABEL="Monkey Game"
+MOJO_HICOLOR_TEXTURES=true
+MOJO_IMAGE_FILTERING_ENABLED=true
 
+ANDROID_APP_LABEL="Monkey Game"
+ANDROID_APP_PACKAGE=com.monkey
+ANDROID_SCREEN_ORIENTATION=portrait
 
-'Java package to create - must be valid java package identifier and must be UNIQUE per app, eg: com.mybizid.mygameid
-'
-APP_PACKAGE=com.monkey
+OPENGL_GLES20_ENABLED=false
 
-
-'Must be one of: user, portrait, landscape, behind, sensor, nosensor, unspecified - experiment!
-'
-SCREEN_ORIENTATION=portrait
-
-
-'true to enable 32 bit textures, else 16 bit.
-'
-HICOLOR_TEXTURES=true
-
-
-'true to enabled image filtering, false to disable
-'
-IMAGE_FILTERING_ENABLED=true
-
-
-' Data file filters - these decide what data gets included in the target project.
-'
-' Image file types supported by android: .png, .jpg, .gif, .bmp
-'
-' Audio file types supported by android: .wav, .ogg, .mp3, .m4a, more...
-'
-' See: http://developer.android.com/guide/appendix/media-formats.html
-'
 TEXT_FILES=*.txt|*.xml|*.json
-
 IMAGE_FILES=*.png|*.jpg|*.gif|*.bmp
-
 SOUND_FILES=*.wav|*.ogg|*.mp3|*.m4a
-
 MUSIC_FILES=*.wav|*.ogg|*.mp3|*.m4a
 

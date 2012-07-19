@@ -27,6 +27,7 @@ FLASH_PLAYER=open -n "${TRANSDIR}/mserver_macos.app" --args
 'Must be set to a valid for for ANDROID target support
 '
 'Android SDK
+ANDROID_PATH="${HOME}/android-sdk-macosx"
 ANDROID_PATH="${HOME}/android-sdk-mac_x86"
 ANDROID_PATH="${HOME}/android-sdk-mac_86"
 '--------------------

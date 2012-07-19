@@ -1,0 +1,8 @@
+
+#Module opengl
+
+The opengl module provides access to the various OpenGL APIs on targets with opengl support. A DataBuffer class is also provided for passing raw data to and from OpenGL.
+
+Currently, only the OpenGL ES 1.1 API is supported, and only on the glfw, android and ios targets. In addition, the mojo module is required in order to create the actual opengl context. All OpenGL API calls should take place within the mojo app's OnRender method.
+
+If your application requires a depth buffer and you are targeting glfw or ios, you will need to modify the appropriate config.h file in your project's .build folder to enable depth buffer support.

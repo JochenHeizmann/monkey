@@ -19,7 +19,7 @@
 	if( self=[super initWithCoder:coder] ){
 	
 		// Enable retina display
-		if( CFG_RETINA_ENABLED ){
+		if( CFG_IOS_RETINA_ENABLED ){
 			if( [self respondsToSelector:@selector(contentScaleFactor)] ){
 				float scaleFactor=[[UIScreen mainScreen] scale];
 				[self setContentScaleFactor:scaleFactor];
@@ -33,25 +33,36 @@
 		eaglLayer.drawableProperties=[NSDictionary dictionaryWithObjectsAndKeys:
         [NSNumber numberWithBool:FALSE],kEAGLDrawablePropertyRetainedBacking,kEAGLColorFormatRGBA8,kEAGLDrawablePropertyColorFormat,nil];
 		
-		//ES1 renderer...
-		context=[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-		      
-		if( !context || ![EAGLContext setCurrentContext:context] ){
-			[self release];
-			return nil;
-		}
-		
-		glGenFramebuffersOES( 1,&defaultFramebuffer );
-		glBindFramebufferOES( GL_FRAMEBUFFER_OES,defaultFramebuffer );
-		glGenRenderbuffersOES( 1,&colorRenderbuffer );
-		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
-		glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_COLOR_ATTACHMENT0_OES,GL_RENDERBUFFER_OES,colorRenderbuffer );
+		if( CFG_OPENGL_GLES20_ENABLED ){
+			context=[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+			if( !context || ![EAGLContext setCurrentContext:context] ) exit(-1);
+			
+			glGenFramebuffers( 1,&defaultFramebuffer );
+			glBindFramebuffer( GL_FRAMEBUFFER,defaultFramebuffer );
+			glGenRenderbuffers( 1,&colorRenderbuffer );
+			glBindRenderbuffer( GL_RENDERBUFFER,colorRenderbuffer );
+			glFramebufferRenderbuffer( GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,colorRenderbuffer );
+			if( CFG_OPENGL_DEPTH_BUFFER_ENABLED ){
+				glGenRenderbuffers( 1,&depthRenderbuffer );
+				glBindRenderbuffer( GL_RENDERBUFFER,depthRenderbuffer );
+				glFramebufferRenderbuffer( GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,depthRenderbuffer );
+				glBindRenderbuffer( GL_RENDERBUFFER,colorRenderbuffer );
+			}
+		}else{
+			context=[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+			if( !context || ![EAGLContext setCurrentContext:context] ) exit(-1);
 
-		if( CFG_DEPTH_BUFFER_ENABLED ){
-			glGenRenderbuffersOES( 1,&depthRenderbuffer );
-			glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
-			glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_DEPTH_ATTACHMENT_OES,GL_RENDERBUFFER_OES,depthRenderbuffer );
+			glGenFramebuffersOES( 1,&defaultFramebuffer );
+			glBindFramebufferOES( GL_FRAMEBUFFER_OES,defaultFramebuffer );
+			glGenRenderbuffersOES( 1,&colorRenderbuffer );
 			glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+			glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_COLOR_ATTACHMENT0_OES,GL_RENDERBUFFER_OES,colorRenderbuffer );
+			if( CFG_OPENGL_DEPTH_BUFFER_ENABLED ){
+				glGenRenderbuffersOES( 1,&depthRenderbuffer );
+				glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+				glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_DEPTH_ATTACHMENT_OES,GL_RENDERBUFFER_OES,depthRenderbuffer );
+				glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+			}
 		}
 	}
 	return self;
@@ -63,26 +74,42 @@
 }
 
 -(void)presentRenderbuffer{
-	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+	if( CFG_OPENGL_GLES20_ENABLED ){
+		[context presentRenderbuffer:GL_RENDERBUFFER];
+	}else{
+		[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+	}
 }
 
 -(BOOL)resizeFromLayer:(CAEAGLLayer *)layer{
 
 	// Allocate color buffer backing based on the current layer size
-	glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
-	[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:layer];
-	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_WIDTH_OES,&backingWidth );
-	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_HEIGHT_OES,&backingHeight );
+	if( CFG_OPENGL_GLES20_ENABLED ){
 	
-	if( CFG_DEPTH_BUFFER_ENABLED ){
-		glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
-		glRenderbufferStorageOES( GL_RENDERBUFFER_OES,GL_DEPTH_COMPONENT16_OES,backingWidth,backingHeight );
+		glBindRenderbuffer( GL_RENDERBUFFER,colorRenderbuffer );
+		[context renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
+		glGetRenderbufferParameteriv( GL_RENDERBUFFER,GL_RENDERBUFFER_WIDTH,&backingWidth );
+		glGetRenderbufferParameteriv( GL_RENDERBUFFER,GL_RENDERBUFFER_HEIGHT,&backingHeight );
+		if( CFG_OPENGL_DEPTH_BUFFER_ENABLED ){
+			glBindRenderbuffer( GL_RENDERBUFFER,depthRenderbuffer );
+			glRenderbufferStorage( GL_RENDERBUFFER,GL_DEPTH_COMPONENT16,backingWidth,backingHeight );
+			glBindRenderbuffer( GL_RENDERBUFFER,colorRenderbuffer );
+		}
+		if( glCheckFramebufferStatus( GL_FRAMEBUFFER )!=GL_FRAMEBUFFER_COMPLETE ) exit(-1);
+		
+	}else{
+	
 		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
-	}
-	
-	if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ){
-		NSLog( @"Failed to make complete framebuffer object %x",glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES ) );
-		abort();
+		[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:layer];
+		glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_WIDTH_OES,&backingWidth );
+		glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_HEIGHT_OES,&backingHeight );
+		if( CFG_OPENGL_DEPTH_BUFFER_ENABLED ){
+			glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+			glRenderbufferStorageOES( GL_RENDERBUFFER_OES,GL_DEPTH_COMPONENT16_OES,backingWidth,backingHeight );
+			glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+		}
+		if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ) exit(-1);
+		
 	}
     
 	return YES;
@@ -95,31 +122,19 @@
 }
 
 -(void)dealloc{
-
-	// Tear down GL
-	if( defaultFramebuffer ){
+	if( CFG_OPENGL_GLES20_ENABLED ){
+		glDeleteFramebuffers( 1,&defaultFramebuffer );
+		glDeleteRenderbuffers( 1,&colorRenderbuffer );
+		if( depthRenderbuffer ) glDeleteRenderbuffers( 1,&depthRenderbuffer );
+		if( [EAGLContext currentContext]==context ) [EAGLContext setCurrentContext:nil];
+		[context release];
+	}else{
 		glDeleteFramebuffersOES( 1,&defaultFramebuffer );
-		defaultFramebuffer=0;
-	}
-
-	if( colorRenderbuffer ){
 		glDeleteRenderbuffersOES( 1,&colorRenderbuffer );
-		colorRenderbuffer=0;
+		if( depthRenderbuffer ) glDeleteRenderbuffersOES( 1,&depthRenderbuffer );
+		if( [EAGLContext currentContext]==context ) [EAGLContext setCurrentContext:nil];
+		[context release];
 	}
-	
-	if( depthRenderbuffer ){
-		glDeleteRenderbuffersOES( 1,&depthRenderbuffer );
-		depthRenderbuffer=0;
-	}	
-	
-	// Tear down context
-	if( [EAGLContext currentContext]==context ){
-        [EAGLContext setCurrentContext:nil];
-	}
-
-	[context release];
-	context = nil;
-	
 	[super dealloc];
 }
 

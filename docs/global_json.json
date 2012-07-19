@@ -1,0 +1,19 @@
+{
+	"breadcrumbs": [
+		{
+			"name": "${MODPATH}",
+			"link": "#" 
+		},
+		{
+			"name": "${IDENT}",
+			"link": "${IDENT}" 
+		}
+	],
+	"definition": [
+		{
+			"heading": "${TYPE} <strong>${IDENT}</strong>"
+			
+			${CONTENT}
+		}
+	]
+}

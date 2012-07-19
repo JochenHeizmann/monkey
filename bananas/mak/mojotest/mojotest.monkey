@@ -64,7 +64,7 @@ Class Test Extends App
 		
 		SetScissor sx,sy,sw,sh
 		
-		Cls 255,32,0'255,128,0
+		Cls 255,32,0
 		
 		PushMatrix
 		

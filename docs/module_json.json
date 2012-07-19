@@ -1,0 +1,16 @@
+{
+	"breadcrumbs": [
+		{
+			"name": "${MODPATH}",
+			"link": "" 
+		}
+	],
+	"definition": [
+		{
+			"heading": "${TYPE} <strong>${MODPATH}</strong>"
+			
+			${CONTENT}
+
+		}
+	]
+}

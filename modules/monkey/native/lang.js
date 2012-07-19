@@ -43,7 +43,12 @@ function print( str ){
 }
 
 function showError( err ){
-	if( err.length ) alert( "Monkey runtime error: "+err+"\n"+stackTrace() );
+	if( typeof(err)=="string" && err=="" ) return;
+	var t="Monkey runtime error: "+err+"\n"+stackTrace();
+	if( window.console!=undefined ){
+		window.console.log( t );
+	}
+	alert( t );
 }
 
 function error( err ){

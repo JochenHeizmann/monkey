@@ -1,7 +1,4 @@
 
-//${CPP_OPTS_BEGIN}
-//${CPP_OPTS_END}
-
 //${CONFIG_BEGIN}
 //${CONFIG_END}
 

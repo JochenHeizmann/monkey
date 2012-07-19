@@ -41,7 +41,7 @@ class bb_std_lang{
 	}
 	
 	static void print( String str ){
-		Log.i( "[Monkey]",str );
+		System.out.println( str );
 	}
 	
 	static void error( String str ){

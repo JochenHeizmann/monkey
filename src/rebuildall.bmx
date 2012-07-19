@@ -61,7 +61,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 	Else
 	
 '		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
-		system trans2+" -clean -target=stdcpp -config=release +DOUBLEP=1 trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=release +CPP_INCREMENTAL_GC=0 +CPP_DOUBLE_PRECISION_FLOATS=1 trans/trans.monkey"
 
 		Delay 100
 		

@@ -14,7 +14,8 @@ HTML_PLAYER="${TRANSDIR}\mserver_winnt.exe"
 '
 'Must be set to a valid dir for ANDROID target support
 '
-'Ant is currently available here: http://ant.apache.org/bindownload.cgi
+'Ant is currently available here: 
+'	http://ant.apache.org/bindownload.cgi
 '
 ANT_PATH="${SYSTEMDRIVE}\apache-ant-1.8.2"
 ANT_PATH="${SYSTEMDRIVE}\ant"
@@ -25,9 +26,10 @@ ANT_PATH="${SYSTEMDRIVE}\ant"
 '
 'Must be set to a valid dir for STDCPP target support.
 '
-'MinGW is currently NOT available here:
-'	http://nuwen.net/
+'MinGW is currently available here:
+'	http://tdm-gcc.tdragon.net/download
 '
+MINGW_PATH="${SYSTEMDRIVE}\MinGW32"
 MINGW_PATH="${SYSTEMDRIVE}\MinGW"
 '--------------------
 

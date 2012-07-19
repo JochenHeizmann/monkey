@@ -32,8 +32,8 @@ Class AndroidTarget Extends Target
 		'create data dir
 		CreateDataDir "assets/monkey"
 
-		Local app_label$=Env.Get( "APP_LABEL" )
-		Local app_package$=Env.Get( "APP_PACKAGE" )
+		Local app_label$=Env.Get( "ANDROID_APP_LABEL" )
+		Local app_package$=Env.Get( "ANDROID_APP_PACKAGE" )
 		
 		Env.Set "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
 		

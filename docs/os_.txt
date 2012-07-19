@@ -1,0 +1,408 @@
+
+#Module os
+
+The os module provides miscellaneous operating system functionality, such as file, directory and environment variable access.
+
+The os module also includes several string processing functions for extracting various components from file system paths such as directory and file extension.
+
+IMPORTANT! The os module is currently only available for the glfw and stdcpp targets.
+
+
+#Function
+
+Syntax::
+
+Function @HostOS$()
+
+Description::
+
+Returns a string describing the host operating system, one of: "winnt" or "macos" (not including quotes).
+
+
+#Function AppPath
+
+Syntax::
+
+Function @AppPath$()
+
+Description::
+
+Returns the file system path of the currently running application.
+
+
+#Function AppArgs
+
+Syntax::
+
+Function @AppArgs$[]()
+
+Description::
+
+Returns the application startup parameters.
+
+
+#Function RealPath
+
+Syntax::
+
+Function @RealPath$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Returns the real, or 'absolute', file system path corresponding to @path.
+
+
+#Function FileType
+
+Syntax::
+
+Function @FileType( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Returns an integer representing the type of a file, one of: 0 for no file, 1 for a normal file, 2 for a directory.
+
+
+#Function FileSize
+
+Syntax::
+
+Function @FileSize( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Return the length of a file, in bytes.
+
+
+#Function FileTime
+
+Syntax::
+
+Function @FileTime( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Return the time the file at @path was last modified.
+
+
+#Function CopyFile
+
+Syntax::
+
+Function @CopyFile( @src$, @dst$ )
+
+Parameters::
+
+@src - source file path.
+
+@dst - destination file path.
+
+Description::
+
+Copies a file from @src to @dst.
+
+
+#Function DeleteFile
+
+Syntax::
+
+@Function @DeleteFile( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Deletes the file at @path.
+
+
+#Function LoadString
+
+Syntax::
+
+Function @LoadString$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Loads a string from the file at @path.
+
+
+#Function SaveString
+
+Syntax::
+
+Function @SaveString( @str$, @path$ )
+
+Parameters::
+
+@str - a string value.
+
+@path - a file system path.
+
+Description::
+
+Saves @str to a file specified by @path.
+
+If a file already exists at @path, it will be overwritten.
+
+
+#Function LoadDir
+
+Syntax::
+
+Function @LoadDir$[]( @path$, @recursive?=False, @hidden?=False )
+
+Parameters::
+
+@path - a file system path.
+
+@recursive - a flag indicating whether subdirectories should also be loaded.
+
+@hidden - a flag indicating whether 'hidden files' should also be loaded.
+
+Description::
+
+Loads the file names in the directory specified by @path into a string array.
+
+If @recursive is @True, @LoadDir will also load file names in subdirectories, but will not add subdirectories to the output string array.
+
+If @hidden is @True, then hidden files - files starting with a dot - are also loaded.
+
+
+#Function CopyDir
+
+Syntax::
+
+Function @CopyDir( @srcpath$, @dstpath$, @recursive?=True, @hidden?=False )
+
+Parameters::
+
+@srcpath - file system path of source directory.
+
+@dstpath - file system path of destination directory.
+
+@recursive - flag indicating whether subdirectories should also be copied.
+
+@hidden - flag indicating whther hidden files should also be copied.
+
+Description::
+
+Copies the directory at @srcpath to a directory at @dst, creating @dstpath if necessary.
+
+If @recursive is @True, then subdirectories are also copied.
+
+If @hidden is @True, then hidden files - files starting with a dot - are also copied.
+
+
+#Function CreateDir
+
+Syntax::
+
+Function @CreateDir( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Creates a new directory at @path.
+
+
+#Function DeleteDir
+
+Syntax::
+
+Function @DeleteDir( @path$, @recursive=False )
+
+Parameters::
+
+@path - a file system path.
+
+@recursive - a flag indicating whether subdirectories should also be deleted.
+
+Description::
+
+Deletes the directory at @path.
+
+If @recursive is @True, then subdirectories are also deleted - use with care!
+
+
+#Function ChangeDir
+
+Syntax::
+
+Function @ChangeDir( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Sets the current directory to the directory at @path.
+
+
+#Function CurrentDir
+
+Syntax::
+
+Function @CurrentDir$()
+
+Description::
+
+Returns the current directory.
+
+
+#Function SetEnv
+
+Syntax::
+
+Function @SetEnv( @name$, @value$ )
+
+Parameters::
+
+@name - name of environment var.
+
+@value - value to set environment var to.
+
+Description::
+
+Sets an environment variable.
+
+
+#Function GetEnv
+
+Syntax::
+
+Function @GetEnv$( @name$ )
+
+Parameters::
+
+@name - name of environment var.
+
+Description::
+
+Gets an environment variable.
+
+
+#Function Execute
+
+Function @Execute( @cmd$ )
+
+Parameters::
+
+@cmd - command to execute.
+
+Description::
+
+Executes a shell command.
+
+
+#Function ExitApp
+
+Function @ExitApp( @retcode )
+
+Parameters::
+
+@retcode - return code.
+
+Description::
+
+Exits the application and returns @retcode.
+
+
+#Function StripDir
+
+Syntax::
+
+Function @StripDir$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Removes the directory from a file system path, and returns the file name and extension.
+
+
+#Function ExtractDir
+
+Syntax::
+
+Function @ExtractDir$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Extracts and returns the directory of a file system path.
+
+
+#Function StripExt
+
+Syntax::
+
+Function @StripExt$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Removes the file extension from a file system path.
+
+
+#Functino ExtractExt
+
+Syntax::
+
+Function @ExtractExt$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Extracts and returns the file extension of a file system path.
+
+
+#Function StripAll
+
+Syntax::
+
+Function @StripAll$( @path$ )
+
+Parameters::
+
+@path - a file system path.
+
+Description::
+
+Removes both the directory and file extension from a file system path, returning just the file name.
