@@ -697,6 +697,8 @@ void Alert( String t ){
 #endif
 
 void Die( const char *p ){
+	String t=String(errInfo)+" : Error : "+p;
+	puts( t.ToCString<char>() );fflush( stdout );
 	Alert( String(p)+"\n"+StackTrace() );
 #if !__OBJC__
 	exit(-1);

@@ -37,7 +37,11 @@ If 1
 	
 		'just recompile existing C++ source
 	
+?Macos
+		If system_( "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o trans_macos trans.build/stdcpp/main.cpp" )
+?Not Macos
 		If system_( "g++ -o trans_macos trans.build/stdcpp/main.cpp" )
+?
 			Print "Failed to compile trans"
 			Return
 		EndIf

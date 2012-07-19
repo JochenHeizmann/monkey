@@ -1,9 +1,0 @@
-19b5a9002c4a4961b2084b3111d75252
-0
-Xbox360
-E:\bmx2dev\targets\xna\Xbox360Game1\Xbox360Game1\bin\Xbox 360\Debug\
-129313270040000000
-E:\bmx2dev\targets\xna\Xbox360Game1\Xbox360Game1\GameThumbnail.png
-2010-10-12T02:08:16.0000000Z
-E:\bmx2dev\targets\xna\Xbox360Game1\Xbox360Game1\bin\Xbox 360\Debug\Xbox360Game1.exe
-2010-10-12T02:08:34.0000000Z

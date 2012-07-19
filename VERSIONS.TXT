@@ -1,5 +1,24 @@
 
-Note: If your having trouble with a new version, try deleting '.build' dirs!!!!!
+Note: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
+
+***** V30 *****
+
+Rebuilt trans_macos to work on 32 bit Mac CPUs.
+
+Changed trans stdcpp target to produce -arch i386 targets only for now.
+
+Fixed dodgy preprocessor error reporing.
+
+Began work on XNA Windows Phone 7 support.
+
+Enabled 'Reach' in XNA - XNA apps should work on wider range of HW.
+
+Fixed Consts in funcs crashing compiler.
+
+Fixed ToArray methods in std.stack
+
+Fixed astranslator crashing when generating return stmt for abstract void methods.
+
 
 ***** V29 *****
 

@@ -104,7 +104,7 @@ End
 Class Enumerator<T>
 
 	Method New( stack:Stack<T> )
-		Self.stack=Stack
+		Self.stack=stack
 	End
 
 	Method HasNext:Bool()
@@ -128,7 +128,7 @@ End
 Class IntStack Extends Stack<IntObject>
 
 	Method ToArray[]()
-		Local arr[Count],i
+		Local arr[Length],i
 		For Local t=Eachin Self
 			arr[i]=t
 			i+=1
@@ -148,7 +148,7 @@ End
 Class FloatStack Extends Stack<FloatObject>
 
 	Method ToArray#[]()
-		Local arr#[Count],i
+		Local arr#[Length],i
 		For Local t#=Eachin Self
 			arr[i]=t
 			i+=1
@@ -168,7 +168,7 @@ End
 Class StringStack Extends Stack<StringObject>
 
 	Method ToArray$[]()
-		Local arr$[Count],i
+		Local arr$[Length],i
 		For Local t$=Eachin Self
 			arr[i]=t
 			i+=1

@@ -287,7 +287,9 @@ Class Parser
 	Field _module:ModuleDecl
 		
 	Method SetErr()
-		_errInfo=_toker.Path+"<"+_toker.Line()+">"
+		If _toker.Path
+			_errInfo=_toker.Path+"<"+_toker.Line()+">"
+		EndIf
 	End
 	
 	Method PushBlock( block:BlockDecl )
@@ -1656,6 +1658,7 @@ Function ParseApp:AppDecl( path$ )
 End
 
 Function Eval$( source$,ty:Type )
+
 	Local env:=New ScopeDecl
 	
 	env.InsertDecl New ConstDecl( "HOST",Type.stringType,New ConstExpr( Type.stringType,ENV_HOST ),0 )

@@ -345,9 +345,15 @@ Class Translator
 	
 	Method TransDeclStmt$( stmt:DeclStmt )
 		Local decl:=LocalDecl( stmt.decl )
-		If Not decl InternalErr
-		MungDecl decl,localMungs
-		Return TransLocalDecl( decl.munged,decl.init )
+		If decl
+			MungDecl decl,localMungs
+			Return TransLocalDecl( decl.munged,decl.init )
+		Endif
+		Local cdecl:=ConstDecl( stmt.decl )
+		If cdecl
+			Return
+		Endif
+		InternalErr
 	End
 	
 	Method TransIfStmt$( stmt:IfStmt )

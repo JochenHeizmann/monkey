@@ -10,21 +10,21 @@
 public class bb_std_lang{
 
 	public static String errInfo="";
-	public static ArrayList errStack=new ArrayList();
+	public static List<String> errStack=new List<String>();
 	
 	public static void pushErr(){
 		errStack.Add( errInfo );
 	}
 	
 	public static void popErr(){
-		errInfo=(String)errStack[ errStack.Count-1 ];
+		errInfo=errStack[ errStack.Count-1 ];
 		errStack.RemoveAt( errStack.Count-1 );
 	}
 
 	public static String StackTrace(){
 		String str=errInfo+"\n";
 		for( int i=errStack.Count-1;i>=0;--i ){
-			str+=(String)errStack[i]+"\n";
+			str+=errStack[i]+"\n";
 		}
 		return str;
 	}

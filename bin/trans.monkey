@@ -6,7 +6,7 @@
 
 Import trans.trans
 
-Const VERSION$="1.01"
+Const VERSION$="1.02"
 
 'from config file
 Global ANDROID_PATH$
@@ -506,7 +506,13 @@ Class StdcppTarget Extends Target
 
 			Local out$="main_"+HostOS
 			DeleteFile out
-			Execute "g++ -o "+out+" main.cpp"
+			
+			Select ENV_HOST
+			Case "macos"
+				Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"
+			Default
+				Execute "g++ -o "+out+" main.cpp"
+			End
 
 			If OPT_RUN
 				Execute "~q"+RealPath( out )+"~q"

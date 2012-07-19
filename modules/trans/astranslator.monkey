@@ -318,7 +318,11 @@ Class AsTranslator Extends Translator
 		Emit t+"function "+decl.munged+Bra( args )+":"+TransType( decl.retType )+"{"
 		
 		If decl.IsAbstract()
-			Emit "return "+TransValue( decl.retType,"" )+";"
+			If VoidType( decl.retType )
+				Emit "return;"
+			Else
+				Emit "return "+TransValue( decl.retType,"" )+";"
+			Endif
 		Else
 			EmitBlock decl
 		EndIf
