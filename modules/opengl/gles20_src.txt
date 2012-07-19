@@ -509,6 +509,7 @@ Kludge glfw,ios
 Function glDrawElements:Void( mode, count, type, ptr:DataBuffer )
 
 'Not available in Android API 8!
+Kludge android,glfw,ios
 Function glDrawElements:Void( mode, count, type, offset )
 
 Kludge none
@@ -675,6 +676,7 @@ Kludge glfw,ios
 Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, data:DataBuffer )
 
 'Not available in Android API 8!
+Kludge android,glfw,ios
 Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, offset )
 
 Kludge none

@@ -1,6 +1,38 @@
 
 class bb_opengl_gles20{
 
+	static boolean inited;
+	static Object[] args4=new Object[4];
+	static Object[] args6=new Object[6];
+	static Method drawElements;
+	static Method vertexAttribPointer;
+	
+	static void initNativeGL(){
+	
+		if( inited ) return;
+		inited=true;
+		
+		Class c;
+		
+		try{
+			c=Class.forName( "com.monkey.NativeGL" );
+		}catch( ClassNotFoundException ex ){
+			c=GLES20.class;
+		}
+
+		try{
+			Class[] p=new Class[]{ Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE };
+			drawElements=GLES20.class.getMethod( "glDrawElements",p );
+		}catch( NoSuchMethodException ex ){
+		}
+
+		try{
+			Class[] p=new Class[]{ Integer.TYPE,Integer.TYPE,Integer.TYPE,Boolean.TYPE,Integer.TYPE,Integer.TYPE };
+			vertexAttribPointer=GLES20.class.getMethod( "glVertexAttribPointer",p );
+		}catch( NoSuchMethodException ex ){
+		}
+	}
+
 	static DataBuffer LoadImageData( String path,int[] info ){
 		Bitmap bitmap=null;
 		try{
@@ -86,6 +118,18 @@ class bb_opengl_gles20{
 	
 	static void _glDrawElements( int mode, int count, int type,DataBuffer indices ){
 		GLES20.glDrawElements( mode,count,type,indices.GetBuffer() );
+	}
+	
+	static void _glDrawElements( int mode, int count, int type, int offset ){
+		initNativeGL();
+		args4[0]=Integer.valueOf( mode );
+		args4[1]=Integer.valueOf( count );
+		args4[2]=Integer.valueOf( type );
+		args4[3]=Integer.valueOf( offset );
+		try{
+			drawElements.invoke( null,args4 );
+		}catch( Exception ex ){
+		}
 	}
 	
 	static void _glGetActiveAttrib( int program, int index, int[] size, int[] type, String[] name ){
@@ -274,5 +318,19 @@ class bb_opengl_gles20{
 	
 	static void _glVertexAttribPointer( int indx, int size, int type, boolean normalized, int stride, DataBuffer ptr ){
 		GLES20.glVertexAttribPointer( indx,size,type,normalized,stride,ptr.GetBuffer() );
+	}
+	
+	static void _glVertexAttribPointer( int indx, int size, int type, boolean normalized, int stride, int offset ){
+		initNativeGL();
+		args6[0]=Integer.valueOf( indx );
+		args6[1]=Integer.valueOf( size );
+		args6[2]=Integer.valueOf( type );
+		args6[3]=Boolean.valueOf( normalized );
+		args6[4]=Integer.valueOf( stride );
+		args6[5]=Integer.valueOf( offset );
+		try{
+			vertexAttribPointer.invoke( null,args6 );
+		}catch( Exception ex ){
+		}
 	}
 }

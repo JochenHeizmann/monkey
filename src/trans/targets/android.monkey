@@ -56,7 +56,6 @@ Class AndroidTarget Extends Target
 		
 		'create main source file
 		Local main$=LoadString( "MonkeyGame.java" )
-		
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
 		main=ReplaceBlock( main,"CONFIG",Config() )
 		
@@ -84,6 +83,17 @@ Class AndroidTarget Extends Target
 		main=ReplaceBlock( main,"PACKAGE","package "+app_package+";" )
 		
 		SaveString main,jpath
+		
+		If Env.Get( "ANDROID_NATIVE_GL_ENABLED" )="true"
+			CopyDir "nativegl/libs","libs",True
+			CreateDir "src";CreateDir "src/com";CreateDir "src/com/monkey"
+			CopyFile "nativegl/NativeGL.java","src/com/monkey/NativeGL.java"
+		Else
+			DeleteFile "libs/armeabi/libnativegl.so"
+			DeleteFile "libs/armeabi-v7a/libnativegl.so"
+			DeleteFile "libs/x86/libnativegl.so"
+			DeleteFile "src/com/monkey/NativeGL.java"
+		Endif
 		
 		If OPT_ACTION>=ACTION_BUILD
 		

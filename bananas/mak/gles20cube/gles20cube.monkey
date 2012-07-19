@@ -1,4 +1,7 @@
 
+'#ANDROID_NATIVE_GL_ENABLED="true"
+#ANDROID_SCREEN_ORIENTATION="user"
+
 Import mojo
 Import opengl.gles20
 
