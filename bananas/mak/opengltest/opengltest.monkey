@@ -1,12 +1,4 @@
 
-#rem
-
-Very simple 'does it work' opengl test app.
-
-Note: for glfw and ios, you'll need to modify config.h in .build/target folder and change ENABLE_DEPTH_BUFFER to 1.
-
-#end
-
 Import mojo
 
 Import opengl.gles11
@@ -84,6 +76,9 @@ Class GLApp Extends App
 	Method OnRender()
 
 		Init
+		
+		glActiveTexture GL_TEXTURE0
+		glClientActiveTexture GL_TEXTURE0
 		
 		glViewport 0,0,DeviceWidth,DeviceHeight
 	

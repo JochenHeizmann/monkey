@@ -1,55 +1,57 @@
 
 #if _WIN32
 
-static void (__stdcall* glGenBuffers)( GLsizei n,GLuint *buffers );
-static void (__stdcall* glDeleteBuffers)( GLsizei n,GLuint *buffers );
-static void (__stdcall* glBufferData)( GLenum target,GLsizei size,const GLvoid *data,GLenum usage );
-static void (__stdcall* glBufferSubData)( GLenum target,GLsizei offset,GLsizei size,const GLvoid *data );
-static void (__stdcall* glBindBuffer)( GLenum target,GLuint buffer );
-static int  (__stdcall* glIsBuffer)( GLuint buffer );
-static void (__stdcall* glGetBufferParameteriv)( GLenum target,GLenum pname,GLint *params );
-static void (__stdcall* glCompressedTexImage2D)( GLenum target,GLint level,GLenum internalformat,GLsizei width,GLsizei height,GLint border,GLsizei imageSize,const GLvoid *data );
-static void (__stdcall* glCompressedTexSubImage2D)( GLenum target,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLsizei imageSize,const GLvoid *data );
+#define INIT_GL_EXTS 1
 
-static int _init_gl_exts_done;
+//1.3
+void (__stdcall* glActiveTexture)( GLenum texture );
+void (__stdcall* glClientActiveTexture)( GLenum texture );
+void (__stdcall* glCompressedTexImage2D)( GLenum target,GLint level,GLenum internalformat,GLsizei width,GLsizei height,GLint border,GLsizei imageSize,const GLvoid *data );
+void (__stdcall* glCompressedTexSubImage2D)( GLenum target,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLsizei imageSize,const GLvoid *data );
 
-static void _init_gl_exts(){
-	_init_gl_exts_done=1;
+//1.5
+void (__stdcall* glGenBuffers)( GLsizei n,GLuint *buffers );
+void (__stdcall* glDeleteBuffers)( GLsizei n,GLuint *buffers );
+void (__stdcall* glBufferData)( GLenum target,GLsizei size,const GLvoid *data,GLenum usage );
+void (__stdcall* glBufferSubData)( GLenum target,GLsizei offset,GLsizei size,const GLvoid *data );
+void (__stdcall* glBindBuffer)( GLenum target,GLuint buffer );
+int  (__stdcall* glIsBuffer)( GLuint buffer );
+void (__stdcall* glGetBufferParameteriv)( GLenum target,GLenum pname,GLint *params );
+
+void Init_GL_Exts(){
 	
 	const char *p=(const char*)glGetString( GL_VERSION );
 	int v=(p[0]-'0')*10+(p[2]-'0');
 	
-	if( v>=15 ){
-		(void*&)glGenBuffers=wglGetProcAddress( "glGenBuffers" );
-		(void*&)glDeleteBuffers=wglGetProcAddress( "glDeleteBuffers" );
-		(void*&)glBufferData=wglGetProcAddress( "glBufferData" );
-		(void*&)glBufferSubData=wglGetProcAddress( "glBufferSubData" );
-		(void*&)glBindBuffer=wglGetProcAddress( "glBindBuffer" );
-		(void*&)glIsBuffer=wglGetProcAddress( "glIsBuffer" );
-		(void*&)glGetBufferParameteriv=wglGetProcAddress( "glGetBufferParameteriv" );
-	}else{
-		(void*&)glGenBuffers=wglGetProcAddress( "glGenBuffersARB" );
-		(void*&)glDeleteBuffers=wglGetProcAddress( "glDeleteBuffersARB" );
-		(void*&)glBufferData=wglGetProcAddress( "glBufferDataARB" );
-		(void*&)glBufferSubData=wglGetProcAddress( "glBufferSubDataARB" );
-		(void*&)glBindBuffer=wglGetProcAddress( "glBindBufferARB" );
-		(void*&)glIsBuffer=wglGetProcAddress( "glIsBufferARB" );
-		(void*&)glGetBufferParameteriv=wglGetProcAddress( "glGetBufferParameterivARB" );
-	}
 	if( v>=13 ){
-		(void*&)glCompressedTexImage2D=wglGetProcAddress( "glCompressedTexImage2D" );
-		(void*&)glCompressedTexSubImage2D=wglGetProcAddress( "glCompressedTexSubImage2D" );
+		(void*&)glActiveTexture=(void*)wglGetProcAddress( "glActiveTexture" );
+		(void*&)glClientActiveTexture=(void*)wglGetProcAddress( "glClientActiveTexture" );
+		(void*&)glCompressedTexImage2D=(void*)wglGetProcAddress( "glCompressedTexImage2D" );
+		(void*&)glCompressedTexSubImage2D=(void*)wglGetProcAddress( "glCompressedTexSubImage2D" );
 	}else{
-		(void*&)glCompressedTexImage2D=wglGetProcAddress( "glCompressedTexImage2DARB" );
-		(void*&)glCompressedTexSubImage2D=wglGetProcAddress( "glCompressedTexSubImage2DARB" );
+		(void*&)glActiveTexture=(void*)wglGetProcAddress( "glActiveTextureARB" );
+		(void*&)glClientActiveTexture=(void*)wglGetProcAddress( "glClientActiveTextureARB" );
+		(void*&)glCompressedTexImage2D=(void*)wglGetProcAddress( "glCompressedTexImage2DARB" );
+		(void*&)glCompressedTexSubImage2D=(void*)wglGetProcAddress( "glCompressedTexSubImage2DARB" );
+	}
+	if( v>=15 ){
+		(void*&)glGenBuffers=(void*)wglGetProcAddress( "glGenBuffers" );
+		(void*&)glDeleteBuffers=(void*)wglGetProcAddress( "glDeleteBuffers" );
+		(void*&)glBufferData=(void*)wglGetProcAddress( "glBufferData" );
+		(void*&)glBufferSubData=(void*)wglGetProcAddress( "glBufferSubData" );
+		(void*&)glBindBuffer=(void*)wglGetProcAddress( "glBindBuffer" );
+		(void*&)glIsBuffer=(void*)wglGetProcAddress( "glIsBuffer" );
+		(void*&)glGetBufferParameteriv=(void*)wglGetProcAddress( "glGetBufferParameteriv" );
+	}else{
+		(void*&)glGenBuffers=(void*)wglGetProcAddress( "glGenBuffersARB" );
+		(void*&)glDeleteBuffers=(void*)wglGetProcAddress( "glDeleteBuffersARB" );
+		(void*&)glBufferData=(void*)wglGetProcAddress( "glBufferDataARB" );
+		(void*&)glBufferSubData=(void*)wglGetProcAddress( "glBufferSubDataARB" );
+		(void*&)glBindBuffer=(void*)wglGetProcAddress( "glBindBufferARB" );
+		(void*&)glIsBuffer=(void*)wglGetProcAddress( "glIsBufferARB" );
+		(void*&)glGetBufferParameteriv=(void*)wglGetProcAddress( "glGetBufferParameterivARB" );
 	}
 }
-
-#define INIT_GL_EXTS if( !_init_gl_exts_done ) _init_gl_exts();
-
-#else
-
-#define INIT_GL_EXTS
 
 #endif
 
@@ -78,12 +80,10 @@ DataBuffer *LoadImageData( String path,Array<int> info ){
 }
 
 void _glGenBuffers( int n,Array<int> buffers,int offset ){
-	INIT_GL_EXTS
 	glGenBuffers( n,(GLuint*)&buffers[offset] );
 }
 
 void _glDeleteBuffers( int n,Array<int> buffers,int offset ){
-	INIT_GL_EXTS
 	glDeleteBuffers( n,(GLuint*)&buffers[offset] );
 }
 
@@ -223,28 +223,15 @@ void _glDrawElements( int mode,int count,int type,int offset ){
 	glDrawElements( mode,count,type,(const GLvoid*)offset );
 }
 
-void _glBindBuffer( int target,int buffer ){
-	INIT_GL_EXTS
-	glBindBuffer( target,buffer );
-}
-
-int _glIsBuffer( int buffer ){
-	INIT_GL_EXTS
-	return glIsBuffer( buffer );
-}
-
 void _glGetBufferParameteriv( int target,int pname,Array<int> params,int offset ){
-	INIT_GL_EXTS
 	glGetBufferParameteriv( target,pname,&params[offset] );
 }
 
 void _glBufferData( int target,int size,DataBuffer *data,int usage ){
-	INIT_GL_EXTS
 	glBufferData( target,size,data->ReadPointer(),usage );
 }
 
 void _glBufferSubData( int target,int offset,int size,DataBuffer *data ){
-	INIT_GL_EXTS
 	glBufferSubData( target,offset,size,data->ReadPointer() );
 }
 

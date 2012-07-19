@@ -314,8 +314,6 @@ Class JsTranslator Extends Translator
 			Return
 		Endif
 		
-		'PushEnv classDecl	'WTF?!?
-		
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.munged
 		
@@ -374,7 +372,6 @@ Class JsTranslator Extends Translator
 
 		Next
 	
-		'PopEnv
 	End
 	
 	Method TransApp$( app:AppDecl )
@@ -392,23 +389,10 @@ Class JsTranslator Extends Translator
 			Local cdecl:=ClassDecl( decl )
 			If Not cdecl Continue
 
-			'global mungs
-			#rem
-			For Local decl:=Eachin cdecl.Semanted
-				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod() Or GlobalDecl( decl )
-					MungDecl decl
-				Endif
-			Next
-			#end
-			
-			'local mungs
-'			PushMungScope
-			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
 			Next
-			
-'			PopMungScope
+
 		Next
 		
 		For Local decl:=Eachin app.Semanted

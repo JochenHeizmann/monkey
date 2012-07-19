@@ -41,6 +41,8 @@ Class MyApp Extends App
 				str=""
 				enabled=True
 				EnableKeyboard
+			Else If KeyHit( KEY_ESCAPE )
+				Error ""	'test back button on android...!
 			Endif
 		Endif
 	End

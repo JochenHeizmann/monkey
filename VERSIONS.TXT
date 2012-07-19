@@ -1,15 +1,25 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V52(d) *****
+***** V52(f) *****
 
 Modules
+
+mojo - added NOP versions of AccelX/AccelY/AccelZ to glfw, flash and xna targets.
+
+glfw opengl - added glActiveTexture and glClientActiveTexture to gles11.
+
+android mojo - implemented secondgear's fix for handling back button events on pre 2.0 versions of android.
+
+html5 mojo - added HTML5_SUSPEND_ON_BLUR_ENABLED="false" config setting.
+
+html5 mojo - Overhauled audio system. Fixed audio crash when suspending app.
 
 opengl - added GLES2.0!
 
 android - monkey.lang now uses System.out.println for 'Print' and  Mojo redirects stdout to android Log.
 
-android mojo.graphics - added auto padding for simple single frame images to prevent crud on right/bottom side.
+android mojo - added auto padding for simple single frame images to prevent crud on right/bottom side.
 
 opengl - added fallbacks to extensions for VBOs and compressed textures to gles11.glfw.cpp.
 
@@ -17,6 +27,10 @@ opengl - fixed gles11 glNormalPointer wrapper.
 
 
 Trans (1.29)
+
+Fixed assign op /= with ints in JS returning fractions.
+
+Fixed file filter code.
 
 Added native gl kludges to android for gles20 apps. Allows use of gles20 on android 2.2. Use native code - beware. Enable with ANDROID_NATIVE_GL_ENABLED=true in CONFIG.TXT
 

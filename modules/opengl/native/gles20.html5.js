@@ -208,6 +208,7 @@ function _glTexImage2D( target,level,internalformat,format,type,path ){
 	tex._format=format;
 	tex._type=type;
 	
+	//Freaks Opera out!
 	gl.texImage2D( target,level,internalformat,w,h,0,format,type,null );
 
 	var img=new Image();

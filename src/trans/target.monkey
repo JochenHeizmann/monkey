@@ -330,17 +330,16 @@ Function MatchPath?( text$,pattern$ )
 		Endif
 		
 		If Not text.StartsWith( bits[0] ) Continue
-		If Not text.EndsWith( bits[bits.Length-1] ) Continue
-			
-		Local i
+
+		Local i:=bits[0].Length
 		For Local j=1 Until bits.Length-1
 			Local bit:=bits[j]
 			i=text.Find( bit,i )
 			If i=-1 Exit
 			i+=bit.Length
 		Next
-		If i<>-1 Return True
 
+		If i<>-1 And text[i..].EndsWith( bits[bits.Length-1] ) Return True
 	Next
 
 	Return False

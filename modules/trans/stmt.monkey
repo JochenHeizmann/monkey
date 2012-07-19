@@ -118,40 +118,46 @@ Class AssignStmt Extends Stmt
 			Return
 		Endif
 		
-		'"=","*=","/=","+=","-=","&=","|=","~~=","mod","shl","shr"
+		Local kludge
 		
 		Select op
 		Case "="
-		
 			rhs=rhs.Cast( lhs.exprType )
-			
+			kludge=False
 		Case "*=","/=","+=","-="
-		
-			If NumericType( lhs.exprType ) And NumericType( rhs.exprType ) And lhs.exprType.EqualsType( rhs.exprType )
-				'Use x op= y form
+			If NumericType( lhs.exprType ) And lhs.exprType.EqualsType( rhs.exprType )
+				'OK to use x op= y form
+				kludge=False
+				'
+				'hack for /= with ints in JS!
+				'
+				If ENV_LANG="js"
+					If op="/=" And IntType( lhs.exprType )
+						kludge=True
+					Endif
+				Endif
+				'
 			Else
 				'Use x=x op y form
-				FixSideEffects
-				rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
-				op="="
+				kludge=True
 			Endif
-			
 		Case "&=","|=","~~=","shl=","shr=","mod="
-		
-			If IntType( lhs.exprType ) And IntType( rhs.exprType )
-				'Use x op= y form
+			If IntType( lhs.exprType ) And lhs.exprType.EqualsType( rhs.exprType )
+				'Ok to use x op= y form
+				kludge=False
 			Else
 				'Use x=x op y form
-				FixSideEffects
-				rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
-				op="="
+				kludge=True
 			Endif
-			
 		Default
-		
 			InternalErr
-			
 		End
+		
+		If kludge
+			FixSideEffects
+			rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
+			op="="
+		Endif
 
 	End
 	

@@ -1,72 +1,17 @@
 
-'#ANDROID_NATIVE_GL_ENABLED="true"
+'#ANDROID_NATIVE_GL_ENABLED="true"	'to run on android 2.2 - WARNING: uses native code.
 #ANDROID_SCREEN_ORIENTATION="user"
 
 Import mojo
 Import opengl.gles20
 
-Global MVPMatrix#[]
+Import geom
+
+Global MVPMatrix:=New Mat4
 
 Function CheckGL()
 	Local err=glGetError()
 	If err Error "GL Error "+err
-End
-	
-Function IdentityMat#[]()
-	Local t#[16]
-	t[0]=1;t[5]=1;t[10]=1;t[15]=1
-	Return t
-End
-
-Function MulMats#[]( x#[],y#[] )
-	Local t#[16]
-	For Local i=0 Until 4
-		For Local j=0 Until 4
-			t[j*4+i]=x[j]*y[i] + x[j+4]*y[i+4] + x[j+8]*y[i+8] + x[j+12]*y[i+12]
-		Next
-	Next
-	Return t	
-End
-
-Function TransposeMat#[]( m#[] )
-	Local t#[16];
-	For Local i=0 Until 4
-		For Local j=0 Until 4
-			t[i*4+j]=m[j*4+i]
-		Next
-	Next
-	Return t
-End
-
-Function FrustumMat#[]( near_left#,near_right#,near_bottom#,near_top#,near#,far# )
-	Local near2:=near*2
-	Local w:=near_right-near_left
-	Local h:=near_top-near_bottom
-	Local d:=far-near
-	Local t#[16]
-	t[0]=near2/w
-	t[5]=near2/h
-	t[8]=(near_right+near_left)/w
-	t[9]=(near_top+near_bottom)/h
-	t[10]=(far+near)/d
-	t[11]=1
-	t[14]=-(far*near2)/d
-	t[15]=0
-	Return t
-End
-
-Function TransMat#[]( tx#,ty#,tz#,tw#=1 )
-	Local t:=IdentityMat()
-	t[12]=tx;t[13]=ty;t[14]=tz;t[15]=tw
-	Return t
-End
-
-Function YawMat#[]( yaw# )
-	Local t:=IdentityMat()
-	Local s:=Sin(yaw),c:=Cos(yaw)
-	t[0]=c;t[2]=s
-	t[8]=-s;t[10]=c;
-	Return t
 End
 
 Class Vertex
@@ -279,7 +224,7 @@ Class Mesh
 	
 	Method Render()
 		'transpose MUST be false - took me an hour or two to find that out!		
-		glUniformMatrix4fv mvp_loc,1,False,MVPMatrix
+		glUniformMatrix4fv mvp_loc,1,False,MVPMatrix.ToArray()
 		
 		glDrawElements GL_TRIANGLES,icount,GL_UNSIGNED_SHORT,0
 		
@@ -407,11 +352,13 @@ Class MyApp Extends App
 		mesh=loader.LoadMesh( "cube.txt",material )
 		
 		SetUpdateRate 60
-		
+
 	End
 	
 	Method OnUpdate()
 	
+		ClearTmps
+
 		If MouseDown()
 			If MouseY()<DeviceHeight()/2
 				obj_z-=.1
@@ -421,10 +368,11 @@ Class MyApp Extends App
 		Endif
 	
 		rot+=1
-		
 	End
 	
 	Method OnRender()
+	
+		ClearTmps
 	
 		glViewport 0,0,DeviceWidth,DeviceHeight
 		
@@ -436,21 +384,26 @@ Class MyApp Extends App
 		
 		mesh.Bind
 
+		Local projMatrix:=New Mat4
+		projMatrix.Set FrustumMatrix( -1,1,-1,1,1,100 )
+			
 		For Local x#=-25 To 25 Step 5
 		
 			For Local y=-25 To 25 Step 5
 			
-				Local f:=FrustumMat( -1,1,-1,1,1,100 )
+				PushTmps
+			
+				Local modelMatrix:=TRSMatrix( x,y,obj_z, 0,rot,0, 1,1,1 )
 				
-				Local t:=TransMat( x,y,obj_z )
-				Local r:=YawMat( rot )
-				
-				MVPMatrix=TransposeMat( MulMats( f,MulMats( t,r ) ) )
+				MVPMatrix.Set projMatrix.Times( modelMatrix )
 		
 				mesh.Render
+				
+				PopTmps
+
 			Next
 		Next
-		
+
 	End
 	
 	Method OnSuspend()

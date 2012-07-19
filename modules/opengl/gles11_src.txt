@@ -499,8 +499,6 @@ Const GL_SRC2_ALPHA                    =$858A
 Const GL_DOT3_RGB                      =$86AE
 Const GL_DOT3_RGBA                     =$86AF
 
-Kludge glfw
-
 Function glBindBuffer:Void( target,buffer )
 Function glIsBuffer:Bool( buffer )
 

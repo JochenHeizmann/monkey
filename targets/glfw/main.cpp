@@ -98,8 +98,8 @@ int main( int argc,const char *argv[] ){
 		warn( "alcOpenDevice failed" );
 	}
 	
-#ifdef INITGLES20
-	InitGLES20();
+#if INIT_GL_EXTS
+	Init_GL_Exts();
 #endif
 	
 	try{

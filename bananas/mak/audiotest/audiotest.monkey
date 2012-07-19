@@ -1,6 +1,8 @@
 
 'A simple audio test app
 
+#HTML5_SUSPEND_ON_BLUR_ENABLED="true"
+
 Import mojo
 
 Class MyApp Extends App

@@ -353,8 +353,8 @@ Extern
 Function LoadImageData:DataBuffer( path$,info[]=[] )="LoadImageData"
 
 '${GLFW_DECLS}
-Function glBindBuffer:Void( target,buffer )="_glBindBuffer"
-Function glIsBuffer:Bool( buffer )="_glIsBuffer"
+Function glBindBuffer:Void( target,buffer )
+Function glIsBuffer:Bool( buffer )
 Function glGenTextures:Void( n,textures[],offset=0 )="_glGenTextures"
 Function glDeleteTextures:Void( n,textures[],offset=0 )="_glDeleteTextures"
 Function glGenBuffers:Void( n,buffers[],offset=0 )="_glGenBuffers"

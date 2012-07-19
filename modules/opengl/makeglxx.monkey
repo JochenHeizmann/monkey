@@ -222,7 +222,7 @@ Function Bump$( text$ )
 	Return text[i+1..].Trim()
 End
 
-Function MakeGL20_cpp()
+Function MakeGL20Exts()
 
 	Local gl:=LoadString( "GL.h" )
 	Local gl2:=LoadString( "gles20.h" )
@@ -233,7 +233,7 @@ Function MakeGL20_cpp()
 	decls.Push "typedef char GLchar;"
 	decls.Push "typedef size_t GLintptr;"
 	decls.Push "typedef size_t GLsizeiptr;"
-	decls.Push "#define INITGLES20 1"
+	decls.Push "#define INIT_GL_EXTS 1"
 		
 	For Local line:=Eachin gl2.Split( "~n" )
 	
@@ -264,7 +264,7 @@ Function MakeGL20_cpp()
 					Local args:=line
 					
 					decls.Push ret+"(__stdcall*"+id+")"+args
-					inits.Push "(void*&)"+id+"=wglGetProcAddress(~q"+id+"~q);"
+					inits.Push "(void*&)"+id+"=(void*)wglGetProcAddress(~q"+id+"~q);"
 
 				Else
 					'Print "//"+tline
@@ -273,7 +273,7 @@ Function MakeGL20_cpp()
 		Endif
 	Next
 	
-	Local t:="#if _WIN32~n"+decls.Join("~n")+"~nvoid InitGLES20(){~n~t"+inits.Join( "~n~t" )+"~n}~n#endif~n"
+	Local t:="#if _WIN32~n"+decls.Join("~n")+"~nvoid Init_GL_Exts(){~n~t"+inits.Join( "~n~t" )+"~n}~n#endif~n"
 	
 	SaveString t,"native/gles20_win32_exts.cpp"
 		
@@ -283,12 +283,15 @@ Function Main()
 
 	ChangeDir "../../"
 
-'	MakeGL11
+	Print "MakeGL11"
+	MakeGL11
 	
+	Print "MakeGL20..."
 	MakeGL20
+	
+	Print "MakeGl20Exts..."
+	MakeGL20Exts
 
-'	MakeGL20_cpp
-
-	Print "Bye!"
+	Print "Done!"
 		
 End

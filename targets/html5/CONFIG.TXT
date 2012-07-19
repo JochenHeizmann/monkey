@@ -1,4 +1,6 @@
 
+HTML5_SUSPEND_ON_BLUR_ENABLED=false
+
 OPENGL_GLES20_ENABLED=false
 
 TEXT_FILES=*.txt|*.xml|*.json
