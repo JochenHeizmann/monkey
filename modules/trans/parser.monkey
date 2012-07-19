@@ -1186,9 +1186,11 @@ Class Parser
 		
 		If attrs & FUNC_METHOD
 			If _toke="new"
+				If attrs & DECL_EXTERN
+					Err "Extern classes cannot have constructors"
+				Endif
 				id=_toke
 				NextToke
-				ty=Null
 				attrs|=FUNC_CTOR
 				attrs&=~FUNC_METHOD
 			Else
@@ -1221,7 +1223,7 @@ Class Parser
 			args=args[..nargs]
 		Endif
 		Parse ")"
-
+		
 		Repeat		
 			If CParse( "final" )
 				attrs|=DECL_FINAL

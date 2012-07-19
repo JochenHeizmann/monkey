@@ -89,11 +89,13 @@ Class JsTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		'
-		Local ctor:FuncDecl=FuncDecl( expr.ctor.actual )
-		Local cdecl:ClassDecl=ClassDecl( expr.classDecl.actual )
-		'
-		Return ctor.munged+".call"+TransArgs( expr.args,"new "+cdecl.munged )
+		Local t$="new "+expr.classDecl.actual.munged
+		If expr.ctor
+			t=expr.ctor.actual.munged+".call"+TransArgs(expr.args,t)
+		Else
+			t="("+t+")"
+		Endif
+		Return t
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
@@ -373,7 +375,7 @@ Class JsTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 		
-		app.mainFunc.munged="bb_Main"
+		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values()
 			MungDecl decl
@@ -395,8 +397,6 @@ Class JsTranslator Extends Translator
 			
 			'local mungs
 			PushMungScope
-			
-'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
@@ -426,7 +426,7 @@ Class JsTranslator Extends Translator
 			Endif
 		Next
 
-		Emit "function bb_Init(){"
+		Emit "function bbInit(){"
 		For Local decl:=Eachin app.semantedGlobals
 			Emit decl.munged+"="+decl.init.Trans()+";"
 		Next

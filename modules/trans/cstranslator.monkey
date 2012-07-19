@@ -127,10 +127,9 @@ Class CsTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		Local ctor:=FuncDecl( expr.ctor.actual )
-		Local cdecl:=ClassDecl( expr.classDecl.actual )
-		'
-		Return "(new "+cdecl.munged+"())."+ctor.munged+TransArgs( expr.args )
+		Local t$="(new "+expr.classDecl.actual.munged+"())"
+		If expr.ctor t+="."+expr.ctor.actual.munged+TransArgs( expr.args )
+		Return t
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
@@ -402,7 +401,7 @@ Class CsTranslator Extends Translator
 	Method TransApp$( app:AppDecl )
 		
 		app.mainModule.munged="bb_"
-		app.mainFunc.munged="bb_Main"
+		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values
 			MungDecl decl
@@ -416,8 +415,6 @@ Class CsTranslator Extends Translator
 			If Not cdecl Continue
 			
 			PushMungScope
-			
-'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 			
@@ -461,10 +458,19 @@ Class CsTranslator Extends Translator
 					Continue
 				Endif
 			Next
+			
+			If mdecl=app.mainModule
+				Emit "public static int bbInit(){"
+				For Local decl:=Eachin app.semantedGlobals
+					Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
+				Next
+				Emit "return 0;"
+				Emit "}"
+			Endif
 
 			Emit "}"
 		Next
-		
+#rem		
 		Emit "class bb_Init{"
 		Emit "public static int Init(){"
 		For Local decl:=Eachin app.semantedGlobals
@@ -473,7 +479,7 @@ Class CsTranslator Extends Translator
 		Emit "return 0;"
 		Emit "}"
 		Emit "}"
-		
+#end		
 		Return JoinLines()
 	End
 	

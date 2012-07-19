@@ -60,8 +60,8 @@ package{
 			game=this;
 			
 			try{
-				bb_Init();
-				bb_Main();
+				bbInit();
+				bbMain();
 			}catch( ex:Object ){
 				return;
 			}
@@ -115,7 +115,7 @@ internal function loadBitmap( path:String ):Bitmap{
 internal function loadSound( path:String ):Sound{
 		
 	var t:Class=Assets[ mungPath(path) ];
-	if( t ) return (new t ) as Sound;
+	if( t ) return (new t) as Sound;
 
 	return null;
 }

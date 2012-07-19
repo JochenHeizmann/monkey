@@ -5,14 +5,12 @@ Import mojo
 
 Class MyApp Extends App
 
-	Field tkey
+	Field tkey,fmt$,mfmt$
 	Field shoot:Sound,shoot_chan,shoot_loop
 	Field tinkle:Sound,tinkle_chan=4,tinkle_loop
 	Field music$,music_on
 	
 	Method OnCreate()
-	
-		Local fmt$,mfmt$
 	
 #If TARGET="glfw"
 		'GLFW supports WAV only
@@ -42,27 +40,30 @@ Class MyApp Extends App
 		fmt="m4a"
 #End
 		If Not mfmt mfmt=fmt
-		
+
+		LoadStuff
+				
+		SetUpdateRate 15
+	End
+	
+	Method LoadStuff()
 		shoot=LoadSound( "shoot."+fmt )
 		tinkle=LoadSound( "tinkle."+fmt )
-		
 		music="happy."+mfmt
-		
-'		LoadSound music
-'		music="shoot."+mfmt
-		
-		SetUpdateRate 15
 	End
 	
 	Method OnUpdate()
 	
+		Local tx#=TouchX(0)*(320.0/DeviceWidth)
+		Local ty#=TouchY(0)*(480.0/DeviceHeight)
+	
 		Local key
 		If TouchHit(0)
-			Local y=TouchY(0)/24
-			If y>=0 And y<7 key=y+1
+			Local y=ty/24
+			If y>=0 And y<8 key=y+1
 		Endif
 	
-		For Local i=KEY_1 To KEY_7
+		For Local i=KEY_1 To KEY_8
 			If KeyHit(i)
 				key=i-KEY_1+1
 				Exit
@@ -106,14 +107,21 @@ Class MyApp Extends App
 				PlayMusic music,1
 				music_on=True
 			Endif
+		Case 8
+			'shoot.Discard		'should work with/without...
+			'tinkle.Discard
+			LoadStuff
 		End
 	End
 	
 	Method OnRender()
+
+		Scale DeviceWidth/320.0,DeviceHeight/480.0
+		
 		Cls
 		
 		SetColor 0,0,255
-		DrawRect 0,tkey*24,DeviceWidth,24
+		DrawRect 0,tkey*24,320,24
 		
 		Translate 5,5
 		
@@ -125,8 +133,9 @@ Class MyApp Extends App
 		DrawText "5) Loop/Stop 'shoot' through channel 6",0,24*4
 		DrawText "6) Loop/Stop 'tinkle' through channel 7",0,24*5
 		DrawText "7) Loop/Stop music",0,24*6
+		DrawText "8) Reload sounds",0,24*7
 		
-		Local y=24*7
+		Local y=24*9
 		For Local i=0 Until 8
 			DrawText "ChannelState("+i+")="+ChannelState(i),0,y
 			y+=24
@@ -137,8 +146,6 @@ Class MyApp Extends App
 End
 
 Function Main()
-
-	Print "Hello World!"
 
 	New MyApp
 

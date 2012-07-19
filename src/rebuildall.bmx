@@ -23,7 +23,7 @@ Const mserver$="..\bin\mserver_winnt.exe"
 
 ?MacOS
 
-Const QUICKTRANS=False	'True
+Const QUICKTRANS=False
 
 Const trans$="../bin/trans_macos"
 Const trans2$=trans

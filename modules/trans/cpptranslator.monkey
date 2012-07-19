@@ -116,11 +116,9 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		'
-		Local ctor:=FuncDecl( expr.ctor.actual )
-		Local cdecl:=ClassDecl( expr.classDecl.actual )
-		'
-		Return "(new "+cdecl.munged+")->"+ctor.munged+TransArgs( expr.args )
+		Local t$="(new "+expr.classDecl.actual.munged+")"
+		If expr.ctor t+="->"+expr.ctor.actual.munged+TransArgs( expr.args )
+		Return t
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
@@ -365,15 +363,15 @@ Class CppTranslator Extends Translator
 		Local superid$=classDecl.superClass.actual.munged
 		
 		If classDecl.IsInterface()
-			Local bases$'=" : public "+superid
+			Local bases$
 			For Local iface:=Eachin classDecl.implments
 				If bases bases+="," Else bases=" : "
 				bases+="public virtual "+iface.actual.munged
-'				bases+="public "+iface.actual.munged
 			Next
+			If Not bases bases=" : public virtual gc_interface"
 			Emit "class "+classid+bases+"{"
 			Emit "public:"
-			Emit "virtual ~"+classid+"(){}"
+'			Emit "virtual ~"+classid+"(){}"
 			Local emitted:=New Stack<FuncDecl>
 			For Local decl:=Eachin classDecl.Semanted
 				Local fdecl:=FuncDecl(decl)
@@ -404,7 +402,6 @@ Class CppTranslator Extends Translator
 		Local bases$=" : public "+superid
 		For Local iface:=Eachin classDecl.implments
 			bases+=",public virtual "+iface.actual.munged
-'			bases+=",public "+iface.actual.munged
 		Next
 
 		Emit "class "+classid+bases+"{"
@@ -514,7 +511,7 @@ Class CppTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 	
-		app.mainFunc.munged="bb_Main"
+		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values()
 			MungDecl decl
@@ -530,8 +527,6 @@ Class CppTranslator Extends Translator
 			Emit "class "+decl.munged+";"
 			
 			PushMungScope
-			
-'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl
@@ -584,7 +579,7 @@ Class CppTranslator Extends Translator
 			Endif
 		Next
 		
-		Emit "int bb_Init(){"
+		Emit "int bbInit(){"
 		For Local decl:=Eachin app.semantedGlobals
 			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
 		Next

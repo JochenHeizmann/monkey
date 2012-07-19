@@ -183,6 +183,21 @@ void gc_mark_q( gc_object *p ){
 	gc_marked_queue.push_back( p );
 }
 
+// for interfaces...
+//
+struct gc_interface{
+	virtual ~gc_interface(){
+	}
+};
+
+void gc_mark( gc_interface *p ){
+	if( p ) gc_mark( dynamic_cast<gc_object*>( p ) );
+}
+
+void gc_mark_q( gc_interface *p ){
+	if( p ) gc_mark_q( dynamic_cast<gc_object*>( p ) );
+}
+
 // ***** Monkey Types *****
 
 typedef wchar_t Char;
@@ -722,8 +737,8 @@ void Die( const char *p ){
 	exit( -1 );
 }
 
-int bb_Init();
-int bb_Main();
+int bbInit();
+int bbMain();
 
 #if _MSC_VER
 int seh_call( int(*f)() ){
@@ -775,11 +790,11 @@ int bb_std_main( int argc,const char **argv ){
 	try{
 
 #if _MSC_VER
-		seh_call( bb_Init );
-		seh_call( bb_Main );
+		seh_call( bbInit );
+		seh_call( bbMain );
 #else
-		bb_Init();
-		bb_Main();
+		bbInit();
+		bbMain();
 #endif
 
 	}catch( const char *p ){

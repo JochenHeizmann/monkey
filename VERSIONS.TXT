@@ -1,6 +1,28 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V40 *****
+
+Modules:
+
+Implemented dguy's ios mojo fix for LoadString crash with non-existent files.
+
+monkey - removed resource module.
+
+mojo graphics/audio - Added Discard method to Image and Sound (these are still GC'd though).
+
+iOS mojo audio - tweaked ExtAudio based loader to attempt to deal with popping mp3s.
+
+input - Fixed KEY_JOYBLAH typo.
+
+
+Trans (1.13):
+
+Addeds support for New with Extern classes - no ctors allowed for now (ie: default only)!
+
+Fixed C++ GC handling of interfaces.
+
+
 ***** V39c *****
 
 Tools:

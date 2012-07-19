@@ -125,11 +125,9 @@ Class AsTranslator Extends Translator
 	End
 
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-		'
-		Local ctor:=FuncDecl( expr.ctor.actual )
-		Local cdecl:=ClassDecl( expr.classDecl.actual )
-		'
-		Return "(new "+cdecl.munged+")."+ctor.munged+TransArgs( expr.args )
+		Local t$="(new "+expr.classDecl.actual.munged+")"
+		If expr.ctor t+="."+expr.ctor.actual.munged+TransArgs( expr.args )
+		Return t
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
@@ -432,7 +430,7 @@ Class AsTranslator Extends Translator
 	
 	Method TransApp$( app:AppDecl )
 		
-		app.mainFunc.munged="bb_Main"
+		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values()
 			MungDecl decl
@@ -447,8 +445,6 @@ Class AsTranslator Extends Translator
 			
 			PushMungScope
 
-'			MungOverrides cdecl
-			
 			For Local decl:=Eachin cdecl.Semanted
 				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
 					decl.ident=cdecl.ident+"_"+decl.ident
@@ -482,7 +478,7 @@ Class AsTranslator Extends Translator
 			Endif
 		Next
 		
-		Emit "function bb_Init():void{"
+		Emit "function bbInit():void{"
 		For Local decl:=Eachin app.semantedGlobals
 			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
 		Next

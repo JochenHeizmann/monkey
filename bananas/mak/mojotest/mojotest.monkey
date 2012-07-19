@@ -14,13 +14,26 @@ Class Test Extends App
 	
 	Method OnCreate()
 
-		image=LoadImage( "RedbrushAlpha.png",1,Image.MidHandle )
+		LoadStuff
 		
 		SetUpdateRate 60
 	End
 	
+	Method LoadStuff()
+
+		image=LoadImage( "RedbrushAlpha.png",1,Image.MidHandle )
+		
+	End
+	
 	Method OnUpdate()
 
+		'Enable to test image thrashing!
+'#rem		
+#if TARGET<>"html5"
+'		image.Discard	'should work with/without
+		LoadStuff
+#end
+'#end
 		If KeyDown( KEY_RIGHT )
 			tx+=.0125
 		Else If KeyDown( KEY_LEFT )

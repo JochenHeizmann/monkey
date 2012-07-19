@@ -10,6 +10,5 @@ Import list
 Import map
 Import math
 Import random
-Import resource
 Import set
 Import stack

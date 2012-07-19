@@ -28,8 +28,8 @@ window.onload=function( e ){
 	
 	
 	try{
-		bb_Init();
-		bb_Main();
+		bbInit();
+		bbMain();
 	}catch( ex ){
 		if( ex ) alert( ex );
 		return;
