@@ -75,7 +75,10 @@ Class GlfwTarget Extends Target
 				
 				If OPT_ACTION>=ACTION_RUN
 					ChangeDir "build/"+CASED_CONFIG
-					Execute "open MonkeyGame.app"
+
+					'Execute "open MonkeyGame.app"
+					ChangeDir "MonkeyGame.app/Contents/MacOS"
+					Execute "./MonkeyGame"
 				Endif
 			Endif
 			

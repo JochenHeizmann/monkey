@@ -38,7 +38,7 @@ Class JsTranslator Extends CTranslator
 		Return "var "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "push_err();"
 	End
 	
@@ -226,6 +226,8 @@ Class JsTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "print"+Bra( arg0 )
 		Case "error" Return "error"+Bra( arg0 )
+		Case "debuglog" Return "debugLog"+Bra( arg0 )
+		Case "debugstop" Return "debugStop()"
 
 		'string/array methods
 		Case "length" Return texpr+".length"

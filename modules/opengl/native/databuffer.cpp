@@ -11,7 +11,7 @@ class DataBuffer : public Object{
 	}
 	
 	~DataBuffer(){
-		if( _data _) free( _data );
+		if( _data ) free( _data );
 	}
 	
 	int Size(){

@@ -29,8 +29,7 @@ package{
 
 			}catch( err:String ){
 			
-				showError( err );
-
+				printError( err );
 			}
 		}
 		

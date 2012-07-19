@@ -43,7 +43,7 @@ DataBuffer.prototype.PokeFloat=function( addr,value ){
 	this.floatArray[addr>>2]=value;
 }
 
-DataBuffer.prototype.Peekbyte=function( addr ){
+DataBuffer.prototype.PeekByte=function( addr ){
 	return this.byteArray[addr];
 }
 

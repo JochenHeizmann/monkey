@@ -25,8 +25,9 @@ public class bb_std_lang{
 	}
 
 	public static String StackTrace(){
+		if( errInfo.Length==0 ) return "";
 		String str=errInfo+"\n";
-		for( int i=errStack.Count-1;i>=0;--i ){
+		for( int i=errStack.Count-1;i>0;--i ){
 			str+=errStack[i]+"\n";
 		}
 		return str;
@@ -39,7 +40,23 @@ public class bb_std_lang{
 	
 	public static int Error( String str ){
 		throw new Exception( str );
+	}
+	
+	public static int DebugLog( String str ){
+		Print( str );
 		return 0;
+	}
+	
+	public static int DebugStop(){
+		Error( "STOP" );
+		return 0;
+	}
+	
+	public static void PrintError( String err ){
+		if( err.Length==0 ) return;
+		Print( "Monkey Runtime Error : "+err );
+		Print( "" );
+		Print( StackTrace() );
 	}
 	
 	//***** String stuff *****

@@ -138,4 +138,3 @@ Function BmxUnquote$( str$ )
 	str=str.Replace( "~~z","~~" )
 	Return str
 End
-

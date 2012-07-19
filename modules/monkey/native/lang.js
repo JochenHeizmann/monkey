@@ -21,14 +21,11 @@ function pop_err(){
 }
 
 function stackTrace(){
-	var str="";
-	push_err();
-	err_stack.reverse();
-	for( var i=0;i<err_stack.length;++i ){
+	if( !err_info.length ) return "";
+	var str=err_info+"\n";
+	for( var i=err_stack.length-1;i>0;--i ){
 		str+=err_stack[i]+"\n";
 	}
-	err_stack.reverse();
-	pop_err();
 	return str;
 }
 
@@ -43,17 +40,21 @@ function print( str ){
 	return 0;
 }
 
-function showError( err ){
+function alertError( err ){
 	if( typeof(err)=="string" && err=="" ) return;
-	var t="Monkey runtime error: "+err+"\n"+stackTrace();
-	if( window.console!=undefined ){
-		window.console.log( t );
-	}
-	alert( t );
+	alert( "Monkey Runtime Error : "+err+"\n\n"+stackTrace() );
 }
 
 function error( err ){
 	throw err;
+}
+
+function debugLog( str ){
+	print( str );
+}
+
+function debugStop(){
+	error( "STOP" );
 }
 
 function dbg_object( obj ){

@@ -1,25 +1,16 @@
 
+#MOJO_AUTO_SUSPEND_ENABLED="true"
+
 Import mojo
 
 Const WIDTH#=320
 Const HEIGHT#=240
-
-Interface I
-	Method Test()
-End
-
-Class F Implements I
-	Method Test()
-	End
-End
 
 Class Sprite
 
 	Field x#,vx#
 	Field y#,vy#
 	Field f#,vf#
-	
-	Field tmp:I[10]
 	
 	Method New()
 	
@@ -30,10 +21,6 @@ Class Sprite
 		vy=Rnd(1,2)
 		If Rnd(1)>=.5 vy=-vy
 		vf=Rnd( .5,1.5 )
-		
-		For Local i=0 Until 10
-			tmp[i]=New F
-		Next
 
 	End
 
@@ -44,12 +31,6 @@ Class Sprite
 		If y<0 Or y>=HEIGHT vy=-vy
 		f+=vf
 		If f>=8 f-=8
-		
-'		For Local i=0 Until 10
-'			tmp[i]=New F
-'			tmp[i].Test
-'		Next
-
 	End
 	
 End
@@ -67,9 +48,7 @@ Class MyApp Extends App
 	Field rot#
 
 	Method OnCreate()
-	
-		Print LoadString( "textfile.txt" )
-	
+
 		image1=LoadImage( "alien1.png",8,Image.MidHandle )
 		image2=LoadImage( "alien2.png",8,Image.MidHandle )
 		
@@ -84,11 +63,7 @@ Class MyApp Extends App
 	End
 	
 	Method OnUpdate()
-	
-'		For Local i=1 To 100
-'			New F
-'		Next
-	
+
 		uframes+=1
 		Local e=Millisecs-utime
 		If e>=1000
@@ -98,6 +73,7 @@ Class MyApp Extends App
 		Endif
 	
 		If MouseHit(0)
+		
 			If MouseX()<DeviceWidth/3
 				For Local i=0 Until 25
 					If Not sprites.IsEmpty() sprites.Pop

@@ -15,6 +15,6 @@ int main( int argc,const char **argv ){
 		
 	}catch( const char *err ){
 	
-		Print( String("Monkey runtime error: ")+err+"\n"+StackTrace() );
+//		Print( String("Monkey runtime error: ")+err+"\n"+StackTrace() );
 	}
 }

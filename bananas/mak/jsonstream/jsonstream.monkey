@@ -4,7 +4,6 @@
 'Also handles built in list, stack and map classes.
 '
 'CAN'T HANDLE CYCLES!!!!!
-'
 
 #REFLECTION_FILTER="jsonstream*|monkey.list|monkey.stack|monkey.map"
 

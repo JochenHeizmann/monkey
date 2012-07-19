@@ -1722,6 +1722,8 @@ Class Parser
 			
 		Wend
 		
+		_errInfo=""
+		
 	End
 	
 	Method New( toker:Toker,app:AppDecl,mdecl:ModuleDecl=Null,defattrs=0 )
@@ -1871,21 +1873,23 @@ Function PreProcess$( path$ )
 			Endif
 
 		Default
-			If ty=TOKE_IDENT
-				If toker.Toke()="="
-					toker.NextToke
-					Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
-					If Env.Contains( toke )
+			If con=ifnest
+				If ty=TOKE_IDENT
+					If toker.Toke()="="
+						toker.NextToke
+						Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
+						If Env.Contains( toke )
+						Else
+							Env.Set toke,val
+						Endif
 					Else
-						Env.Set toke,val
+						Err "Syntax error - expecting assignement"
 					Endif
+				
 				Else
-					Err "Syntax error - expecting assignement"
+					Err "Unrecognized preprocessor directive '"+toke+"'"
 				Endif
-			
-			Else
-				Err "Unrecognized preprocessor directive '"+toke+"'"
-			Endif
+			Endif				
 		End
 
 	Forever

@@ -10,6 +10,9 @@ Const PROFILE?=True
 
 Class CppTranslator Extends CTranslator
 
+	Field lastDbgInfo$
+	Field dbgLocals:=New Stack<LocalDecl>
+
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "bool"
@@ -56,16 +59,46 @@ Class CppTranslator Extends CTranslator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
-		If CONFIG_DEBUG Emit "pushErr();" Else Emit "profEnter(~q"+func+"~q);"
+	Method BeginLocalScope()
+		Super.BeginLocalScope
+	End
+	
+	Method EndLocalScope()
+		Super.EndLocalScope
+		dbgLocals.Clear
+		lastDbgInfo=""
+	End
+	
+	Method EmitEnter( func:FuncDecl )
+		Local id:=func.ident
+		If ClassDecl( func.scope ) id=func.scope.ident+"."+id
+		Emit "DBG_ENTER(~q"+id+"~q);"
+		If func.IsCtor() Or func.IsMethod()
+			Emit func.scope.munged+" *self=this;"
+			Emit "DBG_LOCAL(~qSelf~q,&self);"
+		Endif
+	End
+	
+	Method EmitEnterBlock()
+		Emit "DBG_BLOCK();"
 	End
 	
 	Method EmitSetErr( info$ )
-		If CONFIG_DEBUG Emit "errInfo=~q"+info.Replace( "\","/" )+"~q;"
+		If info=lastDbgInfo Return
+		lastDbgInfo=info
+		For Local decl:=Eachin dbgLocals
+			If decl.ident Emit "DBG_LOCAL(~q"+decl.ident+"~q,&"+decl.munged+");"
+		Next
+		dbgLocals.Clear
+		Emit "DBG_INFO(~q"+info.Replace( "\","/" )+"~q);"
+	End
+	
+	Method EmitLeaveBlock()
+		dbgLocals.Clear
 	End
 	
 	Method EmitLeave()
-		If CONFIG_DEBUG Emit "popErr();" Else Emit "profLeave();"
+		Emit "DBG_LEAVE();"
 	End
 
 	'***** Declarations *****
@@ -240,6 +273,8 @@ Class CppTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "Print"+Bra( arg0 )
 		Case "error" Return "Error"+Bra( arg0 )
+		Case "debuglog" Return "DebugLog"+Bra( arg0 )
+		Case "debugstop" Return "DebugStop()"
 
 		'string/array methods
 		Case "length" Return texpr+".Length()"
@@ -284,6 +319,20 @@ Class CppTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransDeclStmt$( stmt:DeclStmt )
+		Local decl:=LocalDecl( stmt.decl )
+		If decl
+			dbgLocals.Push decl
+			MungDecl decl
+			Return TransLocalDecl( decl.munged,decl.init )
+		Endif
+		Local cdecl:=ConstDecl( stmt.decl )
+		If cdecl
+			Return
+		Endif
+		InternalErr
+	End
 
 	Method TransAssignStmt2$( stmt:AssignStmt )
 		'
@@ -345,13 +394,14 @@ Class CppTranslator Extends CTranslator
 			MungDecl arg
 			If args args+=","
 			args+=TransType( arg.type )+" "+arg.munged
+			dbgLocals.Push arg
 		Next
 		
 		Local id$=decl.munged
 		If decl.ClassScope() id=decl.ClassScope().munged+"::"+id
 		
 		Emit TransType( decl.retType )+" "+id+Bra( args )+"{"
-
+		
 		EmitBlock decl
 
 		Emit "}"
@@ -438,8 +488,16 @@ Class CppTranslator Extends CTranslator
 
 		'gc mark
 		Emit "void mark();"
+		
+		If ENV_CONFIG="debug"
+			Emit "String debug();"
+		Endif
 
 		Emit "};"
+		
+		If ENV_CONFIG="debug"
+			Emit "String dbg_type("+classid+"**p){return ~q"+classDecl.ident+"~q;}"
+		Endif
 	End
 	
 	Method EmitMark( id$,ty:Type,queue? )
@@ -468,7 +526,7 @@ Class CppTranslator Extends CTranslator
 		Local superid$=classDecl.superClass.munged
 		
 		'fields ctor
-		BeginLocalScope		
+		BeginLocalScope
 		Emit classid+"::"+classid+"(){"
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
@@ -496,7 +554,7 @@ Class CppTranslator Extends CTranslator
 		
 		'gc_mark
 		Emit "void "+classid+"::mark(){"
-		If classDecl.superClass 
+		If classDecl.superClass
 			Emit classDecl.superClass.munged+"::mark();"
 		Endif
 		For Local decl:=Eachin classDecl.Semanted
@@ -504,7 +562,25 @@ Class CppTranslator Extends CTranslator
 			If fdecl EmitMark TransField(fdecl,Null),fdecl.type,True
 		Next
 		Emit "}"
-	
+		
+		'debug info
+		If ENV_CONFIG="debug"
+			Emit "String "+classid+"::debug(){"
+			Emit "String t=~q("+classDecl.ident+")\n~q;"
+			If classDecl.superClass And Not classDecl.superClass.IsExtern()
+				Emit "t="+classDecl.superClass.munged+"::debug()+t;"
+			Endif
+			For Local decl:=Eachin classDecl.Decls
+				If Not decl.IsSemanted() Continue
+				If FieldDecl( decl )
+					Emit "t+=dbg_decl(~q"+decl.ident+"~q,&"+decl.munged+");"
+				Else If GlobalDecl( decl )
+					Emit "t+=dbg_decl(~q"+decl.ident+"~q,&"+classDecl.munged+"::"+decl.munged+");"
+				Endif
+			Next
+			Emit "return t;"
+			Emit "}"
+		Endif
 	End
 	
 	Method TransApp$( app:AppDecl )
@@ -577,7 +653,11 @@ Class CppTranslator Extends CTranslator
 		BeginLocalScope
 		Emit "int bbInit(){"
 		For Local decl:=Eachin app.semantedGlobals
-			Emit TransGlobal( decl )+"="+decl.init.Trans()+";"
+			Local munged:=TransGlobal( decl )
+			Emit munged+"="+decl.init.Trans()+";"
+			If ENV_CONFIG="debug"
+				Emit "DBG_GLOBAL(~q"+decl.ident+"~q,&"+munged+");"
+			Endif
 		Next
 		Emit "return 0;"
 		Emit "}"

@@ -1,6 +1,29 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V59 ******
+
+Modules:
+
+c++ lang - added debug handling.
+
+glfw mojo - LoadSound now uses glfw target loadSound.
+
+opengl - Fixed various issues.
+
+lang.cpp/os.cpp - Fixed several issues with empty std::vectors.
+
+
+Targets:
+
+glfw - added stb_vorbis loader (doesn't stream yet) and loadSound/unloadSound functions
+
+
+Trans (v1.35):
+
+Added debug info to c++ translator.
+
+
 ***** V58 *****
 
 Modules:
@@ -21,7 +44,7 @@ Pss - Added! Added config var PSS_PATH="${PROGRAMFILES}\SCE\Pss" to bin\config.w
 Android - MonkeyData.loadString now uses StringBuilder instead of StringBuffer.
 
 
-Trans (v1.34)
+Trans (v1.34):
 
 Fixed scoping bug where code could access globals via class members.
 

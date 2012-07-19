@@ -65,7 +65,7 @@ Class CsTranslator Extends CTranslator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "bb_std_lang.pushErr();"
 	End
 	
@@ -249,6 +249,8 @@ Class CsTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "bb_std_lang.Print"+Bra( arg0 )
 		Case "error" Return "bb_std_lang.Error"+Bra( arg0 )
+		Case "debuglog" Return "bb_std_lang.DebugLog"+Bra( arg0 )
+		Case "debugstop" Return "bb_std_lang.DebugStop()"
 
 		'string/array methods
 		Case "length"

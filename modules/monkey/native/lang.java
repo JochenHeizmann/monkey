@@ -33,19 +33,36 @@ class bb_std_lang{
 	}
 	
 	static String stackTrace(){
+		if( errInfo.length()==0 ) return "";
 		String str=errInfo+"\n";
-		for( int i=errStack.size()-1;i>=0;--i ){
+		for( int i=errStack.size()-1;i>0;--i ){
 			str+=(String)errStack.elementAt(i)+"\n";
 		}
 		return str;
 	}
 	
-	static void print( String str ){
+	static int print( String str ){
 		System.out.println( str );
+		return 0;
 	}
 	
-	static void error( String str ){
+	static int error( String str ){
 		throw new Error( str );
+	}
+	
+	static String makeError( String err ){
+		if( err.length()==0 ) return "";
+		return "Monkey Runtime Error : "+err+"\n\n"+stackTrace();
+	}
+	
+	static int debugLog( String str ){
+		print( str );
+		return 0;
+	}
+	
+	static int debugStop(){
+		error( "STOP" );
+		return 0;
 	}
 	
 	//***** String stuff *****

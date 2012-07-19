@@ -19,6 +19,8 @@ typedef float Float;
 #define FLOAT(X) X##f
 #endif
 
+void dbg_error( const char *p );
+
 //***** GC Config *****
 
 #if CFG_CPP_DEBUG_GC
@@ -70,7 +72,7 @@ struct gc_object{
 	
 	virtual void mark(){
 	}
-
+	
 	void *operator new( size_t size ){
 		return gc_malloc( size );
 	}
@@ -362,12 +364,12 @@ public:
 	}
 	
 	T &At( int index ){
-		if( index<0 || index>=rep->length ) throw "Array index out of range";
+		if( index<0 || index>=rep->length ) dbg_error( "Array index out of range" );
 		return rep->data[index]; 
 	}
 	
 	const T &At( int index )const{
-		if( index<0 || index>=rep->length ) throw "Array index out of range";
+		if( index<0 || index>=rep->length ) dbg_error( "Array index out of range" );
 		return rep->data[index]; 
 	}
 	
@@ -499,7 +501,7 @@ public:
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
-
+	
 	String( Float n ){
 		char buf[256];
 		
@@ -810,7 +812,7 @@ public:
 	bool Save( FILE *fp ){
 		std::vector<unsigned char> buf;
 		Save( buf );
-		return fwrite( &buf[0],1,buf.size(),fp )==buf.size();
+		return buf.size() ? fwrite( &buf[0],1,buf.size(),fp )==buf.size() : true;
 	}
 	
 	void Save( std::vector<unsigned char> &buf ){
@@ -859,7 +861,7 @@ public:
 			if( n>0 ) buf.insert( buf.end(),tmp,tmp+n );
 			if( n!=4096 ) break;
 		}
-		return String::Load( &buf[0],buf.size() );
+		return buf.size() ? String::Load( &buf[0],buf.size() ) : "";
 	}
 	
 	static String Load( unsigned char *p,int n ){
@@ -969,62 +971,340 @@ public:
 	virtual int Compare( Object *obj ){
 		return (char*)this-(char*)obj;
 	}
+	
+	virtual String debug(){
+		return "+Object\n";
+	}
 };
 
 struct gc_interface{
 	virtual ~gc_interface(){}
 };
 
+//***** Debugger *****
+
+int Print( String t );
+
+#define dbg_stream stderr
+
+const char *dbg_info;
+String dbg_exstack;
+
+struct dbg_var;
+struct dbg_func;
+
+static int dbg_suspend;
+static int dbg_stepmode;
+
+static std::vector<dbg_var*> dbg_vars;
+static std::vector<dbg_func*> dbg_funcs;
+
+static std::vector<void*> free_dbg_vars;
+
+int dbg_print( String t ){
+	static char *buf;
+	static int len;
+	int n=t.Length();
+	if( n+100>len ){
+		len=n+100;
+		free( buf );
+		buf=(char*)malloc( len );
+	}
+	buf[n]='\n';
+	for( int i=0;i<n;++i ) buf[i]=t[i];
+	fwrite( buf,n+1,1,dbg_stream );
+	fflush( dbg_stream );
+	return 0;
+}
+
+String dbg_type( bool *p ){
+	return "Bool";
+}
+
+String dbg_type( int *p ){
+	return "Int";
+}
+
+String dbg_type( Float *p ){
+	return "Float";
+}
+
+String dbg_type( String *p ){
+	return "String";
+}
+
+template<class T> String dbg_type( T *p ){
+	return "Object";
+}
+
+template<class T> String dbg_type( Array<T> *p ){
+	return dbg_type( &(*p)[0] )+"[]";
+}
+
+String dbg_value( bool *p ){
+	return *p ? "True" : "False";
+}
+
+String dbg_value( int *p ){
+	return String( *p );
+}
+
+String dbg_value( Float *p ){
+	return String( *p );
+}
+
+String dbg_value( String *p ){
+	return String( "\"" )+(*p).Replace( "\"","~q" )+String( "\"" );
+}
+
+template<class T> String dbg_value( T *t ){
+	Object *p=dynamic_cast<Object*>( *t );
+	char buf[64];
+	sprintf( buf,"%p",p );
+	return String("@") + (buf[0]=='0' && buf[1]=='x' ? buf+2 : buf );
+}
+
+template<class T> String dbg_value( Array<T> *p ){
+	String t="[";
+	int n=(*p).Length();
+	for( int i=0;i<n;++i ){
+		if( i ) t+=",";
+		t+=dbg_value( &(*p)[i] );
+	}
+	return t+"]";
+}
+
+struct dbg_var{
+	virtual String ident(){ return "?ident?"; }
+	virtual String type(){ return "?type?"; }
+	virtual String value(){ return "?value?"; }
+};
+
+template<class T> struct t_dbg_var : public dbg_var{
+	const char *id;
+	T *ptr;
+
+	t_dbg_var( const char *id,T *ptr ):id(id),ptr(ptr){
+	}
+	
+	String ident(){
+		return id;
+	}
+	
+	String type(){
+		return dbg_type( ptr );
+	}
+	
+	String value(){
+		return dbg_value( ptr );
+	}
+	
+	void *operator new( size_t size ){
+		if( free_dbg_vars.empty() ) return malloc( size );
+		void *p=free_dbg_vars.back();
+		free_dbg_vars.pop_back();
+		return p;
+	}
+	
+	void operator delete( void *p ){
+		free_dbg_vars.push_back( p );
+	}
+};
+
+struct dbg_blk{
+	int vars;
+	
+	dbg_blk(){
+		vars=dbg_vars.size();
+		if( dbg_stepmode=='l' ) --dbg_suspend;
+	}
+	
+	~dbg_blk(){
+		while( dbg_vars.size()!=vars ){
+			delete dbg_vars.back();
+			dbg_vars.pop_back();
+		}
+		if( dbg_stepmode=='l' ) ++dbg_suspend;
+	}
+};
+
+struct dbg_func : public dbg_blk{
+	const char *id;
+	const char *info;
+
+	dbg_func( const char *p ):id(p),info(dbg_info){
+		dbg_funcs.push_back( this );
+		if( dbg_stepmode=='s' ) --dbg_suspend;
+	}
+	
+	~dbg_func(){
+		if( dbg_stepmode=='s' ) ++dbg_suspend;
+//		if( dbg_funcs.back()!=this ){ puts( "~dbg_func() ERR!" );exit(-1); }
+		dbg_funcs.pop_back();
+		dbg_info=info;
+	}
+};
+
+template<class T> void dbg_pushvar( const char *id,T *ptr ){
+	dbg_vars.push_back( new t_dbg_var<T>( id,ptr ) );
+}
+
+void dbg_callstack(){
+	int f=0;
+	for( int i=0;i<dbg_vars.size();++i ){
+		while( f<dbg_funcs.size() && i==dbg_funcs[f]->vars ){
+			const char *id=dbg_funcs[f++]->id;
+			const char *info=f<dbg_funcs.size() ? dbg_funcs[f]->info : dbg_info;
+			fprintf( dbg_stream,"+%s;%s\n",id,info );
+		}
+		dbg_var *v=dbg_vars[i];
+		String t=v->ident()+":"+v->type()+"="+v->value();
+		dbg_print( t );
+	}
+	while( f<dbg_funcs.size() ){
+		const char *id=dbg_funcs[f++]->id;
+		const char *info=f<dbg_funcs.size() ? dbg_funcs[f]->info : dbg_info;
+		fprintf( dbg_stream,"+%s;%s\n",id,info );
+	}
+}
+
+String dbg_stacktrace(){
+	if( !dbg_funcs.size() ) return "";
+	String str=String( dbg_info )+"\n";
+	for( int i=dbg_funcs.size()-1;i>0;--i ){
+		str+=String( dbg_funcs[i]->info )+"\n";
+	}
+	return str;
+}
+
+void dbg_throw( const char *err ){
+	dbg_exstack=dbg_stacktrace();
+	throw err;
+}
+
+void dbg_stop(){
+
+#ifdef TARGET_OS_IPHONE
+	dbg_throw( "STOP" );
+#endif
+
+	fprintf( dbg_stream,"{{~~%s~~}}\n",dbg_info );
+	dbg_callstack();
+	dbg_print( "" );
+	
+	for(;;){
+
+		char buf[256];
+		char *e=fgets( buf,256,stdin );
+		if( !e ) exit( -1 );
+		
+		e=strchr( buf,'\n' );
+		if( !e ) exit( -1 );
+		
+		*e=0;
+		
+		Object *p;
+		
+		switch( buf[0] ){
+		case '?':
+			break;
+		case 'r':	//run
+			dbg_suspend=0;		
+			dbg_stepmode=0;
+			return;
+		case 's':	//step
+			dbg_suspend=1;
+			dbg_stepmode='s';
+			return;
+		case 'e':	//enter func
+			dbg_suspend=1;
+			dbg_stepmode='e';
+			return;
+		case 'l':	//leave block
+			dbg_suspend=0;
+			dbg_stepmode='l';
+			return;
+		case '@':	//dump object
+			p=0;
+			sscanf( buf+1,"%p",&p );
+			if( p ){
+				dbg_print( p->debug() );
+			}else{
+				dbg_print( "" );
+			}
+			break;
+		case 'q':	//quit!
+			exit( 0 );
+			break;			
+		default:
+			printf( "????? %s ?????",buf );fflush( stdout );
+			exit( -1 );
+		}
+	}
+}
+
+void dbg_error( const char *err ){
+
+#ifdef TARGET_OS_IPHONE
+	dbg_throw( err );
+#endif
+
+	for(;;){
+		Print( String("Monkey Runtime Error : ")+err );
+		Print( dbg_stacktrace() );
+		dbg_stop();
+	}
+}
+
+template<class T> String dbg_decl( const char *id,T *ptr ){
+	return String( id )+":"+dbg_type(ptr)+"="+dbg_value(ptr)+"\n";
+}
+
+#define DBG_GLOBAL(ID,PTR)
+#define DBG_LOCAL(ID,PTR) dbg_pushvar(ID,PTR)
+#define DBG_INFO(X) {dbg_info=(X);if( dbg_suspend>0 ) dbg_stop();}
+#define DBG_ENTER(P) dbg_func _func(P)
+#define DBG_BLOCK(T) dbg_blk _blk
+#define DBG_LEAVE()
+
 //**** main ****
 
 int argc;
 const char **argv;
-const char *errInfo="";
-std::vector<const char*> errStack;
 
 Float D2R=0.017453292519943295f;
 Float R2D=57.29577951308232f;
 
-void pushErr(){
-	errStack.push_back( errInfo );
-}
-
-void popErr(){
-	errInfo=errStack.back();
-	errStack.pop_back();
-}
-
-String StackTrace(){
-	String str;
-	pushErr();
-	for( int i=errStack.size()-1;i>=0;--i ){
-		str+=String( errStack[i] )+"\n";
-	}
-	popErr();
-	return str;
-}
-
 int Print( String t ){
-	puts( t.ToCString<char>() );
+	static char *buf;
+	static int len;
+	int n=t.Length();
+	if( n+100>len ){
+		len=n+100;
+		free( buf );
+		buf=(char*)malloc( len );
+	}
+	for( int i=0;i<n;++i ) buf[i]=t[i];
+	buf[n]=0;
+	puts( buf );
 	fflush( stdout );
 	return 0;
 }
 
 int Error( String err ){
-	throw err.ToCString<char>();
+	if( !err.Length() ) exit( 0 );
+	dbg_error( err.ToCString<char>() );
 	return 0;
 }
 
-int Compare( int x,int y ){
-	return x-y;
+int DebugLog( String t ){
+	Print( t );
+	return 0;
 }
 
-int Compare( Float x,Float y ){
-	return x<y ? -1 : x>y;
-}
-
-int Compare( String x,String y ){
-	return x.Compare( y );
+int DebugStop(){
+	dbg_stop();
+	return 0;
 }
 
 int bbInit();
@@ -1032,43 +1312,29 @@ int bbMain();
 
 #if _MSC_VER
 
-//Ok, this is butt ugly stuff, but MSVC's SEH seems to be the only
-//way you can catch int divide by zero...let's use it for null objects too...
-//
-const char *FilterException( int type ){
-	switch( type ){
-	case STATUS_ACCESS_VIOLATION:return "Memory access violation";
-	case STATUS_INTEGER_DIVIDE_BY_ZERO:return "Integer divide by zero";
-	}
-	return 0;
-}
+static void _cdecl seTranslator( unsigned int u,EXCEPTION_POINTERS* pExp ){
 
-int seh_call( int(*f)() ){
-	const char *p;
-	__try{
-		return f();
-	}__except( (p=FilterException(GetExceptionCode()))!=0 ){
-		puts( p );
-		throw p;
+	switch( u ){
+	case EXCEPTION_ACCESS_VIOLATION:dbg_error( "Memory access violation" );
+	case EXCEPTION_ILLEGAL_INSTRUCTION:dbg_error( "Illegal instruction" );
+	case EXCEPTION_INT_DIVIDE_BY_ZERO:dbg_error( "Integer divide by zero" );
+	case EXCEPTION_STACK_OVERFLOW:dbg_error( "Stack overflow" );
 	}
+	dbg_error( "Unknown exception" );
 }
 
 #else
 
-int seh_call( int(*f)() ){
-	return f();
-}
-
 void sighandler( int sig  ){
 	switch( sig ){
-	case SIGILL:throw "Illegal instruction";
-	case SIGFPE:throw "Floating point exception";
+	case SIGSEGV:dbg_error( "Memory access violation" );
+	case SIGILL:dbg_error( "Illegal instruction" );
+	case SIGFPE:dbg_error( "Floating point exception" );
 #if !_WIN32
-	case SIGBUS:throw "Bus error";
-#endif
-	case SIGSEGV:throw "Segmentation violation";
+	case SIGBUS:dbg_error( "Bus error" );
+#endif	
 	}
-	throw "Unknown exception";
+	dbg_error( "Unknown signal" );
 }
 
 #endif
@@ -1080,22 +1346,28 @@ int bb_std_main( int argc,const char **argv ){
 	::argc=argc;
 	::argv=argv;
 	
-#if !_MSC_VER
+#if _MSC_VER
+
+	_set_se_translator( seTranslator );
+
+#else
+	
+	signal( SIGSEGV,sighandler );
 	signal( SIGILL,sighandler );
 	signal( SIGFPE,sighandler );
 #if !_WIN32
 	signal( SIGBUS,sighandler );
 #endif
-	signal( SIGSEGV,sighandler );
+
 #endif
 
-	seh_call( bbInit );
+	bbInit();
 	
 #if CFG_CPP_INCREMENTAL_GC
 	gc_mark_roots();
 #endif
 	
-	seh_call( bbMain );
-	
+	bbMain();
+
 	return 0;
 }

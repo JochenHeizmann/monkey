@@ -3,6 +3,11 @@
 
 #HTML5_SUSPEND_ON_BLUR_ENABLED="true"
 
+#If TARGET="glfw"
+#SOUND_FILES="*.wav|*.ogg"
+#MUSIC_FILES="*.wav|*.ogg"
+#Endif
+
 Import mojo
 
 Class MyApp Extends App
@@ -16,10 +21,10 @@ Class MyApp Extends App
 	
 #If TARGET="glfw"
 		'
-		'GLFW supports WAV only
+		'GLFW supports WAV/OGG - OGG doesn't stream yet.
 		'
 		soundFmt="wav"
-		musicFmt="wav"
+		musicFmt="ogg"
 		'
 #Elseif TARGET="html5"
 		'

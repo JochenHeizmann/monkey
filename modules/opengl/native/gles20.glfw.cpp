@@ -37,6 +37,10 @@ void _glBufferSubData( int target,int offset,int size,DataBuffer *data ){
 	glBufferSubData( target,offset,size,data->ReadPointer() );
 }
 
+void _glClearDepthf( float depth ){
+	glClearDepth( depth );
+}
+
 int _glCreateBuffer(){
 	GLuint buf;
 	glGenBuffers( 1,&buf );
@@ -75,6 +79,10 @@ void _glDeleteRenderbuffer( int buffer ){
 
 void _glDeleteTexture( int texture ){
 	glDeleteTextures( 1,(GLuint*)&texture );
+}
+
+void _glDepthRangef( float zNear,float zFar ){
+	glDepthRange( zNear,zFar );
 }
 
 void _glDrawElements( int mode, int count, int type, DataBuffer *indices ){

@@ -70,8 +70,17 @@ function _glBufferSubData( target,offset,size,data ){
 	if( size==data.size ){
 		gl.bufferSubData( target,offset,data.arrayBuffer );
 	}else{
-		gl.bufferSubData( target,offset,new Int8Array( data.arrayBuffer,0,size ),usage );
+		gl.bufferSubData( target,offset,new Int8Array( data.arrayBuffer,0,size ) );
 	}
+}
+
+
+function _glClearDepthf( depth ){
+	gl.clearDepth( depth );
+}
+
+function _glDepthRange( zNear,zFar ){
+	gl.depthRange( zNear,zFar );
 }
 
 function _glGetActiveAttrib( program,index,type,size,name ){
@@ -171,13 +180,41 @@ function _glReadPixels( x,y,width,height,format,type,pixels ){
 	gl.readPixels( x,y,width,height,format,type,pixels.byteArray );
 }
 
+function _glBindBuffer( target,buffer ){
+	if( buffer ){
+		gl.bindBuffer( target,buffer );
+	}else{
+		gl.bindBuffer( target,null );
+	}
+}
+
+function _glBindFramebuffer( target,framebuffer ){
+	if( framebuffer ){
+		gl.bindFramebuffer( target,framebuffer );
+	}else{
+		gl.bindFramebuffer( target,null );
+	}
+}
+
+function _glBindRenderbuffer( target,renderbuffer ){
+	if( renderbuffer ){
+		gl.bindRenderbuffer( target,renderbuffer );
+	}else{
+		gl.bindRenderbuffer( target,null );
+	}
+}
+
 function _glBindTexture( target,tex ){
-	gl.bindTexture( target,tex );
-	if( tex && tex._loaded ){
-		gl.texSubImage2D( target,tex._level,tex._xoffset,tex._yoffset,tex._format,tex._type,tex._loaded );
-		if( tex._genmipmap ) gl.generateMipmap( target );
-		tex._loaded=null;
-		tex._loading=false;
+	if( tex ){
+		gl.bindTexture( target,tex );
+		if( tex._loaded ){
+			gl.texSubImage2D( target,tex._level,tex._xoffset,tex._yoffset,tex._format,tex._type,tex._loaded );
+			if( tex._genmipmap ) gl.generateMipmap( target );
+			tex._loaded=null;
+			tex._loading=false;
+		}
+	}else{
+		gl.bindTexture( target,null );
 	}
 }
 

@@ -9,8 +9,9 @@ Import "native/lang.${LANG}"
 Extern
 
 Function Print( message$ )="$print"
-
 Function Error( message$ )="$error"
+Function DebugLog( message$ )="$debuglog"
+Function DebugStop()="$debugstop"
 
 Class @String Extends Null="String"
 

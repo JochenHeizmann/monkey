@@ -68,6 +68,9 @@
       <Filter>glfw</Filter>
     </ClCompile>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\stb\stb_vorbis.c">
+      <Filter>stb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\glfw\lib\internal.h">
