@@ -429,6 +429,8 @@ Class Reflector
 		If name.StartsWith( ARRAY_PREFIX )
 			Local elemType:=cdecl.instArgs[0]
 			Local elemExpr:=TypeExpr( elemType )
+			Local i=elemExpr.Find( "[]" )
+			If i=-1 i=elemExpr.Length
 			Local ARRAY_PREFIX:=modexprs.Get( boxesmod.filepath )+".ArrayObject<"
 			Emit " Method ElementType:ClassInfo() Property"
 			Emit "  Return "+TypeInfo( elemType )
@@ -443,7 +445,8 @@ Class Reflector
 			Emit "  "+ARRAY_PREFIX+elemExpr+">(i).value[e]="+Unbox( elemType,"v" )
 			Emit " End"
 			Emit " Method NewArray:Object(l:Int)"
-			Emit "  Return "+Box( elemType.ArrayOf(),"New "+elemExpr+"[l]" )
+'			Emit "  Return "+Box( elemType.ArrayOf(),"New "+elemExpr+"[l]" )
+			Emit "  Return "+Box( elemType.ArrayOf(),"New "+elemExpr[..i]+"[l]"+elemExpr[i..] )
 			Emit " End"
 		Endif
 
@@ -490,6 +493,7 @@ Class Reflector
 				Emit "  _ctors["+i+"]=New "+ctors.Get(i)
 			Next
 		Endif
+		Emit " InitR()"
 		Emit " End"
 		Emit "End"
 		

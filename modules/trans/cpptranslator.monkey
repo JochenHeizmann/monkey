@@ -22,7 +22,6 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransRefType$( ty:Type )
-		If ObjectType( ty ) And ty.GetClass().IsInterface() Return "gc_iptr<"+ty.GetClass().munged+">"
 		Return TransType( ty )
 	End
 	
@@ -85,20 +84,12 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransGlobal$( decl:GlobalDecl )
-		Local swiz$
-		If ObjectType( decl.type )
-			If ObjectType( decl.type ).classDecl.IsInterface() swiz=".p"
-		Endif
-		Return TransStatic( decl )+swiz
+		Return TransStatic( decl )
 	End
 	
 	Method TransField$( decl:FieldDecl,lhs:Expr )
-		Local swiz$
-		If ObjectType( decl.type )
-			If ObjectType( decl.type ).classDecl.IsInterface() swiz=".p"
-		Endif
-		If lhs Return TransSubExpr( lhs )+"->"+decl.munged+swiz
-		Return decl.munged+swiz
+		If lhs Return TransSubExpr( lhs )+"->"+decl.munged
+		Return decl.munged
 	End
 		
 	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr )
@@ -200,12 +191,9 @@ Class CppTranslator Extends CTranslator
 		
 		If StringType( expr.expr.exprType ) Return "(int)"+t_expr+"["+t_index+"]"
 		
-		Local swiz$
-		If ObjectType( expr.exprType )And expr.exprType.GetClass().IsInterface() swiz=".p"
+		If ENV_CONFIG="debug" Return t_expr+".At("+t_index+")"
 		
-		If ENV_CONFIG="debug" Return t_expr+".At("+t_index+")"+swiz
-		
-		Return t_expr+"["+t_index+"]"+swiz
+		Return t_expr+"["+t_index+"]"
 	End
 	
 	Method TransSliceExpr$( expr:SliceExpr )
@@ -220,27 +208,11 @@ Class CppTranslator Extends CTranslator
 
 		Local elemType:=ArrayType( expr.exprType ).elemType
 
-		Local imung$		
-		If ObjectType( elemType ) And elemType.GetClass().IsInterface()
-			imung="gc_iptr<"+elemType.GetClass().munged+">"
-		Endif
-		
 		Local t$
 		For Local elem:=Eachin expr.exprs
-
 			Local e:=elem.Trans()
-			
-			If imung
-				If e.EndsWith( ".p" )
-					e=e[..-2]
-				Else
-					e=imung+Bra(e)
-				Endif
-			Endif
-			
 			If t t+=","
 			t+=e
-			
 		Next
 		
 		Local tmp:=New LocalDecl( "",0,Type.voidType,Null )
@@ -313,24 +285,22 @@ Class CppTranslator Extends CTranslator
 
 	'***** Statements *****
 
-'#rem	
-
 	Method TransAssignStmt2$( stmt:AssignStmt )
 		'
 		Local ty:=stmt.lhs.exprType
 		
 		If ObjectType( ty ) Or ArrayType( ty )
 		
+			'Ignore Object null assignments, ie: =Null
+			If ObjectType( ty ) And ConstExpr( stmt.rhs )
+				Return Super.TransAssignStmt2( stmt )
+			Endif
+
 			'Ignore 'unmanaged' objects...
 			If ObjectType( ty ) And Not ty.GetClass().ExtendsObject()
 				Return Super.TransAssignStmt2( stmt )
 			Endif
 			
-			'Ignore const assignments, ie: =Null
-			If ConstExpr( stmt.rhs )
-				Return Super.TransAssignStmt2( stmt )
-			Endif
-
 			'Ignore local var assignments
 			Local varExpr:=VarExpr( stmt.lhs )
 			If varExpr And LocalDecl( varExpr.decl )
@@ -340,15 +310,11 @@ Class CppTranslator Extends CTranslator
 			Local t_lhs:=stmt.lhs.TransVar()
 			Local t_rhs:=stmt.rhs.Trans()
 
-'			If t_lhs.EndsWith( ".p" ) t_rhs="dynamic_cast<gc_object*>("+t_rhs+")"
-'			If t_lhs.EndsWith( ".p" ) t_lhs=t_lhs[..-2]
-
 			Return "gc_assign("+t_lhs+","+t_rhs+")"
 			
 		Endif
 		Return Super.TransAssignStmt2( stmt )
 	End
-'#end
 	
 	'***** Declarations *****
 	
@@ -483,7 +449,6 @@ Class CppTranslator Extends CTranslator
 			'Ignore 'unmanaged' objects...
 			If ObjectType( ty ) And Not ty.GetClass().ExtendsObject() Return
 
-			If id.EndsWith( ".p" ) id=id[..-2]
 			If queue
 				Emit "gc_mark_q("+id+");"
 			Else

@@ -317,11 +317,12 @@ Class ClassInfo
 		Return False
 	End
 	
-	Method GetConsts:ConstInfo[]()
+	Method GetConsts:ConstInfo[]( recursive? )
+		If recursive Return _rconsts
 		Return _consts
 	End
 	
-	Method GetConst:ConstInfo( name$ )
+	Method GetConst:ConstInfo( name$,recursive?=True )
 		If Not _constsMap
 			_constsMap=New StringMap<ConstInfo>
 			For Local t:=Eachin _consts
@@ -329,15 +330,16 @@ Class ClassInfo
 			Next
 		Endif
 		Local t:=_constsMap.Get( name )
-		If Not t And _sclass Return _sclass.GetConst( name )
+		If Not t And _sclass And recursive Return _sclass.GetConst( name,True )
 		Return t
 	End
 	
-	Method GetGlobals:GlobalInfo[]()
+	Method GetGlobals:GlobalInfo[]( recursive? )
+		If recursive Return _rglobals
 		Return _globals
 	End
 	
-	Method GetGlobal:GlobalInfo( name$ )
+	Method GetGlobal:GlobalInfo( name$,recursive?=True )
 		If Not _globalsMap
 			_globalsMap=New StringMap<GlobalInfo>
 			For Local g:=Eachin _globals
@@ -345,15 +347,16 @@ Class ClassInfo
 			Next
 		Endif
 		Local g:=_globalsMap.Get( name )
-		If Not g And _sclass Return _sclass.GetGlobal( name )
+		If Not g And _sclass And recursive Return _sclass.GetGlobal( name,True )
 		Return g
 	End
 	
-	Method GetFields:FieldInfo[]()
+	Method GetFields:FieldInfo[]( recursive? )
+		If recursive Return _rfields
 		Return _fields
 	End
 	
-	Method GetField:FieldInfo( name$ )
+	Method GetField:FieldInfo( name$,recursive?=True )
 		If Not _fieldsMap
 			_fieldsMap=New StringMap<FieldInfo>
 			For Local f:=Eachin _fields
@@ -361,15 +364,16 @@ Class ClassInfo
 			Next
 		Endif
 		Local f:=_fieldsMap.Get( name )
-		If Not f And _sclass Return _sclass.GetField( name )
+		If Not f And _sclass And recursive Return _sclass.GetField( name,True )
 		Return f
 	End
 	
-	Method GetMethods:MethodInfo[]()
+	Method GetMethods:MethodInfo[]( recursive? )
+		If recursive Return _rmethods
 		Return _methods
 	End
 	
-	Method GetMethod:MethodInfo( name$,argTypes:ClassInfo[] )
+	Method GetMethod:MethodInfo( name$,argTypes:ClassInfo[],recursive?=True )
 		If Not _methodsMap
 			_methodsMap=New StringMap<List<MethodInfo>>
 			For Local f:=Eachin _methods
@@ -387,15 +391,16 @@ Class ClassInfo
 				If CmpArgs( f.ParameterTypes(),argTypes ) Return f
 			Next
 		Endif
-		If _sclass Return _sclass.GetMethod( name,argTypes )
+		If _sclass And recursive Return _sclass.GetMethod( name,argTypes,True )
 		Return Null
 	End
 	
-	Method GetFunctions:FunctionInfo[]()
+	Method GetFunctions:FunctionInfo[]( recursive? )
+		If recursive Return _rfunctions
 		Return _functions
 	End
 	
-	Method GetFunction:FunctionInfo( name$,argTypes:ClassInfo[] )
+	Method GetFunction:FunctionInfo( name$,argTypes:ClassInfo[],recursive?=True )
 		If Not _functionsMap
 			_functionsMap=New StringMap<List<FunctionInfo>>
 			For Local f:=Eachin _functions
@@ -413,7 +418,7 @@ Class ClassInfo
 				If CmpArgs( f.ParameterTypes(),argTypes ) Return f
 			Next
 		Endif
-		If _sclass Return _sclass.GetFunction( name,argTypes )
+		If _sclass And recursive Return _sclass.GetFunction( name,argTypes,True )
 		Return Null
 	End
 	
@@ -434,19 +439,62 @@ Class ClassInfo
 	Field _attrs:Int
 	Field _sclass:ClassInfo
 	Field _ifaces:ClassInfo[]
+	
 	Field _consts:ConstInfo[]
 	Field _fields:FieldInfo[]
 	Field _globals:GlobalInfo[]
 	Field _methods:MethodInfo[]
 	Field _functions:FunctionInfo[]
 	Field _ctors:FunctionInfo[]
-	
+
+	Field _rconsts:ConstInfo[]
+	Field _rglobals:GlobalInfo[]
+	Field _rfields:FieldInfo[]
+	Field _rmethods:MethodInfo[]
+	Field _rfunctions:FunctionInfo[]
+
 	Field _globalsMap:StringMap<GlobalInfo>
 	Field _fieldsMap:StringMap<FieldInfo>
 	Field _methodsMap:StringMap<List<MethodInfo>>
 	Field _functionsMap:StringMap<List<FunctionInfo>>
 
 	Method Init()
+	End
+	
+	Method InitR()
+		If _sclass
+			Local consts:=New Stack<ConstInfo>( _sclass._rconsts )
+			For Local t:=Eachin _consts
+				consts.Push t
+			Next
+			_rconsts=consts.ToArray()
+			Local fields:=New Stack<FieldInfo>( _sclass._rfields )
+			For Local t:=Eachin _fields
+				fields.Push t
+			Next
+			_rfields=fields.ToArray()
+			Local globals:=New Stack<GlobalInfo>( _sclass._rglobals )
+			For Local t:=Eachin _globals
+				globals.Push t
+			Next
+			_rglobals=globals.ToArray()
+			Local methods:=New Stack<MethodInfo>( _sclass._rmethods )
+			For Local t:=Eachin _methods
+				methods.Push t
+			Next
+			_rmethods=methods.ToArray()
+			Local functions:=New Stack<FunctionInfo>( _sclass._rfunctions )
+			For Local t:=Eachin _functions
+				functions.Push t
+			Next
+			_rfunctions=functions.ToArray()
+		Else
+			_rconsts=_consts
+			_rfields=_fields
+			_rglobals=_globals
+			_rmethods=_methods
+			_rfunctions=_functions
+		Endif
 	End
 
 End

@@ -45,6 +45,7 @@ Class Sprite
 		If f>=8 f-=8
 		
 		For Local i=0 Until 10
+			tmp[i]=New F
 			tmp[i].Test
 		Next
 	End
@@ -124,7 +125,7 @@ Class MyApp Extends App
 			rtime+=e
 		Endif
 	
-		Cls 0,128,255
+		Cls 128,0,255
 		
 		PushMatrix 
 				

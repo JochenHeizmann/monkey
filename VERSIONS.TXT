@@ -1,6 +1,26 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V55 *****
+
+Modules:
+
+reflection - added recursive? flag to ClassInfo methods GetConst(s), GetGlobal(s), GetField(s), GetMethod(s) and GetFunction(s).
+
+android mojo - setEGLContextClientVersion now uses reflection for backward compatibility with the elderly Android set.
+
+cpp monkey.lang - optimized empty arrays.
+
+cpp monkey.lang - fixed incremental GC bug with empty arrays.
+
+
+Trans (v1.31):
+
+Removed yucky gc_iptr interface pointer container.
+
+Fixed bug with reflection and multi-dimensional arrays.
+
+
 ***** V54c *****
 
 Monk

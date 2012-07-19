@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.30"
+Const VERSION$="1.31"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]

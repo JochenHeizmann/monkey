@@ -229,16 +229,13 @@ Class JsonStream
 			'better not be cyclic..!
 			Write "{"
 			Local n:=0
-			While clas
-				For Local f:=Eachin clas.GetFields()
-					If n Write ","
-					Write "~q"+f.Name+"~q"
-					Write ":"
-					WriteObject f.GetValue( obj )
-					n+=1
-				Next
-				clas=clas.SuperClass
-			Wend
+			For Local f:=Eachin clas.GetFields( True )
+				If n Write ","
+				Write "~q"+f.Name+"~q"
+				Write ":"
+				WriteObject f.GetValue( obj )
+				n+=1
+			Next
 			Write "}"
 		Endif
 		

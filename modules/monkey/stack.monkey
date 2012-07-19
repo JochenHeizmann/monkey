@@ -13,7 +13,7 @@ Class Stack<T>
 		Self.data=data[..]
 		Self.length=data.Length
 	End
-
+	
 	Method ToArray:T[]()
 		Local t:T[length]
 		For Local i=0 Until length

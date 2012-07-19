@@ -63,19 +63,19 @@ Function AppDecls()
 		For Local info:=Eachin cinfo.GetConstructors()
 			Print "  Method New"+Args( info.ParameterTypes )+Attribs( info.Attributes() )
 		Next
-		For Local info:=Eachin cinfo.GetConsts()
+		For Local info:=Eachin cinfo.GetConsts( False )
 			Print "  Const "+info.Name+Ret( info.Type )+Attribs( info.Attributes() )
 		Next
-		For Local info:=Eachin cinfo.GetGlobals()
+		For Local info:=Eachin cinfo.GetGlobals( False )
 			Print "  Global "+info.Name+Ret( info.Type )+Attribs( info.Attributes() )
 		Next
-		For Local info:=Eachin cinfo.GetFields()
+		For Local info:=Eachin cinfo.GetFields( False )
 			Print "  Field "+info.Name+Ret( info.Type )+Attribs( info.Attributes() )
 		Next
-		For Local info:=Eachin cinfo.GetMethods()
+		For Local info:=Eachin cinfo.GetMethods( False )
 			Print "  Method "+info.Name+Ret( info.ReturnType )+Args( info.ParameterTypes )+Attribs( info.Attributes() )
 		Next
-		For Local info:=Eachin cinfo.GetFunctions()
+		For Local info:=Eachin cinfo.GetFunctions( False )
 			Print "  Method "+info.Name+Ret( info.ReturnType )+Args( info.ParameterTypes )+Attribs( info.Attributes() )
 		Next
 	Next

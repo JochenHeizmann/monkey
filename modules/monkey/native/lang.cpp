@@ -4,19 +4,12 @@
 // Placed into the public domain 24/02/2011.
 // No warranty implied; use at your own risk.
 
-/*
-#include <cmath>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <vector>
-#include <typeinfo>
-#include <signal.h>
-#if _WIN32
-#include <windows.h>
-#endif
-*/
+//***** Monkey Types *****
+
+typedef wchar_t Char;
+template<class T> class Array;
+class String;
+class Object;
 
 #if CFG_CPP_DOUBLE_PRECISION_FLOATS
 typedef double Float;
@@ -28,9 +21,8 @@ typedef float Float;
 
 //***** GC Config *****
 
-//#define CFG_CPP_DEBUG_GC 1
-
 #if CFG_CPP_DEBUG_GC
+#define DEBUG_GC 1
 #if __APPLE__
 #define DEBUG_GC_MAC 1
 #elif defined( __glfw_h_ )
@@ -38,104 +30,6 @@ typedef float Float;
 #else
 #undef DEBUG_GC
 #endif
-#endif
-
-//***** Simple profiler *****
-
-#if PROFILE
-
-#include <mmsystem.h>
-#include <map>
-#include <algorithm>
-
-DWORD profTimer;
-CRITICAL_SECTION profLock;
-std::vector<const char*> profStack;
-std::map<const char*,int> profTicksLocal;
-std::map<const char*,int> profTicksTotal;
-
-void profEnter( const char *p ){
-	EnterCriticalSection( &profLock );
-	profStack.push_back( p );
-	LeaveCriticalSection( &profLock );
-}
-
-void profLeave(){
-	EnterCriticalSection( &profLock );
-	profStack.pop_back();
-	LeaveCriticalSection( &profLock );
-}
-
-void CALLBACK profTimerTick( UINT uTimerID,UINT uMsg,DWORD dwUser,DWORD dw1,DWORD dw2 ){
-	EnterCriticalSection( &profLock );
-	if( profStack.size() ){
-		++profTicksLocal[profStack.back()];
-		for( int i=0;i<profStack.size();++i ){
-			++profTicksTotal[ profStack[i] ];
-		}
-	}
-	LeaveCriticalSection( &profLock );
-}
-
-void profStart(){
-	InitializeCriticalSection( &profLock );
-	profTimer=timeSetEvent( 5,0,profTimerTick,0,TIME_PERIODIC|TIME_CALLBACK_FUNCTION );//	|TIME_KILL_SYNCHRONOUS );
-}
-
-struct ProfInfo{
-	int n;
-	const char *p;
-	ProfInfo( int n,const char *p ):n(n),p(p){
-	}
-	bool operator<( const ProfInfo &i )const{
-		return n>i.n;
-	}
-};
-
-void profDump( const std::map<const char*,int> &ticks ){
-	std::vector<ProfInfo> infos;
-	int sum=0;
-	for( std::map<const char*,int>::const_iterator it=ticks.begin();it!=ticks.end();++it ){
-		const char *p=(*it).first;
-		int n=(*it).second;
-		sum+=n;
-		infos.push_back( ProfInfo( n,p ) );
-	}
-	std::sort( infos.begin(),infos.end() );
-	for( int i=0;i<infos.size();++i ){
-		int t=infos[i].n*10000/sum;
-		printf( "%i.%i%% : %s\n",t/100,t%100,infos[i].p );
-	}
-}
-
-void profStop(){
-	timeKillEvent( profTimer );
-
-	EnterCriticalSection( &profLock );
-
-	printf( "\nLocal:\n" );
-	profDump( profTicksLocal );
-
-	printf( "\nTotal:\n" );
-	profDump( profTicksTotal );
-
-	fflush( stdout );
-
-	LeaveCriticalSection( &profLock );
-}
-
-#define P_START profStart();
-#define P_STOP profStop();
-#define P_ENTER(X) profEnter( X );
-#define P_LEAVE profLeave();
-
-#else
-
-#define P_START
-#define P_STOP
-#define P_ENTER(X)
-#define P_LEAVE
-
 #endif
 
 // ***** GC *****
@@ -176,7 +70,7 @@ struct gc_object{
 	
 	virtual void mark(){
 	}
-	
+
 	void *operator new( size_t size ){
 		return gc_malloc( size );
 	}
@@ -198,8 +92,8 @@ int gc_total;
 //objects marked
 int gc_marked;
 
-//toggling markbit
-int gc_markbit;
+//is object marked flag
+int gc_markbit=1;	//toggles 1,2,1,2...
 
 //how much mem alloced
 int gc_alloced;
@@ -228,7 +122,7 @@ gc_object *gc_malloc( int size ){
 		p=(gc_object*)malloc( size );
 	}
 	
-	p->flags=size | (gc_markbit^1);
+	p->flags=size | (gc_markbit^3);
 	p->succ=gc_objs;
 	gc_objs=p;
 
@@ -252,16 +146,24 @@ void gc_free( gc_object *p ){
 	gc_alloced-=size;
 }
 
-inline void gc_mark( gc_object *p ){
-	if( !p || (p->flags & 1)==gc_markbit ) return;
-	p->flags^=1;
+template<class T> void gc_mark( T *t ){
+
+	gc_object *p=dynamic_cast<gc_object*>(t);
+	
+	if( !p || (p->flags & gc_markbit) ) return;
+
+	p->flags^=3;
 	++gc_marked;
 	p->mark();
 }
 
-inline void gc_mark_q( gc_object *p ){
-	if( !p || (p->flags & 1)==gc_markbit ) return;
-	p->flags^=1;
+template<class T> void gc_mark_q( T *t ){
+
+	gc_object *p=dynamic_cast<gc_object*>(t);
+	
+	if( !p || (p->flags & gc_markbit) ) return;
+
+	p->flags^=3;
 	++gc_marked;
 	gc_mark_queue.push_back( p );
 }
@@ -269,14 +171,14 @@ inline void gc_mark_q( gc_object *p ){
 #if CFG_CPP_INCREMENTAL_GC
 
 template<class T,class V> void gc_assign( T *&lhs,V *rhs ){
-	//
-	//Ok, the dynamic_cast should be 'free' if rhs is an object, not an interface, as it's a simple upcast.
-	//
-	//So far, this seems to be true of both msvc and llvm.
-	//
-	//This could be used with gc_mark and gc_mark_q, allowing gc_iptr to be nuked - yay! Later...
-	//
-	gc_mark_q( dynamic_cast<gc_object*>( rhs ) );
+
+	gc_object *p=dynamic_cast<gc_object*>(rhs);
+
+	if( p && !(p->flags & gc_markbit) ){
+		p->flags^=3;
+		++gc_marked;
+		gc_mark_queue.push_back( p );
+	}
 	lhs=rhs;
 }
 
@@ -286,11 +188,9 @@ void gc_collect(){
 	int us=gcMicros();
 #endif
 
-	int swept=0;
-	
 	static int maxalloced;
 
-	int c=0;
+	int swept=0,c=0;
 	
 	if( gc_maxalloced>maxalloced ){
 		maxalloced=gc_maxalloced;
@@ -305,8 +205,6 @@ void gc_collect(){
 	
 		if( gc_mark_queue.empty() ){
 		
-			//sweep!
-			
 			gc_object **q=&gc_objs;
 			
 			swept=gc_total;
@@ -314,21 +212,21 @@ void gc_collect(){
 			while( gc_marked!=gc_total ){
 				gc_object *p=*q;
 				
-				while( (p->flags & 1)==gc_markbit ){
+				while( (p->flags & gc_markbit) ){
 					q=&p->succ;
 					p=*q;
 				}
 
 				*q=p->succ;
-				
 				delete p;
 			}
 			
 			swept-=gc_total;
 			
-			gc_markbit^=1;
 			gc_marked=0;
-			
+
+			gc_markbit^=3;
+	
 			gc_mark_roots();
 			
 			break;
@@ -341,7 +239,8 @@ void gc_collect(){
 
 #if DEBUG_GC
 	us=gcMicros()-us;
-	printf( "us=%i, swept=%i, objects=%i, memalloced=%i, maxalloced=%i\n",us,swept,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+	printf( "us=%i, swept=%i, objects=%i, memalloced=%i, maxalloced=%i\n",us,swept,gc_total,gc_alloced,gc_maxalloced );
+	fflush( stdout );
 #endif
 }
 
@@ -374,7 +273,7 @@ void gc_collect(){
 	while( gc_marked!=gc_total ){
 		gc_object *p=*q;
 		
-		while( (p->flags & 1)==gc_markbit ){
+		while( (p->flags & gc_markbit) ){
 			q=&p->succ;
 			p=*q;
 		}
@@ -384,10 +283,11 @@ void gc_collect(){
 	}
 	
 	swept-=gc_total;
-
-	gc_markbit^=1;
+	
 	gc_marked=0;
 	
+	gc_markbit^=3;
+
 #if DEBUG_GC
 	us=gcMicros()-us;
 	printf( "us=%i, swept=%i, objects=%i, memalloced=%i, maxalloced=%i\n",us,swept,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
@@ -395,13 +295,6 @@ void gc_collect(){
 }
 
 #endif
-
-// ***** Monkey Types *****
-
-typedef wchar_t Char;
-template<class T> class Array;
-class String;
-class Object;
 
 // ***** Array *****
 
@@ -478,7 +371,7 @@ public:
 		return rep->data[index]; 
 	}
 	
-	T &operator[]( int index ){ 
+	T &operator[]( int index ){
 		return rep->data[index]; 
 	}
 
@@ -523,6 +416,10 @@ private:
 		int length;
 		T data[0];
 		
+		Rep():length(0){
+			flags=3;
+		}
+		
 		Rep( int length ):length(length){
 		}
 		
@@ -535,6 +432,10 @@ private:
 		}
 		
 		static Rep *alloc( int length ){
+			if( !length ){
+				static Rep null;
+				return &null;
+			}
 			void *p=gc_malloc( sizeof(Rep)+length*sizeof(T) );
 			return ::new(p) Rep( length );
 		}
@@ -575,7 +476,7 @@ template<class T> void gc_mark_array( int n,Array<T> *p ){
 #if CFG_CPP_INCREMENTAL_GC
 
 template<class T> void gc_assign( Array<T> &lhs,Array<T> rhs ){
-	gc_mark_q( rhs.rep );
+	gc_mark( rhs.rep );
 	lhs=rhs;
 }
 
@@ -1070,45 +971,9 @@ public:
 	}
 };
 
-//Some ugly hacks for interfaces in an attempt to keep plain objects speedy.
-//
-//This mess is mainly to prevent classes from having to virtually inherit 'Object', which incurs quite a
-//bit of overhead when upcasting to Object.
-//
 struct gc_interface{
 	virtual ~gc_interface(){}
-	
-//	gc_object *to_object(){ return dynamic_cast<gc_object*>(this) );
 };
-
-template<class T>
-struct gc_iptr{
-	T *p;
-	gc_iptr(){}
-	gc_iptr( T *p ):p(p){} 
-};
-
-template<class T> void gc_mark( gc_iptr<T> i ){
-	gc_mark( dynamic_cast<gc_object*>(i.p) );
-}
-
-template<class T> void gc_mark_q( gc_iptr<T> i ){
-	gc_mark_q( dynamic_cast<gc_object*>(i.p) );
-}
-
-//mark array of iptrs
-template<class T> void gc_mark_array( int n,gc_iptr<T> *p ){
-	for( int i=0;i<n;++i ) gc_mark( dynamic_cast<gc_object*>( p[i].p ) );
-}
-
-#if CFG_CPP_INCREMENTAL_GC
-
-//template<class T,class V> void gc_assign( gc_iptr<T> *lhs,V *rhs ){
-//	gc_mark_q( dynamic_cast<gc_object*>( rhs ) );
-//	lhs->p=rhs;
-//}
-
-#endif
 
 //**** main ****
 
@@ -1224,8 +1089,6 @@ int bb_std_main( int argc,const char **argv ){
 	signal( SIGSEGV,sighandler );
 #endif
 
-	P_START
-	
 	seh_call( bbInit );
 	
 #if CFG_CPP_INCREMENTAL_GC
@@ -1233,8 +1096,6 @@ int bb_std_main( int argc,const char **argv ){
 #endif
 	
 	seh_call( bbMain );
-	
-	P_STOP
 	
 	return 0;
 }

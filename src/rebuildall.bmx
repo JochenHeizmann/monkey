@@ -12,8 +12,8 @@ End
 Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
-'Const trans2$=trans
-Const trans2$="..\bin\trans_winnt_bak.exe"
+Const trans2$=trans
+'Const trans2$="..\bin\trans_winnt_bak.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
 
