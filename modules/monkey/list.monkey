@@ -209,24 +209,22 @@ Class Node<T>
 
 	Method Remove()
 #If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
+		If _succ._pred<>Self Error "Illegal operation on removed node"
 #Endif
 		_succ._pred=_pred
 		_pred._succ=_succ
-		_succ=Null
-		_pred=Null
 	End Method
 
 	Method NextNode:Node()
 #If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
+		If _succ._pred<>Self Error "Illegal operation on removed node"
 #Endif
 		Return _succ.GetNode()
 	End
 
 	Method PrevNode:Node()
 #If CONFIG="debug"
-		If Not _succ Error "Illegal operation on removed node"
+		If _succ._pred<>Self Error "Illegal operation on removed node"
 #Endif
 		Return _pred.GetNode()
 	End
@@ -268,6 +266,9 @@ Class Enumerator<T>
 	End Method
 
 	Method HasNext:Bool()
+		While _curr._succ._pred<>_curr
+			_curr=_curr._succ
+		Wend
 		Return _curr<>_list._head
 	End 
 
@@ -308,6 +309,9 @@ Class BackwardsEnumerator<T>
 	End Method
 
 	Method HasNext:Bool()
+		While _curr._pred._succ<>_curr
+			_curr=_curr._pred
+		Wend
 		Return _curr<>_list._head
 	End 
 

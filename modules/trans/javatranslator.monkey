@@ -260,8 +260,15 @@ Class JavaTranslator Extends Translator
 			If StringType( expr.exprType ) Return texpr+".length()"
 			Return "bb_std_lang.arrayLength"+Bra( texpr )
 
-		Case "resize" Return "(("+TransType( expr.exprType )+")bb_std_lang.resizeArray"+Bra( texpr+","+arg0 )+")"
-		
+		Case "resize" 
+			Local fn$="resizeArray"
+			Local ty:=ArrayType( expr.exprType ).elemType
+			If StringType( ty )
+				fn="resizeStringArray"
+			Else If ArrayType( ty )
+				fn="resizeArrayArray"
+			Endif
+			Return "("+TransType( expr.exprType )+")bb_std_lang."+fn+Bra( texpr+","+arg0 )
 		'string methods
 		Case "compare" Return texpr+".compareTo"+Bra( arg0 )
 		Case "find" Return texpr+".indexOf"+Bra( arg0+","+arg1 )

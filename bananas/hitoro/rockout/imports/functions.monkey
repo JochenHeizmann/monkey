@@ -1,16 +1,16 @@
 
 Import rockout
 
-Function CenterStringX:Float (string:String)
-		 Return (VDeviceWidth () * 0.5) - (string.Length () * FONT_WIDTH * 0.5)
+Function CenterStringX:Float ( str:String )
+		 Return (VDeviceWidth () * 0.5) - ( str.Length () * FONT_WIDTH * 0.5)
 End
 
-Function CenterStringY:Float (string:String)
+Function CenterStringY:Float ( str:String )
 		 Return (VDeviceHeight () * 0.5) - (FONT_HEIGHT * 0.5)
 End
 
-Function CenterText (string:String)
-	DrawText string, CenterStringX (string), CenterStringY (string)
+Function CenterText ( str:String )
+	DrawText str, CenterStringX (str), CenterStringY (str)
 End
 
 Function ShowState ()

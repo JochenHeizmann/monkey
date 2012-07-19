@@ -14,24 +14,77 @@ class MonkeyData{
 		return MonkeyGame.activity.getAssets();
 	}
 	
+	static String toString( byte[] buf ){
+		int n=buf.length;
+		char tmp[]=new char[n];
+		for( int i=0;i<n;++i ){
+			tmp[i]=(char)(buf[i] & 0xff);
+		}
+		return new String( tmp );
+	}
+	
+	static String loadString( byte[] buf ){
+	
+		int n=buf.length;
+		if( n<3 ) return toString( buf );
+		
+		StringBuffer out=new StringBuffer();
+		
+		int i=0;
+		int cc=buf[i++] & 0xff;
+		int dd=buf[i++] & 0xff;
+		
+		if( cc==0xfe && dd==0xff ){
+			while( i<n-1 ){
+				int x=buf[i++] & 0xff;
+				int y=buf[i++] & 0xff;
+				out.append( (char)((x<<8)|y) ); 
+			}
+		}else if( cc==0xff && dd==0xfe ){
+			while( i<n-1 ){
+				int x=buf[i++] & 0xff;
+				int y=buf[i++] & 0xff;
+				out.append( (char)((y<<8)|x) ); 
+			}
+		}else{
+			int ee=buf[i++] & 0xff;
+			if( cc!=0xef || dd!=0xbb || ee!=0xbf ) return toString( buf );
+			while( i<n ){
+				int c=buf[i++] & 0xff;
+				if( c>=128 && i<n ){
+					int d=buf[i++] & 0xff;
+					if( c>=224 && i<n ){
+						int e=buf[i++] & 0xff;
+						if( c>=240 ) break;
+						c=(c-224)*4096+(d-128)*64+(e-128);
+					}else{
+						c=(c-192)*64+(d-128);
+					}
+				}
+				out.append( (char)c );
+			}
+		}
+		return out.toString();
+	}
+	
 	static String loadString( String path ){
 		path="monkey/"+path;
 		
 		try{
 			InputStream stream=getAssets().open( path );
-			InputStreamReader reader=new InputStreamReader( stream );
+			ByteArrayOutputStream buf=new ByteArrayOutputStream();
 
-			int len;
-			char[] chr=new char[4096];
-			StringBuffer buffer = new StringBuffer();
-			
-			while( (len=reader.read(chr))>0 ){
-				buffer.append( chr,0,len );
+			int n;
+			byte[] tmp=new byte[4096];
+
+			while( (n=stream.read( tmp,0,tmp.length) )!=-1 ){
+				buf.write( tmp,0,n );
 			}
-			reader.close();
+
+			buf.flush();
+			stream.close();
 			
-			return buffer.toString();
-		
+			return loadString( buf.toByteArray() );
 		}catch( IOException e ){
 		}
 		return "";		

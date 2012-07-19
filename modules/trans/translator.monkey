@@ -370,6 +370,10 @@ Class Translator
 			Emit TransLocalDecl( stmt.tmp2.munged,stmt.tmp2.init )+";"
 		Endif
 		
+		Return TransAssignStmt2( stmt )
+	End
+	
+	Method TransAssignStmt2$( stmt:AssignStmt )
 		Return stmt.lhs.TransVar()+TransAssignOp( stmt.op )+stmt.rhs.Trans()
 	End
 	

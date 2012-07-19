@@ -1,11 +1,6 @@
 
-// **** Config *****
-//
-// Set to 0 to disable stuff!
 
-#define RETINA_ENABLED 1
-
-#define ACCELEROMETER_ENABLED 1
+#import "config.h"
 
 #import <UIKit/UIKit.h>
 
@@ -22,9 +17,6 @@
 
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
-
-//#include <AudioToolbox/AudioToolbox.h>
-//#include <CoreFoundation/CoreFoundation.h>
 
 // ***** MonkeyView *****
 
@@ -50,7 +42,7 @@
 @interface MonkeyWindow : UIWindow{
 }
 
--(void)sendEvent:(UIEvent*)event;
+//-(void)sendEvent:(UIEvent*)event;
 
 @end
 

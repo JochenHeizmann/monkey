@@ -139,7 +139,9 @@ Class Target
 		
 		For Local file$=Eachin app.fileImports
 			Select ExtractExt( file ).ToLower()
+			'text file formats
 			Case "txt","xml","json"
+	
 				If Not embedTextFiles 
 					CopyFile file,dir+"/"+StripDir( file )
 				Endif

@@ -251,8 +251,15 @@ Class CsTranslator Extends Translator
 			Return "bb_std_lang.length"+Bra( texpr )
 		
 		'array methods
-		Case "resize" Return "("+TransType( expr.exprType )+")bb_std_lang.resize"+Bra( texpr+","+arg0 )
-
+		Case "resize" 
+			Local fn$="resizeArray"
+			Local ty:=ArrayType( expr.exprType ).elemType
+			If StringType( ty )
+				fn="resizeStringArray"
+			Else If ArrayType( ty )
+				fn="resizeArrayArray"
+			Endif
+			Return "("+TransType( expr.exprType )+")bb_std_lang."+fn+Bra( texpr+","+arg0 )
 		'string methods
 		Case "compare" Return texpr+".CompareTo"+Bra( arg0 )
 		Case "find" Return texpr+".IndexOf"+Bra( arg0+","+arg1 )

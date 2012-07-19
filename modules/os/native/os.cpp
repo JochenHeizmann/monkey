@@ -149,16 +149,9 @@ int FileTime( String path ){
 
 String LoadString( String path ){
 	if( FILE *fp=fopen( OS_STR(path),OS_STR("rb") ) ){
-		std::vector<unsigned char> buf;
-		int sz=0;
-		for(;;){
-			buf.resize( sz+4096 );
-			int n=fread( &buf[sz],1,4096,fp );
-			sz+=n;
-			if( n!=4096 ) break;
-		}
+		String str=String::Load( fp );
 		fclose( fp );
-		return String::Load( &buf[0],sz );
+		return str;
 	}
 	printf( "FOPEN 'rb' for LoadString '%s' failed\n",C_STR( path ) );fflush( stdout );
 	return "";
@@ -166,28 +159,9 @@ String LoadString( String path ){
 	
 int SaveString( String str,String path ){
 	if( FILE *fp=fopen( OS_STR(path),OS_STR("wb") ) ){
-		bool uni=false;
-		for( int i=0;i<str.Length();++i ){
-			if( str[i]>=0xfe ){
-				uni=true;
-				break;
-			}
-		}
-		int rc=-2;
-		if( uni ){
-			unsigned short bom=0xfeff;
-			if( fwrite( &bom,2,1,fp )==1 ){
-				if( fwrite( str.Data(),2,str.Length(),fp )==str.Length() ){
-					rc=0;
-				}
-			}
-		}else{
-			if( fwrite( str.ToCString<unsigned char>(),1,str.Length(),fp )==str.Length() ){
-				rc=0;
-			}
-		}
+		bool ok=str.Save( fp );
 		fclose( fp );
-		return rc;
+		return ok ? 0 : -2;
 	}else{
 		printf( "FOPEN 'wb' for SaveString '%s' failed\n",C_STR( path ) );
 		fflush( stdout );

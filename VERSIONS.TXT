@@ -1,6 +1,28 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V48 *****
+
+Modules:
+
+flash mojo - fixed bug with 'dark' line/oval/poly rendering.
+
+glfw/android mojo - Improved consistency of LoadString/LoadState/SaveState.
+
+ios mojo - Fixed issue with backspace not working when no chars typed.
+
+ios mojo - added DISPLAY_LINK_ENABLED to ios config.h file to enable 60hz 'vsync' kludge. Defaults to 'off' due to issues with input lag.
+
+
+Trans (1.25)
+
+Moved ios target config #defines to separate config.h file.
+
+flash target - text files now incbin'd using [Embed] insetad of string literals.
+
+Fixed Array resize on xna and java returning string/array arrays containing nulls.
+
+
 ***** V47d *****
 
 

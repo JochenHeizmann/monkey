@@ -73,13 +73,13 @@ Class Test Extends App
 		Rotate Millisecs/1000.0*12
 		Translate -320,-240
 		
-		SetColor 255,255,0
+		SetColor 128,255,0
 		DrawRect 32,32,640-64,480-64
 
-		SetColor 0,255,255
+		SetColor 0,128,255
 		DrawOval 64,64,640-128,480-128
 
-		SetColor 255,0,0
+		SetColor 255,0,128
 		DrawLine 32,32,640-32,480-32
 		DrawLine 640-32,32,32,480-32
 
@@ -91,13 +91,13 @@ Class Test Extends App
 		SetColor 255,0,128
 		DrawPoly( [ 160.0,232.0, 320.0,224.0, 480.0,232.0, 480.0,248.0, 320.0,256.0, 160.0,248.0 ] )
 				
-		SetColor 255,255,255
+		SetColor 128,128,128
 		DrawText "The Quick Brown Fox Jumps Over The Lazy Dog",320,240,.5,.5
 		
 		PopMatrix
 		
 		SetScissor 0,0,DeviceWidth,DeviceHeight
-		SetColor 255,0,0
+		SetColor 128,0,0
 		DrawRect 0,0,DeviceWidth,1
 		DrawRect DeviceWidth-1,0,1,DeviceHeight
 		DrawRect 0,DeviceHeight-1,DeviceWidth,1

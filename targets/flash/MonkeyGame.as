@@ -4,6 +4,7 @@ package{
 	import flash.display.*;
 	import flash.events.*;
 	import flash.media.*;
+	import flash.utils.ByteArray;
 
 	[SWF(width="640",height="480")]
 	
@@ -52,9 +53,12 @@ package{
 		}
 		
 		public function loadString( path:String ):String{
-			if( path=="" ) return "";
-//${TEXTFILES_BEGIN}
-//${TEXTFILES_END}
+			var t:Class=Assets[ mungPath( path ) ];
+			if( t ){
+				var buf:ByteArray=(new t) as ByteArray;
+				if( buf ) return buf.toString();
+			}
+			return "";
 		}
 
 		public function loadBitmap( path:String ):Bitmap{
@@ -68,7 +72,6 @@ package{
 			if( t ) return (new t) as Sound;
 			return null;
 		}
-		
 	}		
 }
 

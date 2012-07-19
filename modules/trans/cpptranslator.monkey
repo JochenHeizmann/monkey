@@ -322,19 +322,15 @@ Class CppTranslator Extends Translator
 	End
 
 	'***** Statements *****
-	
-#rem	
-	Method TransAssignStmt$( stmt:AssignStmt )
-		If Not stmt.rhs Return stmt.lhs.Trans()
-		
-		Local rhs:=stmt.rhs.Trans()
-		Local lhs:=stmt.lhs.TransVar()
-		
-'		If ObjectType( stmt.rhs.exprType )
-'			If stmt.rhs.exprType.GetClass().IsInterface() rhs="GC_IPTR"+Bra(rhs)
-'		Endif
 
-		Return lhs+TransAssignOp( stmt.op )+rhs
+#rem	
+	Method TransAssignStmt2$( stmt:AssignStmt )
+		Local objTy:=ObjectType( stmt.lhs.exprType )
+		If objTy
+			Local cdecl:=stmt.lhs.exprType.GetClass()
+			Return "gc_assign(&("+stmt.lhs.TransVar()+"),"+stmt.rhs.Trans()+")"
+		Endif
+		Return Super.TransAssignStmt2( stmt )
 	End
 #end
 	

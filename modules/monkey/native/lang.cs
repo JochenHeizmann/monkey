@@ -120,14 +120,31 @@ public class bb_std_lang{
 		return res;
 	}
 
-   static public Array resize( Array arr,int len ){
-      Type ty=arr.GetType().GetElementType();
-      Array res=Array.CreateInstance( ty,len );
-      int n=Math.Min( arr.Length,len );
-      if( n>0 ) Array.Copy( arr,res,n );
-      return res;
+	static public Array resizeArray( Array arr,int len ){
+		Type ty=arr.GetType().GetElementType();
+		Array res=Array.CreateInstance( ty,len );
+		int n=Math.Min( arr.Length,len );
+		if( n>0 ) Array.Copy( arr,res,n );
+		return res;
    }
 
+	static public Array[] resizeArrayArray( Array[] arr,int len ){
+		int i=arr.Length;
+		arr=(Array[])resizeArray( arr,len );
+		if( i<len ){
+			Array empty=Array.CreateInstance( arr.GetType().GetElementType().GetElementType(),0 );
+			while( i<len ) arr[i++]=empty;
+		}
+		return arr;
+	}
+
+	static public String[] resizeStringArray( String[] arr,int len ){
+		int i=arr.Length;
+		arr=(String[])resizeArray( arr,len );
+		while( i<len ) arr[i++]="";
+		return arr;
+	}
+	
 	static public Array concat( Array lhs,Array rhs ){
 		Array res=Array.CreateInstance( lhs.GetType().GetElementType(),lhs.Length+rhs.Length );
 		Array.Copy( lhs,0,res,0,lhs.Length );

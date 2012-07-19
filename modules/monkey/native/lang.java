@@ -142,24 +142,41 @@ class bb_std_lang{
 		}
 		if( term<from ) term=from;
 		int newlen=term-from;
-		Object res=java.lang.reflect.Array.newInstance( arr.getClass().getComponentType(),newlen );
+		Object res=Array.newInstance( arr.getClass().getComponentType(),newlen );
 		if( newlen>0 ) System.arraycopy( arr,from,res,0,newlen );
 		return res;
 	}
 	
 	static Object resizeArray( Object arr,int newlen ){
 		int len=Array.getLength( arr );
-		Object res=java.lang.reflect.Array.newInstance( arr.getClass().getComponentType(),newlen );
+		Object res=Array.newInstance( arr.getClass().getComponentType(),newlen );
 		int n=Math.min( len,newlen );
 		if( n>0 ) System.arraycopy( arr,0,res,0,n );
 		return res;
 	}
 	
+	static Object[] resizeArrayArray( Object[] arr,int newlen ){
+		int i=arr.length;
+		arr=(Object[])resizeArray( arr,newlen );
+		if( i<newlen ){
+			Object empty=Array.newInstance( arr.getClass().getComponentType().getComponentType(),0 );
+			while( i<newlen ) arr[i++]=empty;
+		}
+		return arr;
+	}
+	
+	static String[] resizeStringArray( String[] arr,int newlen ){
+		int i=arr.length;
+		arr=(String[])resizeArray( arr,newlen );
+		while( i<newlen ) arr[i++]="";
+		return arr;
+	}
+	
 	static Object concatArrays( Object lhs,Object rhs ){
-		int lhslen=java.lang.reflect.Array.getLength( lhs );
-		int rhslen=java.lang.reflect.Array.getLength( rhs );
+		int lhslen=Array.getLength( lhs );
+		int rhslen=Array.getLength( rhs );
 		int len=lhslen+rhslen;
-		Object res=java.lang.reflect.Array.newInstance( lhs.getClass().getComponentType(),len );
+		Object res=Array.newInstance( lhs.getClass().getComponentType(),len );
 		if( lhslen>0 ) System.arraycopy( lhs,0,res,0,lhslen );
 		if( rhslen>0 ) System.arraycopy( rhs,0,res,lhslen,rhslen );
 		return res;

@@ -18,7 +18,7 @@ Class FlashTarget Extends Target
 	
 		Local embedded=True	'set to false for 'non-embedded' builds'
 	
-		CreateDataDir "data"
+		CreateDataDir "data",False
 	
 		Local assets$
 		
@@ -28,7 +28,7 @@ Class FlashTarget Extends Target
 				If t.StartsWith( "." ) Continue
 				Local ext$=ExtractExt( t )
 				Select ext.ToLower()
-				Case "png","jpg","mp3"
+				Case "png","jpg","mp3","txt","xml","json"
 					'
 					Local munged$="_"
 					For Local q$=Eachin StripExt( t ).Split( "/" )
@@ -40,8 +40,14 @@ Class FlashTarget Extends Target
 					Next
 					munged+=ext.Length+ext
 					'
-					stk.Push "[Embed(source=~qdata/"+t+"~q)]"
-					stk.Push "public static var "+munged+":Class;"
+					Select ext.ToLower()
+					Case "png","jpg","mp3"
+						stk.Push "[Embed(source=~qdata/"+t+"~q)]"
+						stk.Push "public static var "+munged+":Class;"
+					Case "txt","xml","json"
+						stk.Push "[Embed(source=~qdata/"+t+"~q,mimeType=~qapplication/octet-stream~q)]"
+						stk.Push "public static var "+munged+":Class;"
+					End
 				End
 
 			Next
@@ -52,7 +58,6 @@ Class FlashTarget Extends Target
 		Local main$=LoadString( "MonkeyGame.as" )
 		
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
-		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		main=ReplaceBlock( main,"${ASSETS_BEGIN}","${ASSETS_END}",assets )
 		
 		SaveString main,"MonkeyGame.as"

@@ -11,7 +11,6 @@
 #include <cstring>
 #include <vector>
 #include <typeinfo>
-
 #include <signal.h>
 
 #if _WIN32
@@ -22,8 +21,6 @@
 #endif
 #endif
 
-//#define DEBUG_GC 1
-
 #if DOUBLEP
 typedef double Float;
 #define FLOAT(X) X
@@ -31,6 +28,14 @@ typedef double Float;
 typedef float Float;
 #define FLOAT(X) X##f
 #endif
+
+//***** GC Config *****
+
+#define DEBUG_GC 0
+#define DEBUG_GC_IOS 0
+#define DEBUG_GC_GLFW 0
+
+#define INCREMENTAL_GC 0	//WIP, Not ready yet...
 
 //***** Simple profiler *****
 
@@ -130,30 +135,52 @@ void profStop(){
 
 #endif
 
-// ***** gc_object *****
-
-#if DEBUG_GC
-int gc_alloced;
-int gc_maxalloced;
-#endif
+// ***** GC *****
 
 struct gc_object;
 gc_object *gc_objs;
 
-int gc_total;		//total objects allocated
+int gc_total;	//total objects allocated
 int gc_marked;	//number of objects marked
 int gc_markbit;	//toggling 'marked' bit - 1/0
 
 //queue some gc_marks to prevent ultra recursive stack thrashing
 std::vector<gc_object*> gc_marked_queue;
 
+void gc_mark();
+
+#if DEBUG_GC
+int gc_alloced;
+int gc_maxalloced;
+#endif
+
+#if DEBUG_GC_IOS
+#include <mach/mach_time.h>
+int gcMillis(){
+	static uint64_t startTime;
+	static mach_timebase_info_data_t timeInfo;
+	if( !startTime ){
+		startTime=mach_absolute_time();
+		mach_timebase_info( &timeInfo );
+	}
+	uint64_t nanos=mach_absolute_time()-startTime;
+	nanos*=timeInfo.numer;
+	nanos/=timeInfo.denom;
+	return nanos/1000000L;
+}
+#endif
+
+#if DEBUG_GC_GLFW
+int gcMillis(){
+	return glfwGetTime()*1000;
+}
+#endif
+
 void *gc_malloc( int size ){
-//	P_ENTER( "::gc_malloc" )
 	++gc_total;
 #if DEBUG_GC
 	int *p=(int*)malloc( sizeof(int)+size );
 	if( !p ){
-//		P_LEAVE
 		return 0;
 	}
 	gc_alloced+=size;
@@ -162,12 +189,10 @@ void *gc_malloc( int size ){
 #else
 	void *p=malloc( size );
 #endif
-//	P_LEAVE
 	return p;
 }
 
 void gc_free( void *q ){
-//	P_ENTER( "::gc_free" )
 	--gc_total;
 #if DEBUG_GC
 	int *p=(int*)q-1;
@@ -176,7 +201,6 @@ void gc_free( void *q ){
 #else
 	free( q );
 #endif
-//	P_LEAVE
 }
 
 struct gc_object{
@@ -205,30 +229,18 @@ struct gc_object{
 	}
 };
 
-void gc_mark();
-
 void gc_sweep(){
 	gc_object **q=&gc_objs;
 	
 	while( gc_marked!=gc_total ){
-
 		gc_object *p=*q;
-
-#if DEBUG_GC		
-		if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
-#endif
-
+		
 		while( (p->flags & 1)==gc_markbit ){
-
 			q=&p->succ;
 			p=*q;
-#if DEBUG_GC			
-			if( !p ) { printf( "GC ERROR\n" );fflush( stdout );break; }
-#endif
 		}
 		
 		*q=p->succ;
-		
 		delete p;
 	}
 
@@ -237,17 +249,57 @@ void gc_sweep(){
 }
 
 void gc_collect(){
-//	P_ENTER( "::gc_collect" )
+
 #if DEBUG_GC
 
-	static int gc_max;
-	if( gc_maxalloced>gc_max ){
-		gc_max=gc_maxalloced;
-		printf( "gc_max=%i\n",gc_max );fflush( stdout );
-	}
-//	double time=glfwGetTime();
+	int time=gcMillis();
 
 #endif
+
+#if INCREMENTAL_GC
+
+	int marked=0;
+	int swept=0;
+
+	for( int i=0;i<1000;++i ){
+	
+		if( gc_marked_queue.empty() ){
+		
+			gc_object **q=&gc_objs;
+
+			while( gc_marked!=gc_total ){
+				gc_object *p=*q;
+	
+				while( (p->flags & 1)==gc_markbit ){
+					q=&p->succ;
+					p=*q;
+				}
+				*q=p->succ;
+				delete p;
+				++swept;
+			}
+			
+			gc_markbit^=1;
+			gc_marked=0;
+			
+			gc_mark();
+			break;
+		}
+		gc_object *p=gc_marked_queue.back();
+		gc_marked_queue.pop_back();
+		p->mark();
+
+		++marked;
+	}
+	
+#if DEBUG_GC
+
+	time=gcMillis()-time;
+	printf( "ms=%i, marked=%i, swept=%i, objects=%i, alloced=%i, maxalloced=%i\n",time,marked,swept,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+	
+#endif
+	
+#else
 
 	gc_mark();
 	
@@ -258,18 +310,15 @@ void gc_collect(){
 	}
 	
 	gc_sweep();
-	
+
 #if DEBUG_GC
 
-//	time=glfwGetTime()-time;
-//	int ms=time*1000000;
-//	printf( "gc_time=%i, gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",ms,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
-
-	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
+	time=gcMillis()-time;
+	printf( "gc_millis=%i, gc_objects=%i, gc_memalloced=%i, gc_maxalloced=%i\n",time,gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
 	
 #endif
 
-//	P_LEAVE
+#endif
 }
 
 void gc_mark( gc_object *p ){
@@ -286,59 +335,12 @@ void gc_mark_q( gc_object *p ){
 	gc_marked_queue.push_back( p );
 }
 
-/*
-static std::vector<gc_object*> gc_exstack;
-
-void gc_markex(){
-	gc_exstack.push_back( gc_objs );
-}
-
-void gc_collectex(){
-
-#if DEBUG_GC
-	static int gc_max;
-	if( gc_maxalloced>gc_max ){
-		gc_max=gc_maxalloced;
-		printf( "gc_max=%i\n",gc_max );fflush( stdout );
-	}
+void gc_assign( void *lhs,gc_object *rhs ){
+#if INCREMENTAL_GC
+	gc_mark_q( rhs );
 #endif
-
-	gc_mark();
-	
-	for( gc_object *p=gc_exstack.back();p;p=p->succ ){
-		gc_mark( p );
-	}
-
-	gc_exstack.pop_back();
-
-	while( !gc_marked_queue.empty() ){
-		gc_object *p=gc_marked_queue.back();
-		gc_marked_queue.pop_back();
-		p->mark();
-	}
-
-	gc_object **q=&gc_objs,*p;
-
-	while( p=*q ){
-		if( p->flags & 2 ){
-			p->flags&=~2;
-			q=&p->succ;
-		}else if( (p->flags&1)==gc_markbit ){
-			q=&p->succ;
-		}else{
-			*q=p->succ;
-			delete p;
-		}
-	}
-
-	gc_markbit^=1;
-	gc_marked=0;
-
-#if DEBUG_GC
-	printf( "gc_total=%i, gc_alloced=%i, gc_maxalloced=%i\n",gc_total,gc_alloced,gc_maxalloced );fflush( stdout );
-#endif
+	*(void**)lhs=(void*)rhs;
 }
-*/
 
 // ***** Monkey Types *****
 
@@ -507,10 +509,6 @@ private:
 template<class T> void gc_mark( Array<T> &t ){
 	gc_mark( t.rep );
 }
-
-//for int, float etc arrays...
-//template<class T> void gc_mark_array( int n,T *p ){
-//}
 
 //for object arrays....
 template<class T> void gc_mark_array( int n,T **p ){
@@ -846,6 +844,53 @@ public:
 		return [NSString stringWithCharacters:ToCString<unichar>() length:rep->length];
 	}
 #endif
+
+	bool Save( FILE *fp ){
+		std::vector<unsigned char> buf;
+		Save( buf );
+		return fwrite( &buf[0],1,buf.size(),fp )==buf.size();
+	}
+	
+	void Save( std::vector<unsigned char> &buf ){
+	
+		bool uni=false;
+		
+		for( int i=0;i<rep->length;++i ){
+			if( rep->data[i]>=0xfe ){
+				uni=true;
+				break;
+			}
+		}
+		
+		if( uni ){
+			Char c;
+			unsigned char *p=(unsigned char*)&c;
+			c=0xfeff;
+			buf.push_back( p[0] );
+			buf.push_back( p[1] );
+			for( int i=0;i<rep->length;++i ){
+				c=rep->data[i];
+				buf.push_back( p[0] );
+				buf.push_back( p[1] );
+			}
+		}else{
+			for( int i=0;i<rep->length;++i ){
+				buf.push_back( rep->data[i] );
+			}
+		}
+	}
+	
+	static String Load( FILE *fp ){
+		unsigned char tmp[4096];
+		std::vector<unsigned char> buf;
+		for(;;){
+			int n=fread( tmp,1,4096,fp );
+			if( n>0 ) buf.insert( buf.end(),tmp,tmp+n );
+			if( n!=4096 ) break;
+		}
+		fclose( fp );
+		return String::Load( &buf[0],buf.size() );
+	}
 	
 	static String Load( unsigned char *p,int n ){
 	

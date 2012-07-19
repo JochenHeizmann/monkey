@@ -11,15 +11,15 @@ Class Button
 	
 	Field text:String
 	
-	Method New (x:Float, y:Float, string:String)
+	Method New (x:Float, y:Float, str:String)
 	
-		Self.width = string.Length * FONT_WIDTH
+		Self.width = str.Length * FONT_WIDTH
 		Self.height = FONT_HEIGHT * 2
 
 		Self.x = x - Self.width * 0.5
 		Self.y = y - Self.height * 0.5
 
-		Self.text = string
+		Self.text = str
 		
 	End
 	
