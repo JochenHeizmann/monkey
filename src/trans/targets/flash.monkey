@@ -62,7 +62,7 @@ Class FlashTarget Extends Target
 		
 		SaveString main,"MonkeyGame.as"
 		
-		If OPT_BUILD
+		If OPT_ACTION>=ACTION_BUILD
 		
 			DeleteFile "main.swf"
 			Execute "mxmlc -static-link-runtime-shared-libraries=true MonkeyGame.as"
@@ -71,7 +71,7 @@ Class FlashTarget Extends Target
 				DeleteDir "data",True
 			Endif
 			
-			If OPT_RUN
+			If OPT_ACTION>=ACTION_RUN
 				If FLASH_PLAYER
 					Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.swf" )+"~q",False
 				Else If HTML_PLAYER

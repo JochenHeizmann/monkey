@@ -12,10 +12,15 @@ Global HTML_PLAYER$
 Global FLASH_PLAYER$
 
 'from trans options
-Global OPT_CLEAN=False
-Global OPT_UPDATE=False
-Global OPT_BUILD=False
-Global OPT_RUN=False
+Const ACTION_PARSE=1
+Const ACTION_SEMANT=2
+Const ACTION_TRANSLATE=3
+Const ACTION_UPDATE=4
+Const ACTION_BUILD=5
+Const ACTION_RUN=6
+
+Global OPT_ACTION
+Global OPT_CLEAN
 Global OPT_OUTPUT$
 Global CASED_CONFIG$="Debug"
 
@@ -24,12 +29,19 @@ Class Target
 	Method Make( path$ )
 		Begin
 		SetSourcePath path
+		
 		Translate
-		CreateTargetDir
-		Local cd$=CurrentDir
-		ChangeDir targetPath
-		MakeTarget
-		ChangeDir cd
+		
+		If OPT_ACTION>=ACTION_UPDATE
+			Print "Building..."
+		
+			CreateTargetDir
+			Local cd$=CurrentDir
+			ChangeDir targetPath
+			
+			MakeTarget
+			ChangeDir cd
+		Endif
 	End
 	
 '***** Protected *****
@@ -66,27 +78,32 @@ Class Target
 	
 	Method Translate()
 
-		Print "Parsing..."
-	
-		app=parser.ParseApp( srcPath )
-
-		Print "Semanting..."
-		
-		app.Semant
-		
-		Print "Translating..."
-
-		For Local file$=Eachin app.fileImports
-			If ExtractExt( file ).ToLower()=ENV_LANG
-				AddTransCode LoadString( file )
+		If OPT_ACTION>=ACTION_PARSE
+			Print "Parsing..."
+			
+			app=parser.ParseApp( srcPath )
+			
+			If OPT_ACTION>=ACTION_SEMANT
+				Print "Semanting..."
+				
+				app.Semant
+				
+				If OPT_ACTION>=ACTION_TRANSLATE
+					Print "Translating..."
+			
+					For Local file$=Eachin app.fileImports
+						If ExtractExt( file ).ToLower()=ENV_LANG
+							AddTransCode LoadString( file )
+						Endif
+					Next
+			
+					AddTransCode _trans.TransApp( app )
+					
+					transCode=_trans.PostProcess( transCode )
+					
+				Endif
 			Endif
-		Next
-
-		AddTransCode _trans.TransApp( app )
-		
-		transCode=_trans.PostProcess( transCode )
-		
-		Print "Building..."
+		End
 	End
 	
 	Method ImportedFiles:StringList( exts$[] )

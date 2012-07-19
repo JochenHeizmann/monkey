@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.26"
+Const VERSION$="1.27"
 
 Global CONFIG_FILE$
 
@@ -91,7 +91,6 @@ Function LoadConfig()
 		If JDK_PATH path+=";"+JDK_PATH+"/bin"
 		If ANT_PATH path+=";"+ANT_PATH+"/bin"
 		If FLEX_PATH path+=";"+FLEX_PATH+"/bin"
-'		If MINGW_PATH path+=";"+MINGW_PATH+"/bin"
 		If MINGW_PATH path=MINGW_PATH+"/bin;"+path
 
 		SetEnv "PATH",path
@@ -106,9 +105,6 @@ Function LoadConfig()
 		If FLEX_PATH path+=":"+FLEX_PATH+"/bin"
 		
 		SetEnv "PATH",path
-		
-		'If Not HTML_PLAYER HTML_PLAYER="open "
-		'If Not FLASH_PLAYER FLASH_PLAYER="open "
 		
 	End
 
@@ -166,14 +162,16 @@ Function Main()
 				ENV_SAFEMODE=True
 			Case "clean"
 				OPT_CLEAN=True
+			Case "check"
+				OPT_ACTION=ACTION_TRANSLATE
 			Case "update"
-				OPT_UPDATE=True
+				OPT_ACTION=ACTION_UPDATE
 			Case "build"
-				OPT_BUILD=True
+				OPT_ACTION=ACTION_BUILD
 			Case "run"
-				OPT_RUN=True
+				OPT_ACTION=ACTION_RUN
 			Default
-				Die "Command line Die"
+				Die "Command line error"
 			End
 		Else
 			Local lhs$=arg[1..j].Trim()
@@ -198,7 +196,7 @@ Function Main()
 			Case "modpath"
 				ENV_MODPATH=StripQuotes( rhs )
 			Default
-				Die "Command line Die"
+				Die "Command line error"
 			End
 		Endif
 	Next
@@ -210,15 +208,8 @@ Function Main()
 	CONFIG_DEBUG=(ENV_CONFIG="debug")
 	CONFIG_RELEASE=(ENV_CONFIG="release")
 	CONFIG_PROFILE=(ENV_CONFIG="profile")
-
-	If OPT_RUN OPT_BUILD=True
-	If OPT_BUILD OPT_UPDATE=True
 	
-	'Default to OPT_BUILD...
-	If Not OPT_UPDATE
-		OPT_UPDATE=True
-		OPT_BUILD=True
-	Endif
+	If Not OPT_ACTION OPT_ACTION=ACTION_BUILD
 	
 	target.Make srcpath
 

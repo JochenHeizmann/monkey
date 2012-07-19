@@ -25,11 +25,11 @@ Class IosTarget Extends Target
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		SaveString main,"main.mm"
 		
-		If OPT_BUILD
+		If OPT_ACTION>=ACTION_BUILD
 
 			Execute "xcodebuild -configuration "+CASED_CONFIG+" -sdk iphonesimulator"
 
-			If OPT_RUN
+			If OPT_ACTION>=ACTION_RUN
 			
 				Local home$=GetEnv( "HOME" )
 

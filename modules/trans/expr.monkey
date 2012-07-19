@@ -832,9 +832,9 @@ Class BinaryCompareExpr Extends BinaryExpr
 		rhs=rhs.Semant()
 
 		ty=BalanceTypes( lhs.exprType,rhs.exprType )
-		If ArrayType( ty )
-			Err "Arrays cannot be compared."
-		Endif
+		
+		If ArrayType( ty ) Err "Arrays cannot be compared."
+		If ObjectType( ty ) And op<>"=" And op<>"<>" Err "Objects can only be compared for equality."
 
 		lhs=lhs.Cast( ty )
 		rhs=rhs.Cast( ty )

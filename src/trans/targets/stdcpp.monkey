@@ -35,7 +35,7 @@ Class StdcppTarget Extends Target
 
 		SaveString main,"main.cpp"
 
-		If OPT_BUILD
+		If OPT_ACTION>=ACTION_BUILD
 
 			Local out$="main_"+HostOS
 			DeleteFile out
@@ -59,7 +59,7 @@ Class StdcppTarget Extends Target
 				End
 			End
 
-			If OPT_RUN
+			If OPT_ACTION>=ACTION_RUN
 				Execute "~q"+RealPath( out )+"~q"
 			Endif
 		Endif

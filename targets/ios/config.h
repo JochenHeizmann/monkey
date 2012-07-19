@@ -19,3 +19,8 @@
 // Set to 1 for incremental GC (experimental), 0 for mark-and-sweep (stable).
 //
 #define INCREMENTAL_GC 0
+
+// Depth buffer support.
+// Set to 1 to enable depth buffer, 0 to disable.
+//
+#define DEPTH_BUFFER_ENABLED 0

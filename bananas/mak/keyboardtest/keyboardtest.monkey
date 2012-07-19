@@ -1,13 +1,9 @@
 
 Import mojo
 
-Class C
-	Field t
-End
-
 Class MyApp Extends App
 
-	Field str$,old$
+	Field str$="Started!",old$
 	Field enabled?
 
 	Method OnCreate()
@@ -16,8 +12,10 @@ Class MyApp Extends App
 	
 	Method OnUpdate()
 		If enabled
-			Local char=GetChar()
-			If char 
+			Repeat
+				Local char=GetChar()
+				If Not char Exit
+				
 				Print "char="+char
 				If char>=32
 					str+=String.FromChar( char )
@@ -26,6 +24,7 @@ Class MyApp Extends App
 					Case 8
 						str=str[..-1]
 					Case 13
+						If str.Trim()="bye" Error ""	'test abrupt exit with keyboard open
 						enabled=False
 						DisableKeyboard
 					Case 27
@@ -34,7 +33,8 @@ Class MyApp Extends App
 						DisableKeyboard
 					End
 				Endif
-			Endif
+
+			Forever
 		Else
 			If KeyHit( KEY_LMB )
 				old=str

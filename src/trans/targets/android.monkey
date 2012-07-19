@@ -53,7 +53,7 @@ Class AndroidTarget Extends Target
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 		SaveString main,jpath
 		
-		If OPT_BUILD
+		If OPT_ACTION>=ACTION_BUILD
 		
 			Execute "adb start-server"
 			
@@ -64,9 +64,11 @@ Class AndroidTarget Extends Target
 			Execute "adb kill-server",False
 
 			If Not r
+			
 				Die "Android build failed."
+				
 			Else
-				If OPT_RUN
+				If OPT_ACTION>=ACTION_RUN
 					Execute "adb shell am start -n "+app_package+"/"+app_package+".MonkeyGame",False
 					Execute "adb kill-server",False
 				End				

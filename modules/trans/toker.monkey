@@ -27,7 +27,7 @@ Class Toker
 	"bool;int;float;string;array;object;mod;continue;exit;"+
 	"include;import;module;extern;"+
 	"new;self;super;eachin;true;false;null;not;"+
-	"extends;abstract;select;case;default;"+
+	"extends;abstract;final;select;case;default;"+
 	"const;local;global;field;method;function;class;"+
 	"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;"+
 	"for;to;step;next;return;"+

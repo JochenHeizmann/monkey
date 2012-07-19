@@ -462,22 +462,18 @@ Class Parser
 	Method ParseIdentType:IdentType()
 		Local id$=ParseIdent()
 		If CParse( "." ) id+="."+ParseIdent()
-		Local args:Type[]
+		Local args:=New Stack<Type>
 		If CParse( "<" )
-			Local nargs
 			Repeat
 				Local arg:=ParseType()
 				While CParse( "[]" )
 					arg=arg.ArrayOf()
 				Wend
-				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=arg
-				nargs+=1
+				args.Push arg
 			Until Not CParse(",")
-			args=args[..nargs]
 			Parse ">"
 		Endif
-		Return New IdentType( id,args )
+		Return New IdentType( id,args.ToArray() )
 	End
 	
 	Method CParseIdentType:IdentType( inner?=False )
@@ -491,7 +487,7 @@ Class Parser
 			If inner Return New IdentType( id,[] )
 			Return
 		Endif
-		Local args:Type[],nargs
+		Local args:=New Stack<Type>
 		Repeat
 			Local arg:Type=CParsePrimitiveType()
 			If Not arg 
@@ -501,13 +497,10 @@ Class Parser
 			While CParse( "[]" )
 				arg=arg.ArrayOf()
 			Wend
-			If args.Length=nargs args=args.Resize( nargs+10 )
-			args[nargs]=arg
-			nargs+=1
+			args.Push arg
 		Until Not CParse(",")
 		If Not CParse( ">" ) Return
-		args=args[..nargs]
-		Return New IdentType( id,args )
+		Return New IdentType( id,args.ToArray() )
 	End
 	
 	Method ParseDeclType:Type()
@@ -540,16 +533,12 @@ Class Parser
 	
 	Method ParseArrayExpr:ArrayExpr()
 		Parse "["
-		Local args:Expr[],nargs
+		Local args:=New Stack<Expr>
 		Repeat
-			Local arg:Expr=ParseExpr()
-			If args.Length=nargs args=args.Resize( nargs+10 )
-			args[nargs]=arg
-			nargs+=1
+			args.Push ParseExpr()
 		Until Not CParse(",")
-		args=args[..nargs]
 		Parse "]"
-		Return New ArrayExpr( args )
+		Return New ArrayExpr( args.ToArray() )
 	End
 	
 	Method ParseArgs:Expr[]( stmt )
@@ -1298,19 +1287,24 @@ Class Parser
 		Until Not CParse(",")
 	End
 	
-	Method ParseFuncDecl:FuncDecl( toke$,attrs )
-		SetErr
+	Method ParseFuncDecl:FuncDecl( attrs )
 
-		If toke Parse toke
+		SetErr
+		Local toke:=_toke
+		
+		If CParse( "function" )
+		Else If CParse( "method" )
+			attrs|=FUNC_METHOD
+		Else
+			InternalErr
+		Endif
 	
 		Local id$
 		Local ty:Type
 		
 		If attrs & FUNC_METHOD
 			If _toke="new"
-				If attrs & DECL_EXTERN
-					Err "Extern classes cannot have constructors"
-				Endif
+				If attrs & DECL_EXTERN Err "Extern classes cannot have constructors."
 				id=_toke
 				NextToke
 				attrs|=FUNC_CTOR
@@ -1323,63 +1317,59 @@ Class Parser
 			id=ParseIdent()
 			ty=ParseDeclType()
 		Endif
-		
-		Local args:ArgDecl[]
+
+		Local args:=New Stack<ArgDecl>
 		
 		Parse "("
 		SkipEols
 		If _toke<>")"
-			Local nargs
 			Repeat
 				Local id$=ParseIdent()
 				Local ty:Type=ParseDeclType()
 				Local init:Expr
 				If CParse( "=" ) init=ParseExpr()
-				Local arg:ArgDecl=New ArgDecl( id,0,ty,init )
-				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=arg
-				nargs+=1
+				args.Push New ArgDecl( id,0,ty,init )
 				If _toke=")" Exit
 				Parse ","
 			Forever
-			args=args[..nargs]
 		Endif
 		Parse ")"
 		
 		Repeat		
 			If CParse( "final" )
+				If Not (attrs & FUNC_METHOD) Err "Functions cannot be final."
+				If attrs & DECL_FINAL Err "Duplicate method attribute."
+				If attrs & DECL_ABSTRACT Err "Methods cannot be both final and abstract."
 				attrs|=DECL_FINAL
 			Else If CParse( "abstract" )
+				If Not (attrs & FUNC_METHOD) Err "Functions cannot be abstract."
+				If attrs & DECL_ABSTRACT Err "Duplicate method attribute."
+				If attrs & DECL_FINAL Err "Methods cannot be both final and abstract."
 				attrs|=DECL_ABSTRACT
 			Else If CParse( "property" )
-				If attrs & FUNC_METHOD
-					attrs|=FUNC_PROPERTY
-				Else
-					Err "Only methods can be properties."
-				Endif
+				If Not (attrs & FUNC_METHOD) Err "Functions cannot be properties."	'why not?
+				If attrs & FUNC_PROPERTY Err "Duplicate method attribute."
+				attrs|=FUNC_PROPERTY
 			Else
 				Exit
 			Endif
 		Forever
 		
-		Local funcDecl:FuncDecl=New FuncDecl( id,attrs,ty,args )
+		Local funcDecl:FuncDecl=New FuncDecl( id,attrs,ty,args.ToArray() )
 		
 		If funcDecl.IsExtern()
 			funcDecl.munged=funcDecl.ident
 			If CParse( "=" )
 				funcDecl.munged=ParseStringLit()
-				'Array $resize hack!
+				'Array $resize hack! move outta here...
 				If funcDecl.munged="$resize"
 					funcDecl.retType=Type.emptyArrayType
 				Endif
-				
 			Endif
 			Return funcDecl
 		Endif
 		
 		If funcDecl.IsAbstract() Return funcDecl
-		
-'		_selTmpId=0
 		
 		PushBlock funcDecl
 		While _toke<>"end"
@@ -1388,119 +1378,79 @@ Class Parser
 		PopBlock
 
 		NextToke
+		
 		If toke CParse toke
 		
 		Return funcDecl
 	End
 	
-	Method ParseClassDecl:ClassDecl( toke$,attrs )
+	Method ParseClassDecl:ClassDecl( attrs )
+	
 		SetErr
-
-		If toke Parse toke
-		
-		Local id$=ParseIdent()
-		Local args$[]
-		Local superTy:IdentType
-		Local imps:IdentType[]
-		
-		If (attrs & CLASS_INTERFACE) And (attrs & DECL_EXTERN)
-			Err "Interfaces cannot be extern."
+		Local toke:=_toke
+	
+		If CParse( "class" )
+		Else If CParse( "interface" )
+			If attrs & DECL_EXTERN Err "Interfaces cannot be extern."
+			attrs|=CLASS_INTERFACE|DECL_ABSTRACT
+		Else
+			InternalErr
 		Endif
 		
-		If CParse( "<" )
+		Local id$=ParseIdent()
+		Local args:=New StringStack
+		Local superTy:IdentType=Type.objectType
+		Local imps:=New Stack<IdentType>
 		
-			If attrs & DECL_EXTERN
-				Err "Extern classes cannot be generic."
-			Endif
-			
-			If attrs & CLASS_INTERFACE
-				Err "Interfaces cannot be generic."
-			Endif
-			
-			Local nargs
+		If CParse( "<" )
+			If attrs & DECL_EXTERN Err "Extern classes cannot be generic."
+			If attrs & CLASS_INTERFACE Err "Interfaces cannot be generic."
 			Repeat
-				Local arg:=ParseIdent()
-				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=arg
-				nargs+=1
+				args.Push ParseIdent()
 			Until Not CParse(",")
-			args=args[..nargs]
-			
 			Parse ">"
 		Endif
 		
 		If CParse( "extends" )
-		
 			If CParse( "null" )
-			
-				If attrs & CLASS_INTERFACE
-					Err "Interfaces cannot extend null"
-				Endif
-				
-				If Not (attrs & DECL_EXTERN)
-					Err "Only extern objects can extend null."
-				Endif
-				
+				If attrs & CLASS_INTERFACE Err "Interfaces cannot extend null"
+				If Not (attrs & DECL_EXTERN) Err "Only extern objects can extend null."
 				superTy=Null
-				
 			Else If attrs & CLASS_INTERFACE
-			
-				Local nimps
 				Repeat
-					If imps.Length=nimps imps=imps.Resize( nimps+10 )
-					imps[nimps]=ParseIdentType()
-					nimps+=1
+					imps.Push ParseIdentType()
 				Until Not CParse(",")
-				imps=imps[..nimps]
 				superTy=Type.objectType
 			Else
 				superTy=ParseIdentType()
 			Endif
-		Else
-			superTy=Type.objectType
 		Endif
 
 		If CParse( "implements" )
-		
-			If attrs & DECL_EXTERN
-				Err "Implements cannot be used with external classes."
-			Endif
-		
-			If attrs & CLASS_INTERFACE
-				Err "Implements cannot be used with interfaces."
-			Endif
-			
-			Local nimps
+			If attrs & DECL_EXTERN Err "Implements cannot be used with external classes."
+			If attrs & CLASS_INTERFACE Err "Implements cannot be used with interfaces."
 			Repeat
-				If imps.Length=nimps imps=imps.Resize( nimps+10 )
-				imps[nimps]=ParseIdentType()
-				nimps+=1
+				imps.Push ParseIdentType()
 			Until Not CParse(",")
-			imps=imps[..nimps]
 		Endif
 
 		Repeat
 			If CParse( "final" )
-			
-				If attrs & CLASS_INTERFACE
-					Err "Final cannot be used with interfaces."
-				Endif
-				
+				If attrs & CLASS_INTERFACE Err "Interfaces cannot be final."
+				If attrs & DECL_FINAL Err "Duplicate class attribute."
+				If attrs & DECL_ABSTRACT Err "Classes cannot be both final and abstract."
 				attrs|=DECL_FINAL
-				
 			Else If CParse( "abstract" )
-			
-				If attrs & CLASS_INTERFACE
-					Err "Abstract cannot be used with interfaces."
-				Endif
-				
+				If attrs & CLASS_INTERFACE Err "Interfaces cannot be abstract."
+				If attrs & DECL_ABSTRACT Err "Duplicate class attribute."
+				If attrs & DECL_FINAL Err "Classes cannot be both final and abstract."
 				attrs|=DECL_ABSTRACT
 			Else
 				Exit
 			Endif
 		Forever
 
-		Local classDecl:ClassDecl=New ClassDecl( id,attrs,args,superTy,imps )
+		Local classDecl:ClassDecl=New ClassDecl( id,attrs,args.ToArray(),superTy,imps.ToArray() )
 		
 		If classDecl.IsExtern()
 			classDecl.munged=classDecl.ident
@@ -1509,8 +1459,11 @@ Class Parser
 		
 		Local decl_attrs=(attrs & DECL_EXTERN)
 		
-		Local method_attrs=decl_attrs|FUNC_METHOD
-		If attrs & CLASS_INTERFACE method_attrs|=DECL_ABSTRACT
+		Local func_attrs=decl_attrs
+		If attrs & CLASS_INTERFACE func_attrs|=DECL_ABSTRACT
+		
+'		Local method_attrs=decl_attrs|FUNC_METHOD
+'		If attrs & CLASS_INTERFACE method_attrs|=DECL_ABSTRACT
 		
 		Repeat
 			SkipEols
@@ -1525,20 +1478,13 @@ Class Parser
 				NextToke
 				decl_attrs=decl_attrs & ~DECL_PRIVATE
 			Case "const","global","field"
-				If (attrs & CLASS_INTERFACE) And _toke<>"const"
-					Err "Interfaces can only contain constants and methods."
-				Endif
+				If (attrs & CLASS_INTERFACE) And _toke<>"const" Err "Interfaces can only contain constants and methods."
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
 			Case "method"
-				Local decl:=ParseFuncDecl( _toke,method_attrs )
-'				If decl.IsCtor() decl.retType=classDecl.objectType
-				classDecl.InsertDecl decl
+				classDecl.InsertDecl ParseFuncDecl( func_attrs )
 			Case "function"
-				If (attrs & CLASS_INTERFACE) And _toke<>"const"
-					Err "Interfaces can only contain constants and methods."
-				Endif
-				Local decl:FuncDecl=ParseFuncDecl( _toke,decl_attrs )
-				classDecl.InsertDecl decl
+				If (attrs & CLASS_INTERFACE) Err "Interfaces can only contain constants and methods."
+				classDecl.InsertDecl ParseFuncDecl( func_attrs )
 			Default
 				Err "Syntax error - expecting class member declaration."
 			End Select
@@ -1743,11 +1689,11 @@ Class Parser
 			Case "const","global"
 				_module.InsertDecls ParseDecls( _toke,attrs )
 			Case "class"
-				_module.InsertDecl ParseClassDecl( _toke,attrs )
+				_module.InsertDecl ParseClassDecl( attrs )
 			Case "interface"
-				_module.InsertDecl ParseClassDecl( _toke,attrs|CLASS_INTERFACE|DECL_ABSTRACT )
+				_module.InsertDecl ParseClassDecl( attrs )
 			Case "function"
-				_module.InsertDecl ParseFuncDecl( _toke,attrs )
+				_module.InsertDecl ParseFuncDecl( attrs )
 			Default
 				Err "Syntax error - expecting declaration."
 			End Select

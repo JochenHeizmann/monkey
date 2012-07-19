@@ -89,11 +89,11 @@ Class XnaTarget Extends Target
 		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		SaveString main,"MonkeyGame/MonkeyGame/Program.cs"
 			
-		If OPT_BUILD
+		If OPT_ACTION>=ACTION_BUILD
 		
 			Execute MSBUILD_PATH+" /p:Configuration="+CASED_CONFIG+" MonkeyGame.sln"
 			
-			If OPT_RUN
+			If OPT_ACTION>=ACTION_RUN
 				ChangeDir "MonkeyGame/MonkeyGame/bin/x86/"+CASED_CONFIG
 				Execute "MonkeyGame",False
 			Endif

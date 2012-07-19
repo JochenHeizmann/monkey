@@ -61,6 +61,10 @@ Class Decl
 		Return (attrs & DECL_PRIVATE)<>0
 	End
 	
+	Method IsFinal()
+		Return (attrs & DECL_FINAL)<>0
+	End
+	
 	Method IsAbstract()
 		Return (attrs & DECL_ABSTRACT)<>0
 	End
@@ -629,7 +633,7 @@ Class FuncDecl Extends BlockDecl
 	
 	Method OnSemant()
 
-		'get cdecl, sclasss
+		'get cdecl, sclass
 		Local cdecl:=ClassScope(),sclass:ClassDecl
 		If cdecl sclass=ClassDecl( cdecl.superClass )
 		
@@ -661,7 +665,7 @@ Class FuncDecl Extends BlockDecl
 			Endif
 		Endif
 		
-		'check we exactly match an override
+		'Find an override
 		If sclass And IsMethod()
 			While sclass
 				Local found
@@ -669,17 +673,17 @@ Class FuncDecl Extends BlockDecl
 					found=True
 					decl.Semant
 					If EqualsFunc( decl ) 
-						overrides=FuncDecl( decl )
-						If overrides.munged
-							If munged And munged<>overrides.munged
-								InternalErr
-							Endif
-							munged=overrides.munged
-						Endif
+						overrides=decl
+						Exit
 					Endif
 				Next
 				If found
 					If Not overrides Err "Overriding method does not match any overridden method."
+					If overrides.IsFinal() Err "Cannot override final method."
+					If overrides.munged
+						If munged And munged<>overrides.munged InternalErr
+						munged=overrides.munged
+					Endif
 					Exit
 				Endif
 				sclass=sclass.superClass
@@ -778,10 +782,14 @@ Class ClassDecl Extends ScopeDecl
 	
 	Method ToString$()
 		Local t$
-		For Local i=0 Until args.Length
-			If i t+=","
-			t+=args[i]
-		Next
+		If args
+			t=",".Join( args )
+		Else If instArgs
+			For Local arg:=Eachin instArgs
+				If t t+=","
+				t+=arg.ToString()
+			Next
+		Endif
 		If t t="<"+t+">"
 		Return ident+t
 	End
@@ -936,7 +944,8 @@ Class ClassDecl Extends ScopeDecl
 		'Semant superclass		
 		If superTy
 			superClass=superTy.SemantClass()
-			If superClass.IsInterface() Err superClass.ToString()+" is an interface, not a class."
+			If superClass.IsFinal() Err "Cannot extend final class."
+			If superClass.IsInterface() Err "Cannot extend an interface."
 			If superClass.ExtendsObject() attrs|=CLASS_EXTENDSOBJECT
 		Else
 			If munged="Object" attrs|=CLASS_EXTENDSOBJECT

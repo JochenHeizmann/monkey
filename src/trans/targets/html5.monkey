@@ -30,7 +30,7 @@ Class Html5Target Extends Target
 		
 		SaveString main,"main.js"
 		
-		If OPT_RUN
+		If OPT_ACTION>=ACTION_RUN
 			Local p$=RealPath( "MonkeyGame.html" )
 			
 			Local t$=HTML_PLAYER+" ~q"+p+"~q"

@@ -32,12 +32,12 @@ Class GlfwTarget Extends Target
 			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 			SaveString main,"main.cpp"
 			
-			If OPT_BUILD
+			If OPT_ACTION>=ACTION_BUILD
 
 				ChangeDir "vc2010"
 				Execute MSBUILD_PATH+" /p:Configuration="+CASED_CONFIG+";Platform=~qwin32~q MonkeyGame.sln"
 				
-				If OPT_RUN
+				If OPT_ACTION>=ACTION_RUN
 					ChangeDir CASED_CONFIG
 					Execute "MonkeyGame"
 				Endif
@@ -51,12 +51,12 @@ Class GlfwTarget Extends Target
 			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",transCode )
 			SaveString main,"main.cpp"
 			
-			If OPT_BUILD
+			If OPT_ACTION>=ACTION_BUILD
 
 				ChangeDir "xcode"
 				Execute "xcodebuild -configuration "+CASED_CONFIG
 				
-				If OPT_RUN
+				If OPT_ACTION>=ACTION_RUN
 					ChangeDir "build/"+CASED_CONFIG
 					Execute "open MonkeyGame.app"
 				Endif

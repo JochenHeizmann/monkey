@@ -1,13 +1,38 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V51 *****
+
+Modules
+
+Added opengl module!
+
+html5 mojo - fixed AccelZ.
+
+android mojo - fixed soft keyboard not appearing in landscape mode (hopefully!) and predictive/multichar text entry. Still something up with backspace on my LG though...
+
+
+Monk (0.36)
+
+Added Final keyword.
+
+
+Trans (1.27)
+
+Added -check option to trans to just do a test parse/semant/translate.
+
+Added check for object comparisons.
+
+Added Final attribute for class/method decls.
+
+
 ***** V50 *****
 
 Modules:
 
 mojo.graphics - added DrawPoint(x#,y#).
 
-html5 mojo - added touch event support - note: touch emulates mouse and vice versa.
+html5 mojo - added touch/accel support - note: touch emulates mouse and vice versa.
 
 android mojo - added touch event opts as suggested by Samah.
 

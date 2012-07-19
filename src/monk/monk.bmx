@@ -25,7 +25,7 @@ Import "monk.o"
 
 AppTitle = "Monk"
 
-Const ABOUT$="Monk 0.35 - a free editor for monkey coders by Simon Armstrong"
+Const ABOUT$="Monk 0.36 - a free editor for monkey coders by Simon Armstrong"
 Const IDE_VERSION$="0.35 Release Version"
 
 Incbin "monktoolbar.png"
@@ -229,7 +229,7 @@ Type TQuickHelp
 		"bool;int;float;string;array;object;mod;continue;exit;"+..
 		"include;import;module;extern;"+..
 		"new;self;super;eachin;true;false;null;not;"+..
-		"extends;abstract;native;select;case;default;"+..
+		"extends;abstract;final;native;select;case;default;"+..
 		"const;local;global;field;method;function;class;interface;implements;"+..
 		"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;for;to;step;next;return;inline;"+..
 		"#rem;"

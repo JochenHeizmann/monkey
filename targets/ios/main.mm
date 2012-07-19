@@ -9,6 +9,10 @@
 
 -(id)initWithCoder:(NSCoder*)coder{
 
+	defaultFramebuffer=0;
+	colorRenderbuffer=0;
+	depthRenderbuffer=0;
+
 	if( self=[super initWithCoder:coder] ){
 	
 		// Enable retina display
@@ -34,12 +38,19 @@
 			return nil;
 		}
 		
-		// Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
 		glGenFramebuffersOES( 1,&defaultFramebuffer );
-		glGenRenderbuffersOES( 1,&colorRenderbuffer );
 		glBindFramebufferOES( GL_FRAMEBUFFER_OES,defaultFramebuffer );
+		glGenRenderbuffersOES( 1,&colorRenderbuffer );
 		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
 		glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_COLOR_ATTACHMENT0_OES,GL_RENDERBUFFER_OES,colorRenderbuffer );
+
+#if DEPTH_BUFFER_ENABLED
+		glGenRenderbuffersOES( 1,&depthRenderbuffer );
+		glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+		glFramebufferRenderbufferOES( GL_FRAMEBUFFER_OES,GL_DEPTH_ATTACHMENT_OES,GL_RENDERBUFFER_OES,depthRenderbuffer );
+		glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+#endif
+		
 	}
 	return self;
 }
@@ -61,8 +72,14 @@
 	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_WIDTH_OES,&backingWidth );
 	glGetRenderbufferParameterivOES( GL_RENDERBUFFER_OES,GL_RENDERBUFFER_HEIGHT_OES,&backingHeight );
 	
-	if( glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES ){
-		NSLog( @"Failed to make complete framebuffer object %x",glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) );
+#if DEPTH_BUFFER_ENABLED
+	glBindRenderbufferOES( GL_RENDERBUFFER_OES,depthRenderbuffer );
+	glRenderbufferStorageOES( GL_RENDERBUFFER_OES,GL_DEPTH_COMPONENT16_OES,backingWidth,backingHeight );
+	glBindRenderbufferOES( GL_RENDERBUFFER_OES,colorRenderbuffer );
+#endif
+	
+	if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ){
+		NSLog( @"Failed to make complete framebuffer object %x",glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES ) );
 		abort();
 	}
     
@@ -79,14 +96,19 @@
 
 	// Tear down GL
 	if( defaultFramebuffer ){
-		glDeleteFramebuffersOES(1, &defaultFramebuffer);
-		defaultFramebuffer = 0;
+		glDeleteFramebuffersOES( 1,&defaultFramebuffer );
+		defaultFramebuffer=0;
 	}
 
 	if( colorRenderbuffer ){
-		glDeleteRenderbuffersOES(1, &colorRenderbuffer);
-		colorRenderbuffer = 0;
+		glDeleteRenderbuffersOES( 1,&colorRenderbuffer );
+		colorRenderbuffer=0;
 	}
+	
+	if( depthRenderbuffer ){
+		glDeleteRenderbuffersOES( 1,&depthRenderbuffer );
+		depthRenderbuffer=0;
+	}	
 	
 	// Tear down context
 	if( [EAGLContext currentContext]==context ){

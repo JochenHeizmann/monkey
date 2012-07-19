@@ -75,7 +75,7 @@ int main( int argc,const char *argv[] ){
 	
 	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,WINDOW_NO_RESIZE );
 	
-	if( !glfwOpenWindow( w,h, 0,0,0,0,0,0, WINDOW_MODE ) ){
+	if( !glfwOpenWindow( w,h, 0,0,0,0,DEPTH_BUFFER_BITS,0, WINDOW_MODE ) ){
 		fail( "glfwOpenWindow failed" );
 	}
 
