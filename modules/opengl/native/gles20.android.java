@@ -12,7 +12,7 @@ class bb_opengl_gles20{
 		if( inited ) return;
 		inited=true;
 		
-		Class c;
+		Class c=null;
 		
 		try{
 			c=Class.forName( "com.monkey.NativeGL" );
@@ -22,13 +22,13 @@ class bb_opengl_gles20{
 
 		try{
 			Class[] p=new Class[]{ Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE };
-			drawElements=GLES20.class.getMethod( "glDrawElements",p );
+			drawElements=c.getMethod( "glDrawElements",p );
 		}catch( NoSuchMethodException ex ){
 		}
 
 		try{
 			Class[] p=new Class[]{ Integer.TYPE,Integer.TYPE,Integer.TYPE,Boolean.TYPE,Integer.TYPE,Integer.TYPE };
-			vertexAttribPointer=GLES20.class.getMethod( "glVertexAttribPointer",p );
+			vertexAttribPointer=c.getMethod( "glVertexAttribPointer",p );
 		}catch( NoSuchMethodException ex ){
 		}
 	}
