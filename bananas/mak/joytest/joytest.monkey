@@ -26,10 +26,10 @@ Class MyApp Extends App
 		DrawText "JoyDown(JOY_RB)    "+JoyDown(JOY_RB),0,220
 		DrawText "JoyDown(JOY_BACK)  "+JoyDown(JOY_BACK),0,240
 		DrawText "JoyDown(JOY_START) "+JoyDown(JOY_START),0,260
-		DrawText "JoyDown(JOY_LEFT)  "+JoyDown(JOY_LEFT),0,260
-		DrawText "JoyDown(JOY_UP)    "+JoyDown(JOY_UP),0,280
-		DrawText "JoyDown(JOY_RIGHT) "+JoyDown(JOY_RIGHT),0,300
-		DrawText "JoyDown(JOY_DOWN)  "+JoyDown(JOY_DOWN),0,320
+		DrawText "JoyDown(JOY_LEFT)  "+JoyDown(JOY_LEFT),0,280
+		DrawText "JoyDown(JOY_UP)    "+JoyDown(JOY_UP),0,300
+		DrawText "JoyDown(JOY_RIGHT) "+JoyDown(JOY_RIGHT),0,320
+		DrawText "JoyDown(JOY_DOWN)  "+JoyDown(JOY_DOWN),0,340
 		
 	End
 	

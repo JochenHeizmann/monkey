@@ -6,8 +6,7 @@
 
 Import trans
 
-Const DECL_NATIVE=		$010000
-Const DECL_EXTERN=		DECL_NATIVE
+Const DECL_EXTERN=		$010000
 Const DECL_PRIVATE=		$020000
 Const DECL_ABSTRACT=	$040000
 Const DECL_FINAL=		$080000
@@ -47,10 +46,6 @@ Class Decl
 	
 	Method ToString$()
 		Return ident
-	End
-	
-	Method IsNative()
-		Return (attrs & DECL_NATIVE)<>0
 	End
 	
 	Method IsExtern()
@@ -109,22 +104,39 @@ Class Decl
 
 		PushErr errInfo
 		
-'		If ident Print "Semanting:"+ident+errInfo
-
 		If scope
 			PushEnv scope
 		Endif
 		
 		attrs|=DECL_SEMANTING
 
-		'If ident Print "Semanting: "+ToString()
-		
 		OnSemant
 		
 		attrs&=~DECL_SEMANTING
 		attrs|=DECL_SEMANTED
 
+		If scope 
+		
+			If Not IsExtern()
+
+				scope.semanted.AddLast Self
+				
+				If GlobalDecl( Self )
+					AppScope.semantedGlobals.AddLast GlobalDecl( Self )
+				Endif
+				
+				If ModuleDecl( scope )
+					AppScope.semanted.AddLast Self
+				Endif
+			
+			Endif
+			
+			PopEnv
+
+		Endif
+#rem
 		If scope
+		
 			scope.semanted.AddLast Self
 			
 			If Not IsExtern And GlobalDecl( Self )
@@ -137,7 +149,7 @@ Class Decl
 			
 			PopEnv
 		Endif
-
+#end
 		PopErr
 	End
 	
@@ -481,7 +493,7 @@ Public
 			Local t$
 			For Local i=0 Until argExprs.Length
 				If t t+=","
-				If argExprs[i] t+=argExprs[i].ToString()
+				If argExprs[i] t+=argExprs[i].exprType.ToString()
 			Next
 			Err "Unable to find overload for "+ident+"("+t+")."
 		Endif
@@ -522,10 +534,12 @@ Class BlockDecl Extends ScopeDecl
 	
 End
 
-Const FUNC_METHOD=1
+Const FUNC_METHOD=1			'mutually exclusive with ctor
 Const FUNC_CTOR=2
 Const FUNC_PROPERTY=4
 
+'Fix! A func is NOT a block/scope!
+'
 Class FuncDecl Extends BlockDecl
 
 	Field retType:Type
@@ -540,7 +554,6 @@ Class FuncDecl Extends BlockDecl
 		Self.retType=retType
 		Self.argDecls=argDecls
 		Self.attrs=attrs
-		
 	End
 	
 	Method ToString$()
@@ -560,14 +573,14 @@ Class FuncDecl Extends BlockDecl
 		Return q+"("+t+")"
 	End
 	
-	Method IsMethod()
-		Return (attrs & FUNC_METHOD)<>0
-	End
-	
 	Method IsCtor()
 		Return (attrs & FUNC_CTOR)<>0
 	End
 
+	Method IsMethod()
+		Return (attrs & FUNC_METHOD)<>0
+	End
+	
 	Method IsStatic()
 		Return (attrs & (FUNC_METHOD|FUNC_CTOR))=0
 	End
@@ -647,17 +660,13 @@ Class FuncDecl Extends BlockDecl
 		Endif
 
 		'check we exactly match an override
-		If sclass And Not IsCtor()
+		If sclass And IsMethod()
 			While sclass
 				Local found
 				For Local decl:=Eachin sclass.FuncDecls
-					If decl.ident<>ident Continue
+					If decl.ident<>ident Or Not decl.IsMethod() Continue
 					found=True
 					decl.Semant
-					If IsMethod()<>decl.IsMethod()
-						overrides=Null
-						Exit
-					Endif
 					If EqualsType( decl )
 						overrides=FuncDecl( decl.actual )
 					Endif
@@ -1210,7 +1219,6 @@ Class AppDecl Extends ScopeDecl
 		mdecl.scope=Self
 		imported.Insert mdecl.filepath,mdecl
 		If Not mainModule
-'			mdecl.munged="bb_"
 			mainModule=mdecl
 		Endif
 	End

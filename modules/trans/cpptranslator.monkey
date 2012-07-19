@@ -453,7 +453,10 @@ Class CppTranslator Extends Translator
 	
 		app.mainFunc.munged="bb_Main"
 		
-		'Munging
+		For Local decl:=Eachin app.imported.Values()
+			MungDecl decl
+		Next
+
 		For Local decl:=Eachin app.Semanted
 		
 			MungDecl decl
@@ -474,7 +477,7 @@ Class CppTranslator Extends Translator
 			PopMungScope
 		Next
 		
-		'Prototypes/header!
+		'prototypes/header!
 		For Local decl:=Eachin app.Semanted
 		
 			Local gdecl:=GlobalDecl( decl )
@@ -496,7 +499,7 @@ Class CppTranslator Extends Translator
 			Endif
 		Next
 		
-		'declarations!
+		'definitions!
 		For Local decl:=Eachin app.Semanted
 			
 			Local gdecl:=GlobalDecl( decl )

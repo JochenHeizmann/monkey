@@ -20,7 +20,7 @@ Class JsTranslator Extends Translator
 			If StringType( ty ) Return "~q~q"
 			If ArrayType( ty ) Return "[]"
 			If ObjectType( ty ) Return "null"
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -134,17 +134,17 @@ Class JsTranslator Extends Translator
 		Else If StringType( dst )
 			If NumericType( src ) Return "String"+texpr
 			If StringType( src )  Return texpr
-		EndIf
+		Endif
 		
 		'upcast
 		If src.ExtendsType( dst )
 			Return texpr
-		EndIf
+		Endif
 		
 		'downcast
 		If dst.ExtendsType( src )
 			Return "object_downcast"+Bra( texpr+","+dst.GetClass().actual.munged )
-		EndIf
+		Endif
 	
 		InternalErr
 	End
@@ -289,7 +289,7 @@ Class JsTranslator Extends Translator
 			Emit decl.ClassScope().munged+".prototype."+decl.munged+"=function"+args+"{"
 		Else
 			Emit "function "+decl.munged+args+"{"
-		EndIf
+		Endif
 
 		EmitBlock decl
 		
@@ -311,7 +311,7 @@ Class JsTranslator Extends Translator
 		
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
-			if fdecl Emit "this."+fdecl.munged+"="+fdecl.init.Trans()+";"
+			If fdecl Emit "this."+fdecl.munged+"="+fdecl.init.Trans()+";"
 		Next
 		
 		Emit "}"
@@ -319,7 +319,7 @@ Class JsTranslator Extends Translator
 		'extends superclass object
 		If superid<>"Object"
 			Emit classid+".prototype=extend_class("+superid+");"
-		EndIf
+		Endif
 
 		'class members
 		For Local decl:=Eachin classDecl.Semanted
@@ -329,7 +329,7 @@ Class JsTranslator Extends Translator
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local gdecl:GlobalDecl=GlobalDecl( decl )
 			If gdecl
@@ -346,8 +346,12 @@ Class JsTranslator Extends Translator
 		
 		app.mainFunc.munged="bb_Main"
 		
+		For Local decl:=Eachin app.imported.Values()
+			MungDecl decl
+		Next
+		
 		For Local decl:=Eachin app.Semanted
-			
+
 			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
@@ -378,19 +382,19 @@ Class JsTranslator Extends Translator
 			If gdecl
 				Emit "var "+gdecl.munged+";"
 				Continue
-			EndIf
+			Endif
 			
 			Local fdecl:FuncDecl=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local cdecl:ClassDecl=ClassDecl( decl )
 			If cdecl
 				EmitClassDecl cdecl
 				Continue
-			EndIf
+			Endif
 		Next
 
 		Emit "function bb_Init(){"

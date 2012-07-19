@@ -42,7 +42,7 @@ Class CsTranslator Extends Translator
 				Return "new "+TransType( elemTy )+t
 			Endif
 			If ObjectType( ty ) Return "null"
-		EndIf
+		Endif
 		InternalErr
 	End
 
@@ -54,7 +54,7 @@ Class CsTranslator Extends Translator
 	
 	Method TransArgs$( args:Expr[] )
 		Local t$
-		For Local arg:=EachIn args
+		For Local arg:=Eachin args
 			If t t+=","
 			t+=arg.Trans()
 		Next
@@ -90,7 +90,7 @@ Class CsTranslator Extends Translator
 			Return decl.scope.munged+"."+decl.munged
 		Else If ModuleDecl( decl.scope )
 			Return decl.scope.munged+"."+decl.munged
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -107,7 +107,7 @@ Class CsTranslator Extends Translator
 		If decl.IsMethod()
 			If lhs Return TransSubExpr( lhs )+"."+decl.munged+TransArgs( args )
 			Return decl.munged+TransArgs( args )
-		EndIf
+		Endif
 		Return TransStatic( decl )+TransArgs( args )
 	End
 	
@@ -170,12 +170,12 @@ Class CsTranslator Extends Translator
 			If IntType( src ) Return texpr+".ToString()"
 			If FloatType( src ) Return texpr+".ToString()"
 			If StringType( src ) Return texpr
-		EndIf
+		Endif
 		
 		'upcast
 		If src.ExtendsType( dst )
 			Return texpr
-		EndIf
+		Endif
 
 		'downcast		
 		If dst.ExtendsType( src )
@@ -183,7 +183,7 @@ Class CsTranslator Extends Translator
 			MungDecl tmp
 			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
 			Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
-		EndIf
+		Endif
 		
 		InternalErr
 	End
@@ -243,7 +243,7 @@ Class CsTranslator Extends Translator
 
 	Method TransArrayExpr$( expr:ArrayExpr )
 		Local t$
-		For Local elem:=EachIn expr.exprs
+		For Local elem:=Eachin expr.exprs
 			If t t+=","
 			t+=elem.Trans()
 		Next
@@ -315,7 +315,7 @@ Class CsTranslator Extends Translator
 		PushMungScope
 		
 		Local args$
-		For Local arg:=EachIn decl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransDecl( arg )
@@ -329,8 +329,8 @@ Class CsTranslator Extends Translator
 				t+="override "
 			Else
 				t+="virtual "
-			EndIf
-		EndIf
+			Endif
+		Endif
 		
 		Emit t+TransType( decl.retType )+" "+decl.munged+Bra( args )+"{"
 		
@@ -347,24 +347,24 @@ Class CsTranslator Extends Translator
 		
 		Emit "class "+classid+" : "+superid+"{"
 		
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 			Local tdecl:=FieldDecl( decl )
 			If tdecl
 				Emit "public "+TransDecl( tdecl )+"="+tdecl.init.Trans()+";"
 				Continue
-			EndIf
+			Endif
 			
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit "public static "+TransDecl( gdecl )+";"
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		Emit "}"
@@ -373,9 +373,12 @@ Class CsTranslator Extends Translator
 	Method TransApp$( app:AppDecl )
 		
 		app.mainModule.munged="bb_"
-'		app.mainFunc.munged="bb_Main"
+		
+		For Local decl:=Eachin app.imported.Values
+			MungDecl decl
+		Next
 
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 
 			MungDecl decl
 
@@ -386,10 +389,12 @@ Class CsTranslator Extends Translator
 			
 			MungOverrides cdecl
 			
-			For Local decl:=EachIn cdecl.Semanted
-				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
+			For Local decl:=Eachin cdecl.Semanted
+			
+				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod()
 					decl.ident=cdecl.ident+"_"+decl.ident
-				EndIf
+				Endif
+				
 				MungDecl decl
 			Next
 			
@@ -397,34 +402,34 @@ Class CsTranslator Extends Translator
 		Next
 		
 		'classes		
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 			
 			Local cdecl:=ClassDecl( decl )
 			If cdecl
 				EmitClassDecl cdecl
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		'Translate globals
-		For Local mdecl:=EachIn app.imported.Values()
+		For Local mdecl:=Eachin app.imported.Values()
 
 			Emit "class "+mdecl.munged+"{"
 
-			For Local decl:=EachIn mdecl.Semanted
+			For Local decl:=Eachin mdecl.Semanted
 				If decl.IsExtern() Or decl.scope.ClassScope() Continue
 			
 				Local gdecl:=GlobalDecl( decl )
 				If gdecl
 					Emit "public static "+TransDecl( gdecl )+";"
 					Continue
-				EndIf
+				Endif
 				
 				Local fdecl:=FuncDecl( decl )
 				If fdecl
 					EmitFuncDecl fdecl
 					Continue
-				EndIf
+				Endif
 			Next
 
 			Emit "}"
@@ -450,7 +455,7 @@ Class CsTranslator Extends Translator
 		'
 		Local head$,usings$,code$,used:=New StringMap<StringObject>
 	
-		For Local line$=EachIn lines
+		For Local line$=Eachin lines
 			If line.StartsWith( "using " )
 				Local i=line.Find( ";" )
 				If i=-1 InternalErr
@@ -458,12 +463,12 @@ Class CsTranslator Extends Translator
 				If Not used.Contains( line )
 					usings+=line+"~n"
 					used.Insert line,line
-				EndIf
+				Endif
 			Else If usings
 				code+=line+"~n"
 			Else 
 				head+=line+"~n"
- 			EndIf
+ 			Endif
 		Next
 		Return head+usings+code
 	End

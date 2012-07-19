@@ -31,7 +31,7 @@ Class Toker
 	"const;local;global;field;method;function;class;"+
 	"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;"+
 	"for;to;step;next;return;"+
-	"interface;implements;inline;"
+	"interface;implements;inline;alias;"
 
 	Global _symbols$[]=[ "..","[]","()",":=","*=","/=","+=","-=","|=","&=","~=" ]
 

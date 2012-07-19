@@ -42,7 +42,7 @@ Class JavaTranslator Extends Translator
 				Return "new "+TransType( elemTy )+t
 			Endif
 			If ObjectType( ty ) Return "null"
-		EndIf
+		Endif
 		InternalErr
 	End
 
@@ -57,7 +57,7 @@ Class JavaTranslator Extends Translator
 	
 	Method TransArgs$( args:Expr[] )
 		Local t$
-		For Local arg:=EachIn args
+		For Local arg:=Eachin args
 			If t t+=","
 			t+=arg.Trans()
 		Next
@@ -95,7 +95,7 @@ Class JavaTranslator Extends Translator
 			Return decl.scope.munged+"."+decl.munged
 		Else If ModuleDecl( decl.scope )
 			Return decl.scope.munged+"."+decl.munged
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -112,7 +112,7 @@ Class JavaTranslator Extends Translator
 		If decl.IsMethod()
 			If lhs Return TransSubExpr( lhs )+"."+decl.munged+TransArgs( args )
 			Return decl.munged+TransArgs( args )
-		EndIf
+		Endif
 		Return TransStatic( decl )+TransArgs( args )
 	End
 	
@@ -175,12 +175,12 @@ Class JavaTranslator Extends Translator
 			If IntType( src ) Return "String.valueOf"+texpr
 			If FloatType( src ) Return "String.valueOf"+texpr
 			If StringType( src ) Return texpr
-		EndIf
+		Endif
 		
 		'upcast
 		If src.ExtendsType( dst )
 			Return texpr
-		EndIf
+		Endif
 
 		'downcast		
 		If dst.ExtendsType( src )
@@ -188,7 +188,7 @@ Class JavaTranslator Extends Translator
 			MungDecl tmp
 			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
 			Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
-		EndIf
+		Endif
 		
 		InternalErr
 	End
@@ -241,7 +241,7 @@ Class JavaTranslator Extends Translator
 	
 	Method TransArrayExpr$( expr:ArrayExpr )
 		Local t$
-		For Local elem:=EachIn expr.exprs
+		For Local elem:=Eachin expr.exprs
 			If t t+=","
 			t+=elem.Trans()
 		Next
@@ -308,7 +308,7 @@ Class JavaTranslator Extends Translator
 		PushMungScope
 		
 		Local args$
-		For Local arg:=EachIn decl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransDecl( arg )
@@ -332,25 +332,25 @@ Class JavaTranslator Extends Translator
 		
 		Emit "class "+classid+" extends "+superid+"{"
 		
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 
 			Local tdecl:=FieldDecl( decl )
 			If tdecl
 				Emit TransDecl( tdecl )+"="+tdecl.init.Trans()+";"
 				Continue
-			EndIf
+			Endif
 			
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit "static "+TransDecl( gdecl )+";"
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		Emit "}"
@@ -358,12 +358,15 @@ Class JavaTranslator Extends Translator
 	End
 	
 	Method TransApp$( app:AppDecl )
-	
+
 		app.mainModule.munged="bb_"
 		
-		'***** Mung *****
-		For Local decl:=EachIn app.Semanted
-			
+		For Local decl:=Eachin app.imported.Values()
+			MungDecl decl
+		Next
+
+		For Local decl:=Eachin app.Semanted
+		
 			MungDecl decl
 
 			Local cdecl:=ClassDecl( decl )
@@ -373,41 +376,44 @@ Class JavaTranslator Extends Translator
 
 			MungOverrides cdecl
 			
-			For Local decl:=EachIn cdecl.Semanted
+			For Local decl:=Eachin cdecl.Semanted
+			
+				If FuncDecl( decl ) And Not FuncDecl( decl ).IsMethod()
+					decl.ident=cdecl.ident+"_"+decl.ident
+				Endif			
+				
 				MungDecl decl
 			Next
 			
 			PopMungScope
 		Next
 
-		'Translate classes		
-		For Local decl:=EachIn app.Semanted
+		For Local decl:=Eachin app.Semanted
 			
 			Local cdecl:=ClassDecl( decl )
 			If cdecl
 				EmitClassDecl cdecl
-			EndIf
+			Endif
 		Next
 		
-		'Translate globals
-		For Local mdecl:=EachIn app.imported.Values()
+		For Local mdecl:=Eachin app.imported.Values()
 
 			Emit "class "+mdecl.munged+"{"
 
-			For Local decl:=EachIn mdecl.Semanted
+			For Local decl:=Eachin mdecl.Semanted
 				If decl.IsExtern() Or decl.scope.ClassScope() Continue
 	
 				Local gdecl:=GlobalDecl( decl )
 				If gdecl
 					Emit "static "+TransDecl( gdecl )+";"
 					Continue
-				EndIf
+				Endif
 				
 				Local fdecl:=FuncDecl( decl )
 				If fdecl
 					EmitFuncDecl fdecl
 					Continue
-				EndIf
+				Endif
 			Next
 
 			Emit "}"
@@ -434,7 +440,7 @@ Class JavaTranslator Extends Translator
 		
 		Local pkg$,imps$,code$,imped:=New StringMap<StringObject>
 		
-		For Local line$=EachIn lines
+		For Local line$=Eachin lines
 			'
 			line+="~n"
 			'
@@ -448,10 +454,10 @@ Class JavaTranslator Extends Translator
 				If Not imped.Contains( line )
 					imps+=line+"~n"
 					imped.Insert line,line
-				EndIf
+				Endif
 			Else
 				code+=line
- 			EndIf
+ 			Endif
 		Next
 		Return "~n"+pkg+"~n"+imps+"~n"+code
 	End

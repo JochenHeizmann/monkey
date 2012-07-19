@@ -15,6 +15,7 @@
 
 #undef LoadString
 
+//For monkey main to set...
 void (*runner)();
 
 //${TRANSCODE_BEGIN}
@@ -27,10 +28,8 @@ void GameMain(){
 }
 //${TRANSCODE_END}
 
-String loadString( String path ){
-	if( !path.Length() ) return "";
-//${TEXTFILES_BEGIN}
-//${TEXTFILES_END}
+FILE *fopenFile( String path,const char *mode ){
+	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
 }
 
 unsigned char *loadImage( String path,int *width,int *height,int *depth ){
@@ -41,8 +40,19 @@ void unloadImage( unsigned char *data ){
 	stbi_image_free( data );
 }
 
-FILE *fopenFile( String path,const char *mode ){
-	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+String loadString( String path ){
+	if( FILE *fp=fopenFile( path,"rb" ) ){
+		int n;
+		String str;
+		unsigned char *buf=(unsigned char*)malloc( 32768 );
+		while( n=fread( buf,1,32768,fp ) ){
+			str=str+String( buf,n );
+		}
+		free( buf );
+		fclose( fp );
+		return str;
+	}
+	return "";
 }
 
 int main( int argc,const char *argv[] ){

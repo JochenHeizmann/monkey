@@ -21,7 +21,7 @@ Class AndroidTarget Extends Target
 	Method MakeTarget()
 	
 		'create data dir
-		CreateDataDir "assets/monkey"
+		CreateDataDir "assets/monkey",False
 
 		'load config
 		Local tags:=LoadTags( "CONFIG.TXT" )
@@ -30,7 +30,7 @@ Class AndroidTarget Extends Target
 		tags.Set "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
 		
 		'template files
-		For Local file$=EachIn LoadDir( "templates",True )
+		For Local file$=Eachin LoadDir( "templates",True )
 			Local str$=LoadString( "templates/"+file )
 			str=ReplaceTags( str,tags )
 			SaveString str,file
@@ -38,7 +38,7 @@ Class AndroidTarget Extends Target
 		
 		'create package
 		Local jpath$="src"
-		DeleteDir jpath,true
+		DeleteDir jpath,True
 		CreateDir jpath
 		For Local t$=Eachin app_package.Split(".")
 			jpath+="/"+t
@@ -50,7 +50,6 @@ Class AndroidTarget Extends Target
 		Local main$=LoadString( "MonkeyGame.java" )
 		main=ReplaceBlock( main,"${PACKAGE_BEGIN}","${PACKAGE_END}","package "+app_package+";" )
 		main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
-		main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 		SaveString main,jpath
 		
 		If OPT_BUILD

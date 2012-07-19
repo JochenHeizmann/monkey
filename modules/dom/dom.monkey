@@ -8,6 +8,10 @@
 'http://dev.w3.org/2006/webapi/DOM-Level-3-Events/html/DOM3-Events.html
 'http://simon.html5.org/dump/html5-canvas-cheat-sheet.html
 
+#if TARGET<>"html5"
+#error "DOM module is only available with html5 target"
+#end
+
 Import webgl
 
 Import "dom.js"

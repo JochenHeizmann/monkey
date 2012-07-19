@@ -215,7 +215,7 @@ Class IdentExpr Extends Expr
 		
 		If Not fdecl.IsStatic()
 			If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-			If scope<>_env Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
+			If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 		Endif
 
 		Return New InvokeExpr( fdecl,args ).Semant()
@@ -318,8 +318,10 @@ Class Parser
 			_tokeType=_toker.TokeType()
 		Until _tokeType<>TOKE_SPACE
 		
+		If _tokeType=TOKE_KEYWORD _toke=_toke.ToLower()
+
 		If toke="," SkipEols
-		
+
 		Return _toke
 	End
 	
@@ -568,7 +570,7 @@ Class Parser
 				expr=New ConstExpr( Type.stringType,BmxUnquote( _toke ) )
 				NextToke
 			Default
-				SyntaxErr
+				Err "Error parsing '"+_toke+"'."
 			End Select
 		End Select
 
@@ -1363,13 +1365,6 @@ Class Parser
 		Return modpath
 	End
 	
-	Method PreProcessPath$( path$ )
-		path=path.Replace( "${HOST}",ENV_HOST )
-		path=path.Replace( "${LANG}",ENV_LANG )
-		path=path.Replace( "${TARGET}",ENV_TARGET )
-		Return path
-	End
-	
 	Method ImportFile( filepath$ )
 
 		If ENV_SAFEMODE
@@ -1399,9 +1394,6 @@ Class Parser
 		
 			filepath=RealPath( dir )+"/"+modpath.Replace( ".","/" )+"."+FILE_EXT			'/blah/etc.monkey
 			Local filepath2$=StripExt( filepath )+"/"+StripDir( filepath )					'/blah/etc/etc.monkey
-			
-'			Print "filepath="+filepath
-'			Print "filepath2="+filepath2
 			
 			If FileType( filepath )=FILETYPE_FILE
 				If FileType( filepath2 )<>FILETYPE_FILE Exit
@@ -1464,7 +1456,7 @@ Class Parser
 		
 		Local path$=_toker.Path()
 		Local ident$=StripAll( path )
-		Local munged$="bb_"+ident+"_"
+		Local munged$	'="bb_"+ident+"_"
 
 		ValidateModIdent ident
 		
@@ -1494,10 +1486,34 @@ Class Parser
 			Case "import"
 				NextToke
 				If _tokeType=TOKE_STRINGLIT
-					ImportFile PreProcessPath( ParseStringLit() )
+					ImportFile ReplaceEnvTags( ParseStringLit() )
 				Else
 					ImportModule ParseModPath(),(attrs & DECL_PRIVATE)=0
 				Endif
+			Case "alias"
+				NextToke
+				Repeat
+					Local ident$=ParseIdent()
+					Parse "="
+					Local decl:Object
+					Local scope:ScopeDecl=_module
+					Repeat
+						Local id$=ParseIdent()
+						decl=scope.FindDecl( id )
+						If Not decl Err "Identifier '"+id+"' not found."
+						If Not CParse( "." ) Exit
+						scope=ScopeDecl( decl )
+						If Not scope Or FuncDecl( scope ) Err "Invalid scope '"+id+"'."
+					Forever
+					Local funcs:=FuncDeclList( decl )
+					If funcs
+						For Local decl:=Eachin funcs
+							_module.InsertAlias ident,decl
+						Next
+					Else
+						_module.InsertAlias ident,Decl( decl )
+					Endif
+				Until Not CParse(",")
 			Default
 				Exit
 			End Select
@@ -1546,6 +1562,16 @@ Class Parser
 	End
 End
 
+Function Eval$( toker:Toker,type:Type )
+	Local src$
+	While toker.Toke And toker.Toke<>"'" And toker.Toke<>"~n"
+		src+=toker.Toke
+		toker.NextToke
+	Wend
+	Local t:=Eval( src,type )
+	Return t
+End
+
 Function PreProcess$( path$ )
 
 	Local ifnest,con,line,source:=New StringList
@@ -1555,6 +1581,7 @@ Function PreProcess$( path$ )
 	toker.NextToke
 	
 	Repeat
+
 		If line
 			source.AddLast "~n"
 			While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
@@ -1569,68 +1596,78 @@ Function PreProcess$( path$ )
 		
 		If toker.TokeType=TOKE_SPACE toker.NextToke
 		
-		If toker.Toke="#"
-			Select toker.NextToke.ToLower
-			Case "if"
-				If con=ifnest
+		If toker.Toke<>"#"
+			If con=ifnest
+				Local line$
+				While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
+					Local toke$=toker.Toke
+					line+=toke
 					toker.NextToke
-					Local src$
-					While toker.Toke And toker.Toke<>"~n"
-						src+=toker.Toke
-						toker.NextToke
-					Wend
-					If Eval( src,Type.boolType )="1" con+=1
-				Endif
-				ifnest+=1
-			Case "rem"
-				ifnest+=1
-			Case "else"
-				If Not ifnest Err "#Else without #If"
-				If con=ifnest
-					con=-con
-				Else If con=ifnest-1
-					toker.NextToke
-					If toker.TokeType=TOKE_SPACE toker.NextToke
-					If toker.Toke.ToLower="if"
-						toker.NextToke
-						Local src$
-						While toker.Toke And toker.Toke<>"~n"
-							src+=toker.Toke
-							toker.NextToke
-						Wend
-						If Eval( src,Type.boolType )="1" con+=1
-					Else
-						con+=1
-					Endif
-				Endif
-			Case "end","endif"
-				If Not ifnest Err "#End without #If"
-				ifnest-=1
-				If con<0 con=-con
-				If ifnest<con con=ifnest
-			Case "print"
-				If con=ifnest
-					toker.NextToke
-					Local src$
-					While toker.Toke And toker.Toke<>"~n"
-						src+=toker.Toke
-						toker.NextToke
-					Wend
-					Print Eval( src,Type.stringType )
-				Endif
-			Default
-				Err "Unrecognized preprocessor directive '"+toker.Toke+"'."
-			End Select
-		Else If con=ifnest
-			Local line$
-			While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
-				Local toke$=toker.Toke
-				If toker.TokeType=TOKE_KEYWORD toke=toke.ToLower
-				line+=toke
-				toker.NextToke
-			Wend
-			If line source.AddLast line
+				Wend
+				If line source.AddLast line
+			Endif
+			Continue
 		Endif
+		
+		Local stm$=toker.NextToke.ToLower()
+		toker.NextToke
+	
+		If stm="end" Or stm="else"
+			If toker.TokeType=TOKE_SPACE toker.NextToke
+			If toker.Toke="if" 
+				toker.NextToke
+				stm+="if"
+			Endif
+		Endif
+		
+		Select stm
+		Case "if"
+		
+			If con=ifnest
+				If Eval( toker,Type.boolType ) con+=1
+			Endif
+			
+			ifnest+=1
+			
+		Case "rem"
+		
+			ifnest+=1
+			
+		Case "else","elseif"
+		
+			If Not ifnest Err "#Else without #If"
+			
+			If con=ifnest
+				con=-con
+			Else If con=ifnest-1
+				If stm="elseif"
+					If Eval( toker,Type.boolType ) con+=1
+				Else
+					con+=1
+				Endif
+			Endif
+			
+		Case "end","endif"
+		
+			If Not ifnest Err "#End without #If"
+			
+			ifnest-=1
+			If con<0 con=-con
+			If ifnest<con con=ifnest
+			
+		Case "print"
+		
+			If con=ifnest
+				Print ReplaceEnvTags( Eval( toker,Type.stringType ) )
+			Endif
+			
+		Case "error"
+			If con=ifnest
+				Err ReplaceEnvTags( Eval( toker,Type.stringType ) )
+			Endif
+		Default
+			Err "Unrecognized preprocessor directive '"+stm+"'."
+		End
 
 	Forever
 	
@@ -1688,10 +1725,9 @@ Function Eval$( source$,ty:Type )
 	
 	expr=expr.Semant()
 	
-	Local r$=expr.Eval()
+	Local val$=expr.Eval()
 	
 	PopEnv
 	
-	Return r
+	Return val
 End
-

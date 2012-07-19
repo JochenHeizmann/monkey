@@ -24,11 +24,11 @@ Class GlfwTarget Extends Target
 		Case "winnt"
 		
 			CreateDir "vc2010/"+CASED_CONFIG
-			CreateDataDir "vc2010/"+CASED_CONFIG+"/data"
+			
+			CreateDataDir "vc2010/"+CASED_CONFIG+"/data",False
 			
 			Local main$=LoadString( "main.cpp" )
 			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
-			main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 			SaveString main,"main.cpp"
 			
 			If OPT_BUILD
@@ -44,11 +44,10 @@ Class GlfwTarget Extends Target
 		
 		Case "macos"
 		
-			CreateDataDir "xcode/data"
+			CreateDataDir "xcode/data",False
 
 			Local main$=LoadString( "main.cpp" )
 			main=ReplaceBlock( main,"${TRANSCODE_BEGIN}","${TRANSCODE_END}",_trans.PostProcess( app.transCode ) )
-			main=ReplaceBlock( main,"${TEXTFILES_BEGIN}","${TEXTFILES_END}",textFiles )
 			SaveString main,"main.cpp"
 			
 			If OPT_BUILD

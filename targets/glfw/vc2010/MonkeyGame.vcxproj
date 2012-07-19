@@ -77,6 +77,7 @@
       <AdditionalIncludeDirectories>../bdwgc/libatomic_ops-1.2/src;../bdwgc/include;../stb;../openal/include;../glfw/include;../glfw/lib;../glfw/lib/win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -32,7 +32,7 @@ Class AsTranslator Extends Translator
 			If StringType( ty ) Return "~q~q"
 			If ArrayType( ty ) Return "[]"
 			If ObjectType( ty ) Return "null"
-		EndIf
+		Endif
 		InternalErr
 	End
 
@@ -42,7 +42,7 @@ Class AsTranslator Extends Translator
 	
 	Method TransArgs$( args:Expr[] )
 		Local t$
-		For Local arg:=EachIn args
+		For Local arg:=Eachin args
 			If t t+=","
 			t+=arg.Trans()
 		Next
@@ -79,7 +79,7 @@ Class AsTranslator Extends Translator
 			Return decl.scope.munged+"."+decl.munged
 		Else If ModuleDecl( decl.scope )
 			Return decl.munged
-		EndIf
+		Endif
 		InternalErr
 	End
 	
@@ -104,7 +104,7 @@ Class AsTranslator Extends Translator
 '				If ENV_CONFIG="debug" t_lhs="dbg_object"+Bra(t_lhs)
 			Endif
 			Return t_lhs+"."+decl.munged+TransArgs( args )
-		EndIf
+		Endif
 		Return TransStatic( decl )+TransArgs( args )
 	End
 	
@@ -163,17 +163,17 @@ Class AsTranslator Extends Translator
 		Else If StringType( dst )
 			If NumericType( src ) Return "String"+texpr
 			If StringType( src )  Return texpr
-		EndIf
+		Endif
 
 		'upcast
 		If src.ExtendsType( dst )
 			Return texpr
-		EndIf
+		Endif
 
 		'downcast		
 		If dst.ExtendsType( src )
 			Return Bra( texpr + " as "+TransType( dst ) )
-		EndIf
+		Endif
 		
 		InternalErr
 	End
@@ -217,7 +217,7 @@ Class AsTranslator Extends Translator
 	
 	Method TransArrayExpr$( expr:ArrayExpr )
 		Local t$
-		For Local elem:=EachIn expr.exprs
+		For Local elem:=Eachin expr.exprs
 			If t t+=","
 			t+=elem.Trans()
 		Next
@@ -305,7 +305,7 @@ Class AsTranslator Extends Translator
 		PushMungScope
 
 		Local args$
-		For Local arg:=EachIn decl.argDecls
+		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransValDecl( arg )
@@ -327,7 +327,7 @@ Class AsTranslator Extends Translator
 			Endif
 		Else
 			EmitBlock decl
-		EndIf
+		Endif
 
 		Emit "}"
 		
@@ -342,7 +342,7 @@ Class AsTranslator Extends Translator
 		Emit "class "+classid+" extends "+superid+"{"
 		
 		'members...
-		For Local decl:=EachIn classDecl.Semanted
+		For Local decl:=Eachin classDecl.Semanted
 			Local tdecl:=FieldDecl( decl )
 			If tdecl
 				Emit "internal var "+TransValDecl( tdecl )+"="+tdecl.init.Trans()+";"
@@ -369,8 +369,11 @@ Class AsTranslator Extends Translator
 		
 		app.mainFunc.munged="bb_Main"
 		
-		For Local decl:=EachIn app.Semanted
-			If decl.IsExtern() Continue
+		For Local decl:=Eachin app.imported.Values()
+			MungDecl decl
+		Next
+		
+		For Local decl:=Eachin app.Semanted
 
 			MungDecl decl
 
@@ -381,10 +384,10 @@ Class AsTranslator Extends Translator
 
 			MungOverrides cdecl
 			
-			For Local decl:=EachIn cdecl.Semanted
+			For Local decl:=Eachin cdecl.Semanted
 				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()
 					decl.ident=cdecl.ident+"_"+decl.ident
-				EndIf
+				Endif
 				MungDecl decl
 			Next
 			
@@ -393,26 +396,25 @@ Class AsTranslator Extends Translator
 	
 		'decls
 		'
-		For Local decl:=EachIn app.Semanted
-			If decl.IsExtern() Continue
+		For Local decl:=Eachin app.Semanted
 
 			Local gdecl:=GlobalDecl( decl )
 			If gdecl
 				Emit "var "+TransValDecl( gdecl )+";"
 				Continue
-			EndIf
+			Endif
 			
 			Local fdecl:=FuncDecl( decl )
 			If fdecl
 				EmitFuncDecl fdecl
 				Continue
-			EndIf
+			Endif
 			
 			Local cdecl:=ClassDecl( decl )
 			If cdecl
 				EmitClassDecl cdecl
 				Continue
-			EndIf
+			Endif
 		Next
 		
 		Emit "function bb_Init():void{"

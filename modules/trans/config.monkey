@@ -16,6 +16,14 @@ Global ENV_SAFEMODE	'True for safe mode!
 Global _errInfo$
 Global _errStack:=New StringList
 
+Function ReplaceEnvTags$( path$ )
+	path=path.Replace( "${HOST}",ENV_HOST )
+	path=path.Replace( "${LANG}",ENV_LANG )
+	path=path.Replace( "${TARGET}",ENV_TARGET )
+	path=path.Replace( "${CONFIG}",ENV_CONFIG )
+	Return path
+End
+
 Function PushErr( errInfo$ )
 	_errStack.AddLast _errInfo
 	_errInfo=errInfo

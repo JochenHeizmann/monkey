@@ -1,6 +1,34 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V37 *****
+
+Modules:
+
+lang.cpp - MSVC version now uses SEH, seems to be the only way to catch int divide by 0.
+
+Mojo GLFW/Android/iOS - no more embedded text files: LoadString now uses real files.
+
+Mojo GLFW - added joystick support. No d-pad yet though...
+
+Mojo iOS - fixed new sample loader to use 3.2 compatible calls only.
+
+
+Trans (1.08):
+
+Fixed default GLFW target so release build links with static CRT.
+
+Module munging fixed - you can now have 2 modules with same name.
+
+Cleaned up preprocessor a bit.
+
+Added #Error directive.
+
+Fixed class function overriding.
+
+Fixed field initializers accessing self methods.
+
+
 ***** V36 *****
 
 Modules:

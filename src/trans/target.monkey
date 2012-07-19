@@ -95,7 +95,9 @@ Class Target
 
 	'Copy files from '.data' directory to target content directory. Creates metaData$ and textFiles$ strings
 	'
-	Method CreateDataDir( dir$ )
+	'If embedTextFiles is false, textfiles are also copied, else textFiles$ string is created.
+	'
+	Method CreateDataDir( dir$,embedTextFiles?=True )
 		dir=RealPath( dir )
 		
 		DeleteDir dir,True
@@ -106,6 +108,10 @@ Class Target
 		
 		For Local file$=Eachin app.fileImports
 			Select ExtractExt( file ).ToLower()
+			Case "txt","xml","json"
+				If Not embedTextFiles 
+					CopyFile file,dir+"/"+StripDir( file )
+				Endif
 			Case "png","jpg","bmp","wav","mp3","ogg"
 				CopyFile file,dir+"/"+StripDir( file )
 			End Select
@@ -118,6 +124,8 @@ Class Target
 		metaData=metaData.Replace( "~n","\n" )
 		
 		textFiles=""
+		
+		If Not embedTextFiles Return
 		
 		For Local f$=Eachin LoadDir( dir,True )
 

@@ -692,28 +692,44 @@ void Error( String t ){
 
 void Die( const char *p ){
 	if( !p || !*p ) exit( 0 );
-	
 	Print( String(errInfo)+" : Error : "+p );
-	
-	Print( String(p)+"\n"+StackTrace() );
-	
+	Print( String(p)+":\n"+StackTrace() );
 	exit( -1 );
-}
-
-void sighandler( int sig  ){
-	switch( sig ){
-	case SIGILL:throw "Illegal instruction";
-	case SIGFPE:throw "Floating point exception";
-#if __APPLE__	
-	case SIGBUS:	//on mac...
-#endif
-	case SIGSEGV:throw "Null object access";
-	}
-	throw "SIG???";
 }
 
 int bb_Init();
 int bb_Main();
+
+#if _MSC_VER
+int seh_call( int(*f)() ){
+	__try{
+		return f();
+	}__except( 1 ){
+		switch( GetExceptionCode() ){
+		case STATUS_ACCESS_VIOLATION:
+			throw "Access violation";
+		case STATUS_ILLEGAL_INSTRUCTION:
+			throw "Illegal instruction";
+		case STATUS_INTEGER_DIVIDE_BY_ZERO:
+			throw "Integer divide by zero";
+		}
+		throw "Unknown SEH exception";
+	}
+	return -1;
+}
+#else
+void sighandler( int sig  ){
+	switch( sig ){
+	case SIGILL:throw "Illegal instruction";
+	case SIGFPE:throw "Floating point exception";
+#if !_WIN32
+	case SIGBUS:throw "Bus error";
+#endif
+	case SIGSEGV:throw "Segmentation violation";
+	}
+	throw "Unknown exception";
+}
+#endif
 
 //entry point call by target main()...
 //
@@ -722,17 +738,27 @@ int bb_std_main( int argc,const char **argv ){
 	::argc=argc;
 	::argv=argv;
 
+#if !_MSC_VER
 	signal( SIGILL,sighandler );
 	signal( SIGFPE,sighandler );
-#if __APPLE__
+#if !_WIN32
 	signal( SIGBUS,sighandler );
 #endif
 	signal( SIGSEGV,sighandler );
+#endif
 
 	try{
+
+#if _MSC_VER
+		seh_call( bb_Init );
+		seh_call( bb_Main );
+#else
 		bb_Init();
 		bb_Main();
+#endif
+
 	}catch( const char *p ){
+
 		Die( p );
 	}
 	
