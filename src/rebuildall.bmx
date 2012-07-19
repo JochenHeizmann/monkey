@@ -16,7 +16,7 @@ Const QUICKTRANS=False
 
 Const trans$="..\bin\trans_winnt.exe"
 Const trans2$=trans
-'Const trans2$="..\bin\trans_winnt_v45.exe"
+'Const trans2$="..\bin\trans_winnt_45c.exe"
 Const newtrans$="trans\trans.build\stdcpp\main_winnt.exe"
 Const makemeta$="..\bin\makemeta_winnt.exe"
 Const mserver$="..\bin\mserver_winnt.exe"
@@ -65,7 +65,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 	Else
-		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=debug trans/trans.monkey"
 
 		Delay 100
 		

@@ -44,6 +44,19 @@ void unloadImage( unsigned char *data ){
 	stbi_image_free( data );
 }
 
+ALCdevice *alcDevice;
+
+ALCcontext *alcContext;
+
+void warn( const char *p ){
+	puts( p );
+}
+
+void fail( const char *p ){
+	puts( p );
+	exit( -1 );
+}
+
 int main( int argc,const char *argv[] ){
 
 	if( !glfwInit() ){
@@ -63,27 +76,25 @@ int main( int argc,const char *argv[] ){
 	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,WINDOW_NO_RESIZE );
 	
 	if( !glfwOpenWindow( w,h, 0,0,0,0,0,0, WINDOW_MODE ) ){
-		puts( "glfwOpenWindow failed" );
-		exit( -1 );
+		fail( "glfwOpenWindow failed" );
 	}
 
 	glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );	
 
 	glfwSetWindowTitle( WINDOW_TITLE );
 	
-	ALCdevice *alcDevice=alcOpenDevice( 0 );
-	if( !alcDevice ){
-		puts( "alcOpenDevice failed" );
-		exit( -1 );
-	}
-	ALCcontext *alcContext=alcCreateContext( alcDevice,0 );
-	if( !alcContext ){
-		puts( "alcCreateContext failed" );
-		exit( -1 );
-	}
-	if( !alcMakeContextCurrent( alcContext ) ){
-		puts( "alcmakeContextCurrent failed" );
-		exit( -1 );
+	if( alcDevice=alcOpenDevice( 0 ) ){
+		if( alcContext=alcCreateContext( alcDevice,0 ) ){
+			if( alcMakeContextCurrent( alcContext ) ){
+				//alc all go!
+			}else{
+				warn( "alcMakeContextCurrent failed" );
+			}
+		}else{
+			warn( "alcCreateContext failed" );
+		}
+	}else{
+		warn( "alcOpenDevice failed" );
 	}
 	
 	try{
@@ -94,12 +105,12 @@ int main( int argc,const char *argv[] ){
 
 	}catch( const char *err ){
 
-		Print( String("Monkey runtime error: ")+err+"\n"+StackTrace() );
+		warn( ( String("Monkey runtime error: ")+err+"\n"+StackTrace() ).ToCString<char>() );
 	}
 	
-	alcDestroyContext( alcContext );
+	if( alcContext ) alcDestroyContext( alcContext );
 
-	alcCloseDevice( alcDevice );
+	if( alcDevice ) alcCloseDevice( alcDevice );
 
 	glfwTerminate();
 

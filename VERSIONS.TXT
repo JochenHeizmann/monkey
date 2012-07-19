@@ -1,6 +1,37 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V46 *****
+
+Modules:
+
+monkey.stack - Fixed RemoveEach bug.
+
+mojo.input - Fixed XNA gamepad detection. Depends on use of KeyDown/KeyHit to determine what keys can 'detect' a gamepad.
+
+mojo - Fixed iOS pathForResource issue with sutff in subdirs not loading.
+
+mojo - Removed unused GamerServices stuff from XNA version.
+
+
+Trans (1.21)
+
+xna target - Removed unused GamerServices stuff from XNA version.
+
+FLASH_PLAYER setting in bin/config.blah.txt now optional. If present, it is used to open target .swf file. Otherwise, HTML_PLAYER is used to open target .html file.
+
+Fixed C++ issue with literal arrays of interfaces.
+
+Fixed Actionscript return/reachability issue.
+
+Fixed ~=
+
+Mod can now handle floats.
+
+Fixed x op= y type inconsistencies with x=x op y.
+
+Fixed C# float<->string conversions to be 'culturally insensitive'!
+
 
 ***** V45c *****
 

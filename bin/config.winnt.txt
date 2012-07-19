@@ -4,6 +4,7 @@
 '
 'Must be set for HTML5 target support.
 '
+'for opening .html files...
 HTML_PLAYER="${TRANSDIR}\mserver_winnt.exe"
 '--------------------
 
@@ -45,7 +46,8 @@ ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
 '--------------------
 'Flex SDK and flash player path.
 '
-'Must be set for FLASH target support.
+'FLEX_PATH Must be set for FLASH target support.
+'Either HTML_PLAYER or FLASH_PLAYER must be set for FLASH target support.
 '
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.5"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.1.0.16076"
@@ -54,7 +56,9 @@ FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
-FLASH_PLAYER="${TRANSDIR}\mserver_winnt.exe"
+'for opening .swf files...monkey will use HTML_PLAYER if this is not set.
+'FLASH_PLAYER="${SYSTEMDRIVE}\flex_sdk_4.0\flashplayer_10_sa_debug.exe"
+
 '--------------------
 
 '--------------------

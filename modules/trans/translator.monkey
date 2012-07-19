@@ -176,6 +176,7 @@ Class Translator
 	
 	Method TransAssignOp$( op$ )
 		Select op
+		Case "~~=" Return "^="
 		Case "mod=" Return "%="
 		Case "shl=" Return "<<="
 		Case "shr=" Return ">>="
@@ -221,11 +222,12 @@ Class Translator
 	End
 	
 	Method TransExprNS$( expr:Expr )
-		If VarExpr( expr ) Return expr.Trans()
-		If ConstExpr( expr ) Return expr.Trans()
+		If Not expr.SideEffects() Return expr.Trans()
+'		If VarExpr( expr ) Return expr.Trans()
+'		If ConstExpr( expr ) Return expr.Trans()
 		Return CreateLocal( expr )
 	End
-	
+
 	Method CreateLocal$( expr:Expr )
 		Local tmp:=New LocalDecl( "",expr.exprType,expr )
 		MungDecl tmp
@@ -355,8 +357,20 @@ Class Translator
 	End
 	
 	Method TransAssignStmt$( stmt:AssignStmt )
-		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
-		Return stmt.lhs.Trans()
+		If Not stmt.rhs
+			Return stmt.lhs.Trans()
+		Endif
+		
+		If stmt.tmp1
+			MungDecl stmt.tmp1
+			Emit TransLocalDecl( stmt.tmp1.munged,stmt.tmp1.init )+";"
+		Endif
+		If stmt.tmp2
+			MungDecl stmt.tmp2
+			Emit TransLocalDecl( stmt.tmp2.munged,stmt.tmp2.init )+";"
+		Endif
+		
+		Return stmt.lhs.TransVar()+TransAssignOp( stmt.op )+stmt.rhs.Trans()
 	End
 	
 	Method TransReturnStmt$( stmt:ReturnStmt )
@@ -423,7 +437,7 @@ Class Translator
 				If rs
 					If rs.expr
 						EmitSetErr stmt.errInfo
-						Local t_expr:=TransExprNS( rs.expr )
+						Local t_expr:=TransExprNS( rs.expr )'.Trans()
 						EmitLeave
 						Emit "return "+t_expr+";"
 					Else
@@ -441,30 +455,38 @@ Class Translator
 			
 		Next
 		
-		Local r=unreachable
+		Local unr=unreachable
 		unreachable=False
 		
-		If func And Not r
-
-			If ENV_CONFIG<>"release" EmitLeave
-			
-			If Not VoidType( func.retType )
-				If func.IsCtor()
-					Emit "return this;"
-				Else
-					If func.ModuleScope().IsStrict()
-						_errInfo=func.errInfo
-						Err "Missing return statement."
+		If func
+			If unr
+				'Actionscript's reachability analysis ain't so hot...tack on a return
+				'just in case.
+				If ENV_LANG="as" And Not VoidType( func.retType )
+					If block.stmts.IsEmpty() Or Not ReturnStmt( block.stmts.Last() )
+						Emit "return "+TransValue( func.retType,"" )+";"
 					Endif
-					Emit "return "+TransValue( func.retType,"" )+";"
+				Endif
+			Else
+				If ENV_CONFIG<>"release" EmitLeave
+				
+				If Not VoidType( func.retType )
+					If func.IsCtor()
+						Emit "return this;"
+					Else
+						If func.ModuleScope().IsStrict()
+							_errInfo=func.errInfo
+							Err "Missing return statement."
+						Endif
+						Emit "return "+TransValue( func.retType,"" )+";"
+					Endif
 				Endif
 			Endif
-
 		Endif
 		
 		PopEnv
 		
-		Return r
+		Return unr
 	End
 	
 	Method TransDeclStmt$( stmt:DeclStmt )

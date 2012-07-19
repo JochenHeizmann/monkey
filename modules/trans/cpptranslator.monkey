@@ -211,6 +211,9 @@ Class CppTranslator Extends Translator
 		Local pri=ExprPri( expr )
 		Local t_lhs$=TransSubExpr( expr.lhs,pri )
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
+		If expr.op="mod" And FloatType( expr.exprType )
+			Return "fmod("+t_lhs+","+t_rhs+")"
+		Endif
 		Return t_lhs+TransBinaryOp( expr.op,t_rhs )+t_rhs
 	End
 	
@@ -238,21 +241,36 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransArrayExpr$( expr:ArrayExpr )
+
 		Local elemType:=ArrayType( expr.exprType ).elemType
 
-		Local tmp:=New LocalDecl( "",Type.voidType,Null )
-		MungDecl tmp
+		Local imung$		
+		If ObjectType( elemType ) And elemType.GetClass().IsInterface()
+			imung="gc_iptr<"+elemType.GetClass().actual.munged+">"
+		Endif
 		
 		Local t$
 		For Local elem:=Eachin expr.exprs
+
+			Local e:=elem.Trans()
+			
+			If imung
+				If e.EndsWith( ".p" )
+					e=e[..-2]
+				Else
+					e=imung+Bra(e)
+				Endif
+			Endif
+			
 			If t t+=","
-			t+=elem.Trans()
+			t+=e
+			
 		Next
 		
-		Local tt$
-'		If Not _env tt="static "
+		Local tmp:=New LocalDecl( "",Type.voidType,Null )
+		MungDecl tmp
 
-		Emit tt+TransType( elemType )+" "+tmp.munged+"[]={"+t+"};"
+		Emit TransRefType( elemType )+" "+tmp.munged+"[]={"+t+"};"
 		
 		Return "Array<"+TransRefType( elemType )+" >("+tmp.munged+","+expr.exprs.Length+")"
 	End
@@ -318,6 +336,7 @@ Class CppTranslator Extends Translator
 
 	'***** Statements *****
 	
+#rem	
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If Not stmt.rhs Return stmt.lhs.Trans()
 		
@@ -330,6 +349,7 @@ Class CppTranslator Extends Translator
 
 		Return lhs+TransAssignOp( stmt.op )+rhs
 	End
+#end
 	
 	'***** Declarations *****
 	

@@ -84,7 +84,9 @@ Class MyApp Extends App
 			sprite.Update
 		Next
 
-	End
+		rot+=1
+
+ 	End
 	
 	Method OnRender()
 
@@ -102,7 +104,6 @@ Class MyApp Extends App
 				
 		Scale DeviceWidth/WIDTH,DeviceHeight/HEIGHT
 		
-		rot+=1
 		Local r:=rot
 		Local image:=image1
 		Local i,n=sprites.Length()/10	'ie: simulate 10 render state changes

@@ -89,7 +89,7 @@ Class Stack<T>
 				Continue
 			Endif
 			Local b=i,e=i+1
-			While e<length And Equals( data[e],value )=0
+			While e<length And Equals( data[e],value )
 				e+=1
 			Wend
 			While e<length

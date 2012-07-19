@@ -155,7 +155,8 @@ Class CsTranslator Extends Translator
 	Method TransCastExpr$( expr:CastExpr )
 		Local dst:=expr.exprType
 		Local src:=expr.expr.exprType
-		Local texpr$=Bra( expr.expr.Trans() )
+		Local uexpr$=expr.expr.Trans()
+		Local texpr$=Bra( uexpr )
 		
 		If BoolType( dst )
 			If BoolType( src ) Return texpr
@@ -172,10 +173,12 @@ Class CsTranslator Extends Translator
 		Else If FloatType( dst )
 			If IntType( src ) Return "(float)"+texpr
 			If FloatType( src ) Return texpr
-			If StringType( src ) Return "float.Parse"+texpr
+'			If StringType( src ) Return "float.Parse"+texpr
+			If StringType( src ) Return "float.Parse"+Bra(uexpr+",CultureInfo.InvariantCulture")
 		Else If StringType( dst )
 			If IntType( src ) Return texpr+".ToString()"
-			If FloatType( src ) Return texpr+".ToString()"
+'			If FloatType( src ) Return texpr+".ToString()"
+			If FloatType( src ) Return texpr+".ToString(CultureInfo.InvariantCulture)"
 			If StringType( src ) Return texpr
 		Endif
 		

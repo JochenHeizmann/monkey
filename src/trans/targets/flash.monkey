@@ -5,7 +5,7 @@ Class FlashTarget Extends Target
 
 	Function IsValid()
 		If FileType( "flash" )<>FILETYPE_DIR Return False
-		Return FLEX_PATH<>"" And FLASH_PLAYER<>""
+		Return FLEX_PATH<>"" And (FLASH_PLAYER<>"" Or HTML_PLAYER<>"")
 	End
 	
 	Method Begin()
@@ -67,7 +67,11 @@ Class FlashTarget Extends Target
 			Endif
 			
 			If OPT_RUN
-				Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.html" )+"~q",False
+				If FLASH_PLAYER
+					Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.swf" )+"~q",False
+				Else If HTML_PLAYER
+					Execute HTML_PLAYER+" ~q"+RealPath( "MonkeyGame.html" )+"~q",False
+				Endif
 			Endif
 		Endif
 	End

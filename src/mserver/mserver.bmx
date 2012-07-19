@@ -314,7 +314,7 @@ Function ServerThread:Object( data:Object )
 	
 	Repeat
 	
-		Local socket:TSocket=SocketAccept( server.socket,1000 )'60*1000 )
+		Local socket:TSocket=SocketAccept( server.socket,60*1000 )
 		If Not socket Continue
 		
 		If SocketRemoteIP( socket )<>localhostIp

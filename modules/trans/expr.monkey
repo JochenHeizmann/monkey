@@ -32,13 +32,17 @@ Class Expr
 	Method SemantScope:ScopeDecl()
 		Return Null
 	End
-
+	
 	Method Eval$()
 		Err ToString()+" cannot be statically evaluated."
 	End
 	
 	Method EvalConst:Expr()
 		Return New ConstExpr( exprType,Eval() ).Semant()
+	End
+	
+	Method SideEffects?()
+		Return True
 	End
 	
 	Method Trans$()
@@ -190,6 +194,10 @@ Class ConstExpr Extends Expr
 		Return "ConstExpr(~q"+value+"~q)"
 	End
 	
+	Method SideEffects?()
+		Return False
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 		
@@ -224,6 +232,10 @@ Class VarExpr Extends Expr
 	
 	Method ToString$()
 		Return "VarExpr("+decl.ToString()+")"
+	End
+	
+	Method SideEffects?()
+		Return False
 	End
 	
 	Method Semant:Expr()
@@ -264,6 +276,10 @@ Class MemberVarExpr Extends Expr
 	
 	Method ToString$()
 		Return "MemberVarExpr("+expr.ToString()+","+decl.ToString()+")"
+	End
+	
+	Method SideEffects?()
+		Return expr.SideEffects()
 	End
 	
 	Method Semant:Expr()
@@ -509,6 +525,10 @@ Class SelfExpr Extends Expr
 		Return New SelfExpr
 	End
 	
+	Method SideEffects?()
+		Return False
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 	
@@ -712,13 +732,19 @@ Class BinaryExpr Extends Expr
 	Field lhs:Expr
 	Field rhs:Expr
 	
+	Method New( op$,lhs:Expr,rhs:Expr )
+		Self.op=op
+		Self.lhs=lhs
+		Self.rhs=rhs
+	End
+	
 	Method Trans$()
 		Return _trans.TransBinaryExpr( Self )
 	End
 
 End
 
-' * / + / & ~ | ^ shl shr
+' * / mod + - & | ~ shl shr
 Class BinaryMathExpr Extends BinaryExpr
 
 	Method New( op$,lhs:Expr,rhs:Expr )
@@ -738,7 +764,7 @@ Class BinaryMathExpr Extends BinaryExpr
 		rhs=rhs.Semant()
 		
 		Select op
-		Case "&","~~","|","mod","shl","shr"
+		Case "&","~~","|","shl","shr"
 			exprType=Type.intType
 		Default
 			exprType=BalanceTypes( lhs.exprType,rhs.exprType )
@@ -921,6 +947,10 @@ Class IndexExpr Extends Expr
 	
 	Method Copy:Expr()
 		Return New IndexExpr( CopyExpr(expr),CopyExpr(index) )
+	End
+	
+	Method SideEffects?()
+		Return False
 	End
 	
 	Method Semant:Expr()

@@ -50,6 +50,8 @@ Class AssignStmt Extends Stmt
 	Field op$
 	Field lhs:Expr
 	Field rhs:Expr
+	Field tmp1:LocalDecl
+	Field tmp2:LocalDecl
 	
 	Method New( op$,lhs:Expr,rhs:Expr )
 		Self.op=op
@@ -57,18 +59,90 @@ Class AssignStmt Extends Stmt
 		Self.rhs=rhs
 	End
 	
+	Method FixSideEffects()
+	
+		'Ok, this is ugly stuff...but we need to be able to expand
+		'x op= y to x=x op y without evaualting any bits of x that have side effects
+		'twice.
+		'
+		Local e1:=MemberVarExpr( lhs )
+		If e1
+			If e1.expr.SideEffects()
+				tmp1=New LocalDecl( "",e1.expr.exprType,e1.expr )
+				lhs=New MemberVarExpr( New VarExpr(tmp1),e1.decl ).Semant()
+			Endif
+		Endif
+
+		Local e2:=IndexExpr( lhs )
+		If e2
+			Local expr:=e2.expr
+			Local index:=e2.index
+			If expr.SideEffects() Or index.SideEffects()
+				If expr.SideEffects()
+					tmp1=New LocalDecl( "",expr.exprType,expr )
+					expr=New VarExpr( tmp1 )
+				Endif
+				If index.SideEffects()
+					tmp2=New LocalDecl( "",index.exprType,index )
+					index=New VarExpr( tmp2 )
+				Endif
+				lhs=New IndexExpr( expr,index ).Semant()
+			Endif
+		Endif
+
+	End
+	
 	Method OnSemant()
+
 		rhs=rhs.Semant()
 		lhs=lhs.SemantSet( op,rhs )
+		
 		If InvokeExpr( lhs ) Or InvokeMemberExpr( lhs )
 			rhs=Null
-		Else
-			rhs=rhs.Cast( lhs.exprType )
+			Return
 		Endif
+		
+		'"=","*=","/=","+=","-=","&=","|=","~~=","mod","shl","shr"
+		
+		Select op
+		Case "="
+		
+			rhs=rhs.Cast( lhs.exprType )
+			
+		Case "*=","/=","+=","-="
+		
+			If NumericType( lhs.exprType ) And NumericType( rhs.exprType ) And lhs.exprType.EqualsType( rhs.exprType )
+				'Use x op= y form
+			Else
+				'Use x=x op y form
+				FixSideEffects
+				rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
+				op="="
+			Endif
+			
+		Case "&=","|=","~~=","shl=","shr=","mod="
+		
+			If IntType( lhs.exprType ) And IntType( rhs.exprType )
+				'Use x op= y form
+			Else
+				'Use x=x op y form
+				FixSideEffects
+				rhs=New BinaryMathExpr( op[..-1],lhs,rhs ).Semant().Cast( lhs.exprType )
+				op="="
+			Endif
+			
+		Default
+		
+			InternalErr
+			
+		End
+
 	End
 	
 	Method Trans$()
 		_errInfo=errInfo
+		If tmp1 tmp1.Semant
+		If tmp2 tmp2.Semant
 		Return _trans.TransAssignStmt( Self )
 	End
 End

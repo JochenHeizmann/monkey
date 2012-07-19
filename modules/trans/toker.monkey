@@ -33,7 +33,7 @@ Class Toker
 	"for;to;step;next;return;"+
 	"interface;implements;inline;alias;"
 
-	Global _symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~=" ]
+	Global _symbols$[]=[ "..",":=","*=","/=","+=","-=","|=","&=","~~=" ]
 
 	Field _path$
 	Field _line

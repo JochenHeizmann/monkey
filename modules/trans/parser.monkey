@@ -1110,7 +1110,7 @@ Class Parser
 			Local expr:Expr=ParsePrimaryExpr( True )
 			
 			Select _toke
-			Case "=","*=","/=","+=","-=","&=","|=","~=","mod","shl","shr"
+			Case "=","*=","/=","+=","-=","&=","|=","~~=","mod","shl","shr"
 				If IdentExpr( expr ) Or IndexExpr( expr )
 					Local op$=_toke
 					NextToke
@@ -1289,25 +1289,6 @@ Class Parser
 		
 		If funcDecl.IsAbstract() Return funcDecl
 		
-		'Ok, only first statement of a constructor can call super constructor - not pretty, should be in semant.
-		#rem
-		If attrs & FUNC_CTOR
-			SkipEols
-			If CParse( "super" )
-				Parse "."
-				If _toke="new"
-					Local id$=_toke
-					NextToke
-					funcDecl.superCtor=New InvokeSuperExpr( id,ParseArgs( True ) )
-					funcDecl.AddStmt New ExprStmt( funcDecl.superCtor )
-				Else
-					Local id$=ParseIdent()
-					funcDecl.AddStmt New ExprStmt( New InvokeSuperExpr( id,ParseArgs( True ) ) )
-				Endif
-			Endif
-		Endif
-		#end
-
 		PushBlock funcDecl
 		While _toke<>"end"
 			ParseStmt

@@ -398,6 +398,13 @@ public:
 	template<class R> Array( const Array<R> &t ):rep( (Rep*)t.rep ){
 	}
 
+	//I reckon this'll work instead of the above now...but too chicken to try it!
+	//
+	//Wait for a more mellow update...
+	//
+	//Array( const Array<T> &t ):rep( t.rep ){
+	//}
+	
 	Array( int length ):rep( Rep::alloc(length) ){
 		t_create( rep->length,rep->data );
 	}
@@ -961,6 +968,8 @@ struct gc_interface{
 template<class T>
 struct gc_iptr{
 	T *p;
+	gc_iptr(){}
+	gc_iptr( T *p ):p(p){} 
 };
 
 template<class T> void gc_mark( gc_iptr<T> i ){
