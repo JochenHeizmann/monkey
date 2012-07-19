@@ -6,6 +6,7 @@
 
 //***** JavaScript Runtime *****
 
+var obj_id=0;
 var err_info="";
 var err_stack=[];
 
@@ -130,6 +131,15 @@ function resize_object_array( arr,len ){
 	return arr;
 }
 
+function string_compare( lhs,rhs ){
+	var n=Math.min( lhs.length,rhs.length ),i,t;
+	for( i=0;i<n;++i ){
+		t=lhs.charCodeAt(i)-rhs.charCodeAt(i);
+		if( t ) return t;
+	}
+	return lhs.length-rhs.length;
+}
+
 function string_replace( str,find,rep ){	//no unregex replace all?!?
 	var i=0;
 	for(;;){
@@ -160,10 +170,13 @@ function object_downcast( obj,clas ){
 	return null;
 }
 
+function object_implements( obj,iface ){
+	if( obj && obj.implments && obj.implments[iface] ) return obj;
+	return null;
+}
+
 function extend_class( clas ){
 	var tmp=function(){};
 	tmp.prototype=clas.prototype;
 	return new tmp;
 }
-
-

@@ -4,7 +4,7 @@ Import target
 Class Html5Target Extends Target
 
 	Function IsValid()
-		Return True
+		Return HTML_PLAYER<>""
 	End
 
 	Method Begin()
@@ -30,7 +30,14 @@ Class Html5Target Extends Target
 		SaveString main,"main.js"
 		
 		If OPT_RUN
-			Execute HTML_PLAYER+" ~q"+RealPath( "MonkeyGame.html" )+"~q",False
+			Local p$=RealPath( "MonkeyGame.html" )
+			
+'			Local t$="~q"+ExtractDir(AppPath)+"/mserver_winnt~q ~q"+p+"~q"
+
+			Local t$=HTML_PLAYER+" ~q"+p+"~q"
+
+			Execute t,False
+			
 		Endif
 
 	End

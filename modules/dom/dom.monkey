@@ -1325,7 +1325,7 @@ Class CanvasRenderingContext2D Extends DOMObject
 	Method fillText( text$,x#,y#,maxWidth# )
 	Method strokeText( text$,x#,y# )
 	Method strokeText( text$,x#,y#,maxWidth# )
-	Method MeasureText:TextMetrics( text$ )
+	Method measureText:TextMetrics( text$ )
 	
 	Method clearRect( x#,y#,w#,h# )
 	Method fillRect( x#,y#,w#,h# )

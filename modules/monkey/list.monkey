@@ -12,8 +12,12 @@ Public
 
 Class List<T>
 
-	Method Equals( lhs:Object,rhs:Object )
+	Method Equals?( lhs:T,rhs:T )
 		Return lhs=rhs
+	End
+	
+	Method Compare( lhs:T,rhs:T )
+		Error "Unable to compare items"
 	End
 	
 	Method Clear()
@@ -57,8 +61,9 @@ Class List<T>
 	Method RemoveEach( value:T )
 		Local node:=_head._succ
 		While node<>_head
-			node=node._succ
-			If Equals( node._pred._data,value ) node._pred.Remove
+			Local succ:=node._succ
+			If Equals( node._data,value ) node.Remove
+			node=succ
 		Wend
 	End
 
@@ -81,6 +86,65 @@ Class List<T>
 	Method Backwards:BackwardsList<T>()
 		Return New BackwardsList<T>( Self )
 	End
+	
+	Method Sort( ascending=True )
+		Local ccsgn=-1
+		If ascending ccsgn=1
+		Local insize=1
+		
+		Repeat
+			Local merges
+			Local tail:=_head
+			Local p:=_head._succ
+
+			While p<>_head
+				merges+=1
+				Local q:=p._succ,qsize=insize,psize=1
+				
+				While psize<insize And q<>_head
+					psize+=1
+					q=q._succ
+				Wend
+
+				Repeat
+					Local t:Node<T>
+					If psize And qsize And q<>_head
+						Local cc=Compare( p._data,q._data ) * ccsgn
+						If cc<=0
+							t=p
+							p=p._succ
+							psize-=1
+						Else
+							t=q
+							q=q._succ
+							qsize-=1
+						Endif
+					Else If psize
+						t=p
+						p=p._succ
+						psize-=1
+					Else If qsize And q<>_head
+						t=q
+						q=q._succ
+						qsize-=1
+					Else
+						Exit
+					Endif
+					t._pred=tail
+					tail._succ=t
+					tail=t
+				Forever
+				p=q
+			Wend
+			tail._succ=_head
+			_head._pred=tail
+
+			If merges<=1 Return
+
+			insize*=2
+		Forever
+
+	End Method
 
 Private
 
@@ -199,8 +263,12 @@ Class IntList Extends List<IntObject>
 		Return arr
 	End
 	
-	Method Equals( lhs:Object,rhs:Object )
-		Return IntObject(lhs).value=IntObject(rhs).value
+	Method Equals?( lhs:IntObject,rhs:IntObject )
+		Return lhs.value=rhs.value
+	End
+	
+	Method Compare( lhs:IntObject,rhs:IntObject )
+		Return lhs.value-rhs.value
 	End
 
 End
@@ -216,8 +284,13 @@ Class FloatList Extends List<FloatObject>
 		Return arr
 	End
 	
-	Method Equals( lhs:Object,rhs:Object )
-		Return FloatObject(lhs).value=FloatObject(rhs).value
+	Method Equals?( lhs:FloatObject,rhs:FloatObject )
+		Return lhs.value=rhs.value
+	End
+	
+	Method Compare( lhs:FloatObject,rhs:FloatObject )
+		If lhs.value<rhs.value Return -1
+		Return lhs.value>rhs.value
 	End
 	
 End
@@ -242,8 +315,12 @@ Class StringList Extends List<StringObject>
 		Return separator.Join( bits )
 	End
 	
-	Method Equals( lhs:Object,rhs:Object )
-		Return StringObject(lhs).value=StringObject(rhs).value
+	Method Equals?( lhs:StringObject,rhs:StringObject )
+		Return lhs.value=rhs.value
+	End
+
+	Method Compare( lhs:StringObject,rhs:StringObject )
+		Return lhs.value.Compare( rhs.value )
 	End
 
 End

@@ -38,14 +38,9 @@ Function Err( err$ )
 	ExitApp -1
 End
 
-Function SyntaxErr()
-	Err "Syntax error."
-End
-
 Function InternalErr()
-	Local t$=_errInfo+" : Error : Internal error."
-	Print t
-	Error t
+	Print _errInfo+" : Error : Internal error."
+	Error _errInfo+" : Error : Internal error."
 End
 
 Function Asc( str$ )

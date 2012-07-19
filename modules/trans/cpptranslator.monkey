@@ -9,23 +9,16 @@ Import trans
 Class CppTranslator Extends Translator
 
 	Method TransType$( ty:Type )
-		ty=ty.Actual()
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "bool"
 		If IntType( ty ) Return "int"
 		If FloatType( ty ) Return "float"
 		If StringType( ty ) Return "String"
-		If ArrayType( ty ) Return "Array<"+TransType( ArrayType( ty ).elemType )+" >"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.actual.munged+"*"
-'		If ObjectType( ty ) Return "Handle<"+ObjectType( ty ).classDecl.actual.munged+">"
+		If ArrayType( ty ) Return "Array<"+TransType( ArrayType(ty).elemType )+" >"
+		If ObjectType( ty ) Return ty.GetClass().actual.munged+"*"
 		InternalErr
 	End
 
-	Method TransLocalType$( ty:Type )
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.actual.munged+"*"
-		Return TransType( ty )
-	End
-	
 	Method TransValue$( ty:Type,value$ )
 		If value
 			If BoolType( ty ) Return "true"
@@ -84,6 +77,17 @@ Class CppTranslator Extends Translator
 		InternalErr
 	End
 	
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
+			If ty.GetClass().IsInterface()
+				Return "dynamic_cast<"+TransType(ty)+">"+Bra(expr)
+			Else
+				Return "static_cast<"+TransType(ty)+">"+Bra(expr)
+			Endif
+		Endif
+		Return expr
+	End
+	
 	Method TransGlobal$( decl:GlobalDecl )
 		Return TransStatic( decl )
 	End
@@ -112,17 +116,17 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
+		'
 		Local ctor:=FuncDecl( expr.ctor.actual )
 		Local cdecl:=ClassDecl( expr.classDecl.actual )
 		'
-		Return "(new "+cdecl.munged+"())->"+ctor.munged+TransArgs( expr.args )
+		Return "(new "+cdecl.munged+")->"+ctor.munged+TransArgs( expr.args )
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
 		Local texpr$=expr.expr.Trans()
-		Local elemTy:=ArrayType( expr.exprType ).elemType
 		'
-		Return "Array<"+TransType( elemTy )+" >"+Bra( texpr )
+		Return "Array<"+TransType( expr.ty )+" >"+Bra( expr.expr.Trans() )
 	End
 		
 	Method TransSelfExpr$( expr:SelfExpr )
@@ -130,47 +134,42 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method TransCastExpr$( expr:CastExpr )
-		Local texpr$=Bra( expr.expr.Trans() )
+	
+		Local t$=Bra( expr.expr.Trans() )
+		
 		Local dst:=expr.exprType
 		Local src:=expr.expr.exprType
 		
 		If BoolType( dst )
-			If BoolType( src ) Return texpr
-			If IntType( src ) Return Bra( texpr+"!=0" )
-			If FloatType( src ) Return Bra( texpr+"!=0.0f" )
-			If ArrayType( src ) Return Bra( texpr+".Length()!=0" )
-			If StringType( src ) Return Bra( texpr+".Length()!=0" )
-			If ObjectType( src ) Return Bra( texpr+"!=0" )
+			If BoolType( src ) Return t
+			If IntType( src ) Return Bra( t+"!=0" )
+			If FloatType( src ) Return Bra( t+"!=0.0f" )
+			If ArrayType( src ) Return Bra( t+".Length()!=0" )
+			If StringType( src ) Return Bra( t+".Length()!=0" )
+			If ObjectType( src ) Return Bra( t+"!=0" )
 		Else If IntType( dst )
-			If BoolType( src ) Return Bra( texpr+"?1:0" )
-			If IntType( src ) Return texpr
-			If FloatType( src ) Return "int"+Bra(texpr)
-			If StringType( src ) Return texpr+".ToInt()"
+			If BoolType( src ) Return Bra( t+"?1:0" )
+			If IntType( src ) Return t
+			If FloatType( src ) Return "int"+Bra(t)
+			If StringType( src ) Return t+".ToInt()"
 		Else If FloatType( dst )
-			If IntType( src ) Return "float"+Bra(texpr)
-			If FloatType( src ) Return texpr
-			If StringType( src ) Return texpr+".ToFloat()"
+			If IntType( src ) Return "float"+Bra(t)
+			If FloatType( src ) Return t
+			If StringType( src ) Return t+".ToFloat()"
 		Else If StringType( dst )
-			If IntType( src ) Return "String"+Bra( texpr )
-			If FloatType( src ) Return "String"+Bra( texpr )
-			If StringType( src ) Return texpr
+			If IntType( src ) Return "String"+Bra( t )
+			If FloatType( src ) Return "String"+Bra( t )
+			If StringType( src ) Return t
 		Endif
 		
-		'upcast
-		If src.ExtendsType( dst )
-			If ArrayType( src ) And ArrayType( dst )
-				Return "(("+TransType(dst)+")"+texpr+")"
-			Endif
-			Return texpr
+		If src.GetClass().ExtendsClass( dst.GetClass() )
+			If Not src.GetClass().IsInterface() Return t
+			Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
+		Else If dst.GetClass().ExtendsClass( src.GetClass() )
+			Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
 		Endif
 
-		'downcast		
-		If dst.ExtendsType( src )
-			Return "dynamic_cast<"+dst.GetClass().actual.munged+"*>"+Bra( "("+src.GetClass().actual.munged+"*)"+texpr )
-'			Return "dynamic_cast<"+dst.GetClass().actual.munged+"*>"+Bra( texpr )
-		Endif
-		
-		InternalErr
+		Err "C++ translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
 	Method TransUnaryExpr$( expr:UnaryExpr )
@@ -249,6 +248,7 @@ Class CppTranslator Extends Translator
 		Case "resize" Return texpr+".Resize"+Bra( arg0 )
 		
 		'string methods
+		Case "compare" Return texpr+".Compare"+Bra( arg0 )
 		Case "find" Return texpr+".Find"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".FindLast"+Bra( arg0 )
 		Case "findlast2" Return texpr+".FindLast"+Bra( arg0+","+arg1 )
@@ -278,79 +278,76 @@ Class CppTranslator Extends Translator
 
 	'***** Statements *****
 	
-	Method TransAssignStmt$( stmt:AssignStmt )
-#rem	
-		If stmt.op="=" And stmt.rhs And ObjectType( stmt.rhs.exprType )
-			'
-			'assign object somewhere!
-			'
-			If VarExpr( stmt.lhs )
-			
-				Local decl:VarDecl=VarDecl( VarExpr(stmt.lhs).decl.actual )
-				If FieldDecl( decl )
-					Local lhs$="this",rhs$=stmt.rhs.Trans()
-					Return "SetField(this,&"+decl.ClassScope.munged+"::"+decl.munged+","+stmt.rhs.Trans()+")"
-				Else If GlobalDecl( decl )
-					Return "SetGlobal(&"+decl.munged+","+stmt.rhs.Trans()+")"
-				Else If LocalDecl( decl )
-					Return "SetLocal(&"+decl.munged+","+stmt.rhs.Trans()+")"
-				Endif
-			
-			Else If MemberVarExpr( stmt.lhs )
-			
-				Local decl:VarDecl=VarDecl( MemberVarExpr(stmt.lhs).decl.actual )
-				If FieldDecl( decl )
-					Local lhs$=MemberVarExpr(stmt.lhs).expr.Trans(),rhs$=stmt.rhs.Trans()
-					Return "SetField("+lhs+",&"+decl.ClassScope.munged+"::"+decl.munged+","+rhs+")"
-				Endif
-				
-			Else If IndexExpr( stmt.lhs )
-			
-			Else
-				InternalErr
-			Endif
-		Endif
-#end
-		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
-		Return stmt.lhs.Trans()
-	End
+'	Method _TransAssignStmt$( stmt:AssignStmt )
+'		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
+'		Return stmt.lhs.Trans()
+'	End
 	
 	'***** Declarations *****
 	
 	Method EmitFuncProto( decl:FuncDecl )
-		PushMungScope
+		'PushMungScope
+		
+		'Find decl we override
+		Local odecl:=decl
+		While odecl.overrides
+			odecl=odecl.overrides
+		Wend
 
 		Local args$
-		For Local arg:=Eachin decl.argDecls
-			MungDecl arg
+		For Local arg:=Eachin odecl.argDecls
 			If args args+=","
-			args+=TransLocalType( arg.ty )+" "+arg.munged
+			args+=TransType( arg.ty )'+" "+arg.munged
 		Next
-
-		Local t$
-		If decl.IsMethod() t+="virtual "
-		If decl.IsStatic() And decl.ClassScope() t+="static "
 		
-		Emit t+TransLocalType( decl.retType )+" "+decl.munged+Bra( args )+";"
+		Local t$=TransType( odecl.retType )+" "+decl.munged+Bra( args )
+		If decl.IsAbstract() t+="=0"
+		
+		Local q$
+		If decl.IsMethod() q+="virtual "
+		If decl.IsStatic() And decl.ClassScope() q+="static "
+		
+		Emit q+t+";"
 
-		PopMungScope
+		'PopMungScope
 	End
 	
 	Method EmitFuncDecl( decl:FuncDecl )
+		If decl.IsAbstract() Return
+		
 		PushMungScope
 		
+		'Find decl we override
+		Local odecl:=decl
+		While odecl.overrides
+			odecl=odecl.overrides
+		Wend
+
+		'Generate 'args' string and arg casts
 		Local args$
-		For Local arg:=Eachin decl.argDecls
-			mungScope.Insert arg.munged,arg
+		Local argCasts:=New StringStack
+		For Local i=0 Until decl.argDecls.Length
+			Local arg:=decl.argDecls[i]
+			Local oarg:=odecl.argDecls[i]
+			MungDecl arg
 			If args args+=","
-			args+=TransLocalType( arg.ty )+" "+arg.munged
+			args+=TransType( oarg.ty )+" "+arg.munged
+			If arg.ty.EqualsType( oarg.ty ) Continue
+			Local t$=arg.munged
+			arg.munged=""
+			MungDecl arg
+			argCasts.Push TransType( arg.ty )+" "+arg.munged+"=static_cast<"+TransType(arg.ty)+">"+Bra(t)+";"
 		Next
 		
 		Local id$=decl.munged
 		If decl.ClassScope() id=decl.ClassScope().munged+"::"+id
 		
-		Emit TransLocalType( decl.retType )+" "+id+Bra( args )+"{"
-		
+		Emit TransType( odecl.retType )+" "+id+Bra( args )+"{"
+	
+		For Local t$=Eachin argCasts
+			Emit t
+		Next
+
 		EmitBlock decl
 
 		Emit "}"
@@ -359,10 +356,58 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method EmitClassProto( classDecl:ClassDecl )
+
+		If classDecl.IsTemplateInst()
+			InternalErr
+		Endif
+		
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.actual.munged
 		
-		Emit "class "+classid+" : public "+superid+"{"
+		If classDecl.IsInterface()
+			Local bases$'=" : public "+superid
+			For Local iface:=Eachin classDecl.implments
+				If bases bases+="," Else bases=" : "
+				bases+="public virtual "+iface.actual.munged
+'				bases+="public "+iface.actual.munged
+			Next
+			Emit "class "+classid+bases+"{"
+			Emit "public:"
+			Emit "virtual ~"+classid+"(){}"
+			Local emitted:=New Stack<FuncDecl>
+			For Local decl:=Eachin classDecl.Semanted
+				Local fdecl:=FuncDecl(decl)
+				If Not fdecl Continue
+				EmitFuncProto fdecl
+				emitted.Push fdecl
+			Next
+			For Local iface:=Eachin classDecl.implmentsAll
+				For Local decl:=Eachin iface.Semanted
+					Local fdecl:=FuncDecl(decl)
+					If Not fdecl Continue
+					Local found
+					For Local fdecl2:=Eachin emitted
+						If fdecl.ident<>fdecl2.ident Continue
+						If Not fdecl.EqualsFunc( fdecl2 ) Continue
+						found=True
+						Exit
+					Next
+					If found Continue
+					EmitFuncProto fdecl
+					emitted.Push fdecl
+				Next
+			Next
+			Emit "};"
+			Return
+		Endif
+		
+		Local bases$=" : public "+superid
+		For Local iface:=Eachin classDecl.implments
+			bases+=",public virtual "+iface.actual.munged
+'			bases+=",public "+iface.actual.munged
+		Next
+
+		Emit "class "+classid+bases+"{"
 		Emit "public:"
 
 		'fields
@@ -374,9 +419,9 @@ Class CppTranslator Extends Translator
 			Endif
 		Next
 
-		'fields ctor		
+		'fields ctor
 		Emit classid+"();"
-		
+
 		'methods		
 		For Local decl:=Eachin classDecl.Semanted
 		
@@ -393,7 +438,7 @@ Class CppTranslator Extends Translator
 			Endif
 		Next
 
-		'gc_mark
+		'gc mark
 		Emit "void mark();"
 
 		Emit "};"
@@ -413,7 +458,19 @@ Class CppTranslator Extends Translator
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
-	
+
+		If classDecl.IsTemplateInst()
+			Return
+		Endif
+		
+		If classDecl.IsInterface()
+'			For Local decl:=Eachin classDecl.Semanted
+'				If Not FuncDecl( decl ) InternalErr
+'				EmitFuncDecl FuncDecl( decl )
+'			Next
+			Return
+		Endif
+
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.actual.munged
 		
@@ -425,7 +482,7 @@ Class CppTranslator Extends Translator
 			Emit fdecl.munged+"="+fdecl.init.Trans()+";"
 		Next
 		Emit "}"
-
+		
 		'methods		
 		For Local decl:=Eachin classDecl.Semanted
 		
@@ -445,14 +502,14 @@ Class CppTranslator Extends Translator
 		'gc_mark
 		Emit "void "+classid+"::mark(){"
 		If classDecl.superClass 
-			Emit classDecl.superClass.munged+"::mark();"
+			Emit classDecl.superClass.actual.munged+"::mark();"
 		Endif
 		For Local tdecl:=Eachin classDecl.Semanted
 			Local decl:=FieldDecl( tdecl )
 			If decl EmitMark decl.munged,decl.ty,True
 		Next
 		Emit "}"
-
+	
 	End
 	
 	Method TransApp$( app:AppDecl )
@@ -471,10 +528,10 @@ Class CppTranslator Extends Translator
 			If Not cdecl Continue
 			
 			Emit "class "+decl.munged+";"
-		
+			
 			PushMungScope
 			
-			MungOverrides cdecl
+'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl

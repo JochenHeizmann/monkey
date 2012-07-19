@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.09"
+Const VERSION$="1.10"
 
 Global CONFIG_FILE$
 
@@ -114,8 +114,8 @@ Function LoadConfig()
 		
 		SetEnv "PATH",path
 		
-		If Not HTML_PLAYER HTML_PLAYER="open "
-		If Not FLASH_PLAYER FLASH_PLAYER="open "
+		'If Not HTML_PLAYER HTML_PLAYER="open "
+		'If Not FLASH_PLAYER FLASH_PLAYER="open "
 		
 	End
 
@@ -173,6 +173,8 @@ Function Main()
 			Exit
 		Endif
 	Next
+	
+	SetEnv "TRANSDIR",ExtractDir( AppPath )
 
 	LoadConfig
 	

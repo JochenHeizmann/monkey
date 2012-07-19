@@ -83,7 +83,6 @@ Class Champange Extends App
 			d = New Dot()
 			Self.dots.AddLast(d)
 		Next
-	
 
 		SetUpdateRate 30
 		Print  "Use spacebar to add 1000 dots"

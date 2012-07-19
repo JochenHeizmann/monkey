@@ -10,11 +10,15 @@ Class Expr
 	Field exprType:Type
 	
 	Method ToString$()
-		Return "Expression"
+		Return "<Expr>"
+	End
+	
+	Method Copy:Expr()
+		InternalErr
 	End
 	
 	Method Semant:Expr()
-		Todo
+		InternalErr
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
@@ -48,51 +52,36 @@ Class Expr
 	Method TransVar$()
 		InternalErr
 	End
-
+	
 	'semant and cast
 	Method Semant:Expr( ty:Type,castFlags=0 )
-		If exprType.EqualsType( ty ) Return Self
-		Return New CastExpr( ty,Self,castFlags ).Semant()
+		Local expr:=Semant()
+		If expr.exprType.EqualsType( ty ) Return expr
+		Return New CastExpr( ty,expr,castFlags ).Semant()
 	End
 
 	'expr and ty already semanted!
-	Method CastTo:Expr( ty:Type,castFlags=0 )
+	Method Cast:Expr( ty:Type,castFlags=0 )
 		If exprType.EqualsType( ty ) Return Self
 		Return New CastExpr( ty,Self,castFlags ).Semant()
 	End
 	
-	'actually the same as cast!
-	Method SemantTo:Expr( ty:Type,castFlags=0 )
-		If exprType.EqualsType( ty ) Return Self
-		Return New CastExpr( ty,Self,castFlags ).Semant()
-	End
-	
-	Method SemantArgs( args:Expr[] )
+	Method SemantArgs:Expr[]( args:Expr[] )
+		args=args[..]
 		For Local i=0 Until args.Length
 			If args[i] args[i]=args[i].Semant()
 		Next
-	End
-	
-	Method BalanceTypes:Type( lhs:Type,rhs:Type )
-		If StringType( lhs ) Or StringType( rhs ) Return Type.stringType
-		If FloatType( lhs ) Or FloatType( rhs ) Return Type.floatType
-		If IntType( lhs ) Or IntType( rhs ) Return Type.intType
-		
-		If lhs.ExtendsType( rhs ) Return rhs
-		If rhs.ExtendsType( lhs ) Return lhs
-		
-		Err "Can't balance types "+lhs.ToString()+" and "+rhs.ToString()+"."
+		Return args
 	End
 	
 	Method CastArgs:Expr[]( args:Expr[],funcDecl:FuncDecl )
-		'
 		If args.Length>funcDecl.argDecls.Length InternalErr
-		'
+
 		args=args.Resize( funcDecl.argDecls.Length )
-		'
+		
 		For Local i=0 Until args.Length
 			If args[i]
-				args[i]=args[i].CastTo( funcDecl.argDecls[i].ty )
+				args[i]=args[i].Cast( funcDecl.argDecls[i].ty )
 			Else If funcDecl.argDecls[i].init
 				args[i]=funcDecl.argDecls[i].init	
 			Else
@@ -100,6 +89,28 @@ Class Expr
 			Endif
 		Next
 		Return args
+	End
+	
+	Method BalanceTypes:Type( lhs:Type,rhs:Type )
+		If StringType( lhs ) Or StringType( rhs ) Return Type.stringType
+		If FloatType( lhs ) Or FloatType( rhs ) Return Type.floatType
+		If IntType( lhs ) Or IntType( rhs ) Return Type.intType
+		If lhs.ExtendsType( rhs ) Return rhs
+		If rhs.ExtendsType( lhs ) Return lhs
+		Err "Can't balance types "+lhs.ToString()+" and "+rhs.ToString()+"."
+	End
+	
+	Method CopyExpr:Expr( expr:Expr )
+		If Not expr Return
+		Return expr.Copy()
+	End
+	
+	Method CopyArgs:Expr[]( exprs:Expr[] )
+		exprs=exprs[..]
+		For Local i=0 Until exprs.Length
+			exprs[i]=CopyExpr( exprs[i] )
+		Next
+		Return exprs
 	End
 
 End
@@ -114,9 +125,17 @@ Class StmtExpr Extends Expr
 		Self.expr=expr
 	End
 	
+	Method Copy:Expr()
+		Return New StmtExpr( stmt,CopyExpr(expr) )
+	End
+	
+	Method ToString$()
+		Return "StmtExpr(,"+expr.ToString()+")"
+	End
+		
 	Method Semant:Expr()
 		If exprType Return Self
-
+		
 		stmt.Semant()
 		expr=expr.Semant()
 		exprType=expr.exprType
@@ -135,7 +154,6 @@ Class ConstExpr Extends Expr
 	Field value$
 	
 	Method New( ty:Type,value$ )
-	
 		If IntType( ty )
 			Local radix
 			If value.StartsWith( "%" )
@@ -160,20 +178,22 @@ Class ConstExpr Extends Expr
 				value+=".0"
 			Endif
 		Endif
-		
 		Self.ty=ty
 		Self.value=value
 	End
 	
+	Method Copy:Expr()
+		Return New ConstExpr( ty,value )
+	End
+	
 	Method ToString$()
-		Return value
+		Return "ConstExpr(~q"+value+"~q)"
 	End
 	
 	Method Semant:Expr()
 		If exprType Return Self
-
-		ty=ty.Semant()
-		exprType=ty
+		
+		exprType=ty.Semant()
 		Return Self
 	End
 	
@@ -198,23 +218,27 @@ Class VarExpr Extends Expr
 		Self.decl=decl
 	End
 	
+	Method Copy:Expr()
+		Return Self
+	End
+	
+	Method ToString$()
+		Return "VarExpr("+decl.ToString()+")"
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
-		
+		If Not decl.IsSemanted() InternalErr
 		exprType=decl.ty
 		Return Self
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
-		Semant
-		Return Self
+		Return Semant()
 	End
 	
 	Method Trans$()
-		If decl=decl.actual Return _trans.TransVarExpr( Self )
-		Local expr:Expr=New VarExpr( VarDecl( decl.actual ) )
-		expr=New CastExpr( exprType,expr,CAST_EXPLICIT|CAST_TEMPLATE )
-		Return expr.Semant().Trans()
+		Return _trans.TransTemplateCast( exprType,VarDecl(decl.actual).ty,_trans.TransVarExpr( Self ) )
 	End
 	
 	Method TransVar$()
@@ -232,64 +256,78 @@ Class MemberVarExpr Extends Expr
 		Self.decl=decl
 	End
 	
+	Method Copy:Expr()
+		Return Self
+	End
+	
+	Method ToString$()
+		Return "MemberVarExpr("+expr.ToString()+","+decl.ToString()+")"
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
-	
+		If Not decl.IsSemanted() InternalErr
 		exprType=decl.ty
 		Return Self
 	End
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
-		Semant
-		Return Self
+		Return Semant()
 	End
 	
 	Method Trans$()
-		If decl=decl.actual Return _trans.TransMemberVarExpr( Self )
-		Local expr:Expr=New MemberVarExpr( Self.expr,VarDecl( decl.actual ) )
-		expr=New CastExpr( exprType,expr,CAST_EXPLICIT|CAST_TEMPLATE )
-		Return expr.Semant().Trans()
+		Return _trans.TransTemplateCast( exprType,VarDecl(decl.actual).ty,_trans.TransMemberVarExpr( Self ) )
 	End
 	
 	Method TransVar$()
 		Return _trans.TransMemberVarExpr( Self )
  	End
+
 End
 
 Class InvokeExpr Extends Expr
 	Field decl:FuncDecl
 	Field args:Expr[]
-	
+
 	Method New( decl:FuncDecl,args:Expr[] )
 		Self.decl=decl
 		Self.args=args
 	End
 	
+	Method Copy:Expr()
+		Return Self
+	End
+	
+	Method ToString$()
+		Local t$="InvokeExpr("+decl.ToString()
+		For Local arg:=Eachin args
+			t+=","+arg.ToString()
+		Next
+		Return t+")"
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
-		
-		args=CastArgs( args,decl )
-		
 		exprType=decl.retType
+		args=CastArgs( args,decl )
 		Return Self
 	End
 	
 	Method Trans$()
-		If decl=decl.actual Return _trans.TransInvokeExpr( Self )
-		Local expr:Expr=New InvokeExpr( FuncDecl( decl.actual ),Self.args )
-		expr=New CastExpr( exprType,expr,CAST_EXPLICIT|CAST_TEMPLATE )
-		Return expr.Semant().Trans()
+		Return _trans.TransTemplateCast( exprType,FuncDecl(decl.actual).retType,_trans.TransInvokeExpr( Self ) )
 	End
 	
 	Method TransStmt$()
 		Return _trans.TransInvokeExpr( Self )
 	End
+
 End
 
 Class InvokeMemberExpr Extends Expr
 	Field expr:Expr
 	Field decl:FuncDecl
 	Field args:Expr[]
+	Field isResize	'FIXME - butt ugly!
 	
 	Method New( expr:Expr,decl:FuncDecl,args:Expr[] )
 		Self.expr=expr
@@ -297,15 +335,27 @@ Class InvokeMemberExpr Extends Expr
 		Self.args=args
 	End
 	
+	Method Copy:Expr()
+		Return Self
+	End
+	
+	Method ToString$()
+		Local t$="InvokeMemberExpr("+expr.ToString()+","+decl.ToString()
+		For Local arg:=Eachin args
+			t+=","+arg.ToString()
+		Next
+		Return t+")"
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 		
-		args=CastArgs( args,decl )
-	
 		exprType=decl.retType
-		
+		args=CastArgs( args,decl )
+
 		'Array $resize hack!
 		If ArrayType( exprType ) And VoidType( ArrayType( exprType ).elemType )
+			isResize=True
 			exprType=expr.exprType
 		Endif
 		
@@ -313,10 +363,10 @@ Class InvokeMemberExpr Extends Expr
 	End
 	
 	Method Trans$()
-		If decl=decl.actual Return _trans.TransInvokeMemberExpr( Self )
-		Local expr:Expr=New InvokeMemberExpr( Self.expr,FuncDecl( decl.actual ),Self.args )
-		expr=New CastExpr( exprType,expr,CAST_EXPLICIT|CAST_TEMPLATE )
-		Return expr.Semant().Trans()
+		'Array $resize hack!
+		If isResize Return _trans.TransInvokeMemberExpr( Self )
+		
+		Return _trans.TransTemplateCast( exprType,FuncDecl(decl.actual).retType,_trans.TransInvokeMemberExpr( Self ) )
 	End
 	
 	Method TransStmt$()
@@ -336,11 +386,15 @@ Class NewObjectExpr Extends Expr
 		Self.args=args
 	End
 	
+	Method Copy:Expr()
+		Return New NewObjectExpr( ty,CopyArgs(args) )
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 		
 		ty=ty.Semant()
-		SemantArgs args
+		args=SemantArgs( args )
 		
 		Local objTy:ObjectType=ObjectType( ty )
 		If Not objTy
@@ -349,18 +403,12 @@ Class NewObjectExpr Extends Expr
 
 		classDecl=objTy.classDecl
 		
-		If classDecl.IsTemplateArg()
-			Err "Cannot create instance of template class."
-		Endif
+		If classDecl.IsAbstract() Err "Cannot create instance of abstract class."
+		If classDecl.IsTemplateArg() Err "Cannot create instance of template argument."
+		If classDecl.args And Not classDecl.instanceof Err "Cannot create instance of generic class."
 		
-		If classDecl.IsAbstract()
-			Err "Cannot create instance of abstract class."
-		Endif
-
 		ctor=classDecl.FindFuncDecl( "new",args )
-		If Not ctor
-			Err "No suitable constructor found for class "+classDecl.ToString()+"."
-		Endif
+		If Not ctor	Err "No suitable constructor found for class "+classDecl.ToString()+"."
 		
 		classDecl.attrs|=CLASS_INSTANCED
 
@@ -376,21 +424,25 @@ Class NewObjectExpr Extends Expr
 End
 
 Class NewArrayExpr Extends Expr
-	Field ty:ArrayType
+	Field ty:Type
 	Field expr:Expr
 	
 	Method New( ty:Type,expr:Expr )
-		Self.ty=New ArrayType( ty )
+		Self.ty=ty
 		Self.expr=expr
-		
+	End
+	
+	Method Copy:Expr()
+		If exprType InternalErr
+		Return New NewArrayExpr( ty,CopyExpr(expr) )
 	End
 	
 	Method Semant:Expr()
 		If exprType Return Self
-	
-		ty=ArrayType( ty.Semant() )
-		expr=expr.Semant().CastTo( Type.intType )
-		exprType=ty
+		
+		ty=ty.Semant()
+		exprType=New ArrayType( ty )
+		expr=expr.Semant( Type.intType )
 		Return Self
 	End
 	
@@ -413,6 +465,10 @@ Class InvokeSuperExpr Extends Expr
 		Self.args=args
 	End
 	
+	Method Copy:Expr()
+		Return New InvokeSuperExpr( ident,CopyArgs(args) )
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 	
@@ -423,10 +479,9 @@ Class InvokeSuperExpr Extends Expr
 
 		If Not superClass Err "Class has no super class."
 
-		SemantArgs args
+		args=SemantArgs( args )
 		funcDecl=superClass.FindFuncDecl( ident,args )
 		If Not funcDecl Err "Can't find superclass method '"+ident+"'."
-		
 		args=CastArgs( args,funcDecl )
 		exprType=funcDecl.retType
 		Return Self
@@ -438,18 +493,17 @@ Class InvokeSuperExpr Extends Expr
 
 End
 
-'	self
+'	Self
 Class SelfExpr Extends Expr
 
-	Method New()
-		
+	Method Copy:Expr()
+		Return New SelfExpr
 	End
 	
 	Method Semant:Expr()
 		If exprType Return Self
 	
-		If _env.FuncScope().IsStatic() Err "Illegal use of Self."
-
+		If _env.FuncScope().IsStatic() Err "Illegal use of Self within static scope."
 		exprType=New ObjectType( _env.ClassScope() )
 		Return Self
 	End
@@ -460,8 +514,7 @@ Class SelfExpr Extends Expr
 
 End
 
-Const CAST_EXPLICIT=1	'otherwise implicit
-Const CAST_TEMPLATE=2	'template style cast
+Const CAST_EXPLICIT=1
 
 Class CastExpr Extends Expr
 	Field ty:Type
@@ -472,7 +525,10 @@ Class CastExpr Extends Expr
 		Self.ty=ty
 		Self.expr=expr
 		Self.flags=flags
-		
+	End
+	
+	Method Copy:Expr()
+		Return New CastExpr( ty,CopyExpr(expr),flags )
 	End
 	
 	Method Semant:Expr()
@@ -483,11 +539,6 @@ Class CastExpr Extends Expr
 		
 		Local src:Type=expr.exprType
 		
-		If (flags & CAST_TEMPLATE)
-			ty=ty.Actual()
-			src=src.Actual()
-		Endif
-		
 		'equal?
 		If src.EqualsType( ty ) Return expr
 		
@@ -495,14 +546,13 @@ Class CastExpr Extends Expr
 		If src.ExtendsType( ty )
 		
 			'cast from void[] to T[]
-			'
 			If ArrayType(src) And VoidType( ArrayType(src).elemType )
 				Return New ConstExpr( ty,"" ).Semant()
 			Endif
 		
 			'Box/unbox?...
 			If ObjectType( ty ) And Not ObjectType( src )
-			
+
 				'Box!
 				expr=New NewObjectExpr( ty,[expr] ).Semant()
 				
@@ -523,31 +573,32 @@ Class CastExpr Extends Expr
 				Endif
 				Local fdecl:FuncDecl=src.GetClass().FindFuncDecl( op,[] )
 				expr=New InvokeMemberExpr( expr,fdecl,[] ).Semant()
+
 			Endif
 			exprType=ty
 
 		Else If BoolType( ty )
 
-			If (flags & CAST_EXPLICIT) exprType=ty
+			If  flags & CAST_EXPLICIT 
+				exprType=ty
+			Endif
 		
 		Else If ty.ExtendsType( src )
 		
 			If flags & CAST_EXPLICIT
-				'if both objects
-				If ObjectType( ty ) And ObjectType( src ) exprType=ty
-				
-				'or both NOT objects
-				If Not ObjectType( ty ) And Not ObjectType( src ) exprType=ty
+			
+				'if both objects or both non-objects...
+				If (ObjectType(ty)<>Null)=(ObjectType(src)<>Null) exprType=ty
 
 			Endif
+		
 		Endif
 		
 		If Not exprType
-			Err "Cannot convert from type "+src.ToString()+" to type "+ty.ToString()+"."
+			Err "Cannot convert from "+src.ToString()+" to "+ty.ToString()+"."
 		Endif
 		
 		If ConstExpr( expr ) Return EvalConst()
-		
 		Return Self
 	End
 	
@@ -592,7 +643,10 @@ Class UnaryExpr Extends Expr
 	Method New( op$,expr:Expr )
 		Self.op=op
 		Self.expr=expr
-		
+	End
+	
+	Method Copy:Expr()
+		Return New UnaryExpr( op,CopyExpr(expr) )
 	End
 	
 	Method Semant:Expr()
@@ -604,17 +658,16 @@ Class UnaryExpr Extends Expr
 			If Not NumericType( expr.exprType ) Err expr.ToString()+" must be numeric for use with unary operator '"+op+"'"
 			exprType=expr.exprType
 		Case "~~"
-			expr=expr.Semant().CastTo( Type.intType )
+			expr=expr.Semant( Type.intType )
 			exprType=Type.intType
 		Case "not"
-			expr=expr.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
+			expr=expr.Semant( Type.boolType,CAST_EXPLICIT )
 			exprType=Type.boolType
 		Default
 			InternalErr
 		End Select
 		
 		If ConstExpr( expr ) Return EvalConst()
-		
 		Return Self
 	End
 	
@@ -654,12 +707,15 @@ End
 
 ' * / + / & ~ | ^ shl shr
 Class BinaryMathExpr Extends BinaryExpr
-	Field ty:Type
 
 	Method New( op$,lhs:Expr,rhs:Expr )
 		Self.op=op
 		Self.lhs=lhs
 		Self.rhs=rhs
+	End
+	
+	Method Copy:Expr()
+		Return New BinaryMathExpr( op,CopyExpr(lhs),CopyExpr(rhs) )
 	End
 	
 	Method Semant:Expr()
@@ -682,8 +738,8 @@ Class BinaryMathExpr Extends BinaryExpr
 			Endif
 		End Select
 		
-		lhs=lhs.CastTo( exprType )
-		rhs=rhs.CastTo( exprType )
+		lhs=lhs.Cast( exprType )
+		rhs=rhs.Cast( exprType )
 		
 		If ConstExpr( lhs ) And ConstExpr( rhs ) Return EvalConst()
 
@@ -735,16 +791,23 @@ Class BinaryCompareExpr Extends BinaryExpr
 		Self.rhs=rhs
 	End
 	
+	Method Copy:Expr()
+		Return New BinaryCompareExpr( op,CopyExpr(lhs),CopyExpr(rhs) )
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
-	
+		
 		lhs=lhs.Semant()
 		rhs=rhs.Semant()
 
 		ty=BalanceTypes( lhs.exprType,rhs.exprType )
+		If ArrayType( ty )
+			Err "Arrays cannot be compared."
+		Endif
 
-		lhs=lhs.CastTo( ty )
-		rhs=rhs.CastTo( ty )
+		lhs=lhs.Cast( ty )
+		rhs=rhs.Cast( ty )
 
 		exprType=Type.boolType
 		
@@ -804,11 +867,15 @@ Class BinaryLogicExpr Extends BinaryExpr
 		Self.rhs=rhs
 	End
 	
+	Method Copy:Expr()
+		Return New BinaryLogicExpr( op,CopyExpr(lhs),CopyExpr(rhs) )
+	End
+	
 	Method Semant:Expr()
 		If exprType Return Self
 		
-		lhs=lhs.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
-		rhs=rhs.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
+		lhs=lhs.Semant( Type.boolType,CAST_EXPLICIT )
+		rhs=rhs.Semant( Type.boolType,CAST_EXPLICIT )
 		
 		exprType=Type.boolType
 		
@@ -833,14 +900,17 @@ Class IndexExpr Extends Expr
 	Method New( expr:Expr,index:Expr )
 		Self.expr=expr
 		Self.index=index
-		
+	End
+	
+	Method Copy:Expr()
+		Return New IndexExpr( CopyExpr(expr),CopyExpr(index) )
 	End
 	
 	Method Semant:Expr()
 		If exprType Return Self
 	
 		expr=expr.Semant()
-		index=index.Semant().CastTo( Type.intType )
+		index=index.Semant( Type.intType )
 		
 		If StringType( expr.exprType )
 			exprType=Type.intType
@@ -877,7 +947,10 @@ Class SliceExpr Extends Expr
 		Self.expr=expr
 		Self.from=from
 		Self.term=term
-		
+	End
+	
+	Method Copy:Expr()
+		Return New SliceExpr( CopyExpr(expr),CopyExpr(from),CopyExpr(term) )
 	End
 	
 	Method Semant:Expr()
@@ -885,8 +958,8 @@ Class SliceExpr Extends Expr
 	
 		expr=expr.Semant()
 		If ArrayType( expr.exprType ) Or StringType( expr.exprType )
-			If from from=from.Semant().CastTo( Type.intType )
-			If term term=term.Semant().CastTo( Type.intType )
+			If from from=from.Semant( Type.intType )
+			If term term=term.Semant( Type.intType )
 			exprType=expr.exprType
 		Else
 			Err "Slices can only be used on strings or arrays."
@@ -917,9 +990,12 @@ Class ArrayExpr Extends Expr
 	
 	Method New( exprs:Expr[] )
 		Self.exprs=exprs
-		
 	End
 	
+	Method Copy:Expr()
+		Return New ArrayExpr( CopyArgs(exprs) )
+	End
+
 	Method Semant:Expr()
 		If exprType Return Self
 		
@@ -932,7 +1008,7 @@ Class ArrayExpr Extends Expr
 		Next
 		
 		For Local i=0 Until exprs.Length
-			exprs[i]=exprs[i].CastTo( ty )
+			exprs[i]=exprs[i].Cast( ty )
 		Next
 		
 		exprType=New ArrayType( ty )

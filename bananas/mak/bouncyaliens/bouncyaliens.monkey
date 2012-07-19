@@ -1,8 +1,8 @@
 
 Import mojo
 
-Const WIDTH#=320'/4
-Const HEIGHT#=240'/4
+Const WIDTH#=320
+Const HEIGHT#=240
 
 Class Sprite
 
@@ -51,7 +51,8 @@ Class MyApp Extends App
 	End
 	
 	Method OnUpdate()
-		If TouchDown(0) And TouchY(0)<16
+	
+		If TouchDown(0)
 			If TouchX(0)<DeviceWidth/2
 				If Not sprites.IsEmpty() sprites.Pop
 			Else

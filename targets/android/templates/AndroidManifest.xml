@@ -3,6 +3,9 @@
 	package="${APP_PACKAGE}"
 	android:versionCode="1"
 	android:versionName="1.0">
+	<uses-sdk 
+		android:minSdkVersion="3"
+		android:targetSdkVersion="7" />
 	<application android:label="${APP_LABEL}" android:icon="@drawable/icon">
 		<activity 
 			android:name="MonkeyGame" 

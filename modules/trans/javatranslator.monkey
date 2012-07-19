@@ -9,14 +9,13 @@ Import trans
 Class JavaTranslator Extends Translator
 
 	Method TransType$( ty:Type )
-		ty=ty.Actual()
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "boolean"
 		If IntType( ty ) Return "int"
 		If FloatType( ty ) Return "float"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return TransType( ArrayType( ty ).elemType )+"[]"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.munged
+		If ObjectType( ty ) Return ty.GetClass().actual.munged
 		InternalErr
 	End
 	
@@ -31,7 +30,6 @@ Class JavaTranslator Extends Translator
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
 			If StringType( ty ) Return "~q~q"
-'			If ArrayType( ty ) Return Bra( "new "+TransType(ArrayType(ty).elemType)+"[0]" )
 			If ArrayType( ty ) 
 				Local elemTy:=ArrayType( ty ).elemType
 				Local t$="[0]"
@@ -82,8 +80,6 @@ Class JavaTranslator Extends Translator
 		Emit "bb_std_lang.popErr();"
 	End
 
-	
-
 	'***** Declarations *****
 	
 	Method TransStatic$( decl:Decl )
@@ -97,6 +93,13 @@ Class JavaTranslator Extends Translator
 			Return decl.scope.munged+"."+decl.munged
 		Endif
 		InternalErr
+	End
+	
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
+			Return "(("+TransType(ty)+")"+Bra(expr)+")"
+		Endif
+		Return expr
 	End
 	
 	Method TransGlobal$( decl:GlobalDecl )
@@ -127,6 +130,7 @@ Class JavaTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
+		'
 		Local ctor:=FuncDecl( expr.ctor.actual )
 		Local cdecl:=ClassDecl( expr.classDecl.actual )
 		'
@@ -151,10 +155,12 @@ Class JavaTranslator Extends Translator
 	End
 	
 	Method TransCastExpr$( expr:CastExpr )
+
 		Local texpr$=Bra( expr.expr.Trans() )
+		
 		Local dst:=expr.exprType
 		Local src:=expr.expr.exprType
-		
+
 		If BoolType( dst )
 			If BoolType( src ) Return texpr
 			If IntType( src ) Return Bra( texpr+"!=0" )
@@ -177,20 +183,16 @@ Class JavaTranslator Extends Translator
 			If StringType( src ) Return texpr
 		Endif
 		
-		'upcast
-		If src.ExtendsType( dst )
+		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
-		Endif
-
-		'downcast		
-		If dst.ExtendsType( src )
-			Local tmp:=New LocalDecl( "",src,expr.expr )
+		Else If dst.GetClass().ExtendsClass( src.GetClass() )
+			Local tmp:=New LocalDecl( "",src,Null )
 			MungDecl tmp
-			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
+			Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
 			Return "($t instanceof $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
 		Endif
-		
-		InternalErr
+
+		Err "Java translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
 	Method TransUnaryExpr$( expr:UnaryExpr )
@@ -207,12 +209,7 @@ Class JavaTranslator Extends Translator
 		If BinaryCompareExpr( expr ) And StringType( expr.lhs.exprType ) And StringType( expr.rhs.exprType )
 			Return Bra( lhs+".compareTo"+Bra(rhs)+TransBinaryOp( expr.op )+"0" )
 		Endif
-#rem
-		'array concatenation?		
-		If expr.op="+" And ArrayType( expr.exprType )
-			Return "(("+TransType( expr.exprType )+")bb_std_lang.concatArrays"+Bra( lhs+","+rhs )+")"
-		EndIf
-#end
+		
 		Local pri=ExprPri( expr )
 		If ExprPri( expr.lhs )>pri lhs=Bra( lhs )
 		If ExprPri( expr.rhs )>=pri rhs=Bra( rhs )
@@ -273,6 +270,7 @@ Class JavaTranslator Extends Translator
 		Case "resize" Return "(("+TransType( expr.exprType )+")bb_std_lang.resizeArray"+Bra( texpr+","+arg0 )+")"
 		
 		'string methods
+		Case "compare" Return texpr+".compareTo"+Bra( arg0 )
 		Case "find" Return texpr+".indexOf"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".lastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".lastIndexOf"+Bra( arg0+","+arg1 )
@@ -307,30 +305,80 @@ Class JavaTranslator Extends Translator
 	Method EmitFuncDecl( decl:FuncDecl )
 		PushMungScope
 		
+		'Find decl we override
+		Local odecl:=decl
+		While odecl.overrides
+			odecl=odecl.overrides
+		Wend
+
+		'Generate 'args' string and arg casts
 		Local args$
-		For Local arg:=Eachin decl.argDecls
+		Local argCasts:=New StringStack
+		For Local i=0 Until decl.argDecls.Length
+			Local arg:=decl.argDecls[i]
+			Local oarg:=odecl.argDecls[i]
 			MungDecl arg
 			If args args+=","
-			args+=TransDecl( arg )
+			args+=TransType( oarg.ty )+" "+arg.munged
+			If arg.ty.EqualsType( oarg.ty ) Continue
+			Local t$=arg.munged
+			arg.munged=""
+			MungDecl arg
+			argCasts.Push TransDecl( arg )+"="+Bra(TransType(arg.ty))+Bra(t)+";"
 		Next
 		
-		Local t$
-		If decl.IsStatic() t+="static "
+		Local t$="public "+TransType( odecl.retType )+" "+decl.munged+Bra( args )
 		
-		Emit t+TransType( decl.retType )+" "+decl.munged+Bra( args )+"{"
-		
-		EmitBlock decl
-
-		Emit "}"
+		If decl.ClassScope() And decl.ClassScope().IsInterface()
+			Emit t+";"
+		Else
+			Local q$
+			If decl.IsStatic() q+="static "
+			Emit q+t+"{"
+			For Local t$=Eachin argCasts
+				Emit t
+			Next
+			EmitBlock decl
+			Emit "}"
+		Endif
 		
 		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
-		Local classid$=classDecl.munged
+	
+		If classDecl.IsTemplateInst()
+			InternalErr
+		Endif
+	
+		Local classid$=classDecl.actual.munged
 		Local superid$=classDecl.superClass.actual.munged
+
+		If classDecl.IsInterface() 
+
+			Local bases$
+			For Local iface:=Eachin classDecl.implments
+				If bases bases+="," Else bases=" extends "
+				bases+=iface.actual.munged
+			Next
+
+			Emit "interface "+classid+bases+"{"
+			
+			For Local decl:=Eachin classDecl.Semanted
+				If Not FuncDecl( decl ) InternalErr
+				EmitFuncDecl FuncDecl( decl )
+			Next
+			Emit "}"
+			Return
+		Endif
 		
-		Emit "class "+classid+" extends "+superid+"{"
+		Local bases$
+		For Local iface:=Eachin classDecl.implments
+			If bases bases+="," Else bases=" implements "
+			bases+=iface.actual.munged
+		Next
+		
+		Emit "class "+classid+" extends "+superid+bases+"{"
 		
 		For Local decl:=Eachin classDecl.Semanted
 
@@ -360,6 +408,7 @@ Class JavaTranslator Extends Translator
 	Method TransApp$( app:AppDecl )
 
 		app.mainModule.munged="bb_"
+		app.mainFunc.munged="bb_Main"
 		
 		For Local decl:=Eachin app.imported.Values()
 			MungDecl decl
@@ -374,7 +423,7 @@ Class JavaTranslator Extends Translator
 			
 			PushMungScope
 
-			MungOverrides cdecl
+'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 			

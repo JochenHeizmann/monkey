@@ -1,5 +1,13 @@
 
 '--------------------
+'HTML player path.
+'
+'Must be set for HTML5 target support.
+'
+HTML_PLAYER="${TRANSDIR}\mserver_winnt.exe"
+'--------------------
+
+'--------------------
 'Ant build tool path
 '
 'Must be set to a valid dir for ANDROID target support
@@ -35,7 +43,7 @@ ANDROID_PATH="${SYSTEMDRIVE}\android-sdk-windows"
 '--------------------
 
 '--------------------
-'Flex SDK path.
+'Flex SDK and flash player path.
 '
 'Must be set for FLASH target support.
 '
@@ -45,6 +53,7 @@ FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0.0.14159"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4.0"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk_4"
 FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
+FLASH_PLAYER="${TRANSDIR}\mserver_winnt.exe"
 '--------------------
 
 '--------------------
@@ -53,20 +62,4 @@ FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
 'Must be set for XNA and GLFW target support.
 '
 MSBUILD_PATH="${WINDIR}\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
-'--------------------
-
-'--------------------
-'Tool used to 'run' .html files.
-'
-'This is optional, OS default tool for .html files will be used if this not set.
-'
-'HTML_PLAYER="${PROGRAMFILES}\Mozilla Firefox\firefox.exe"
-'--------------------
-
-'--------------------
-'Tool used to 'run' flash .swf files.
-'
-'This is optional, OS default tool for .swf files will be used if this not set.
-'
-'FLASH_PLAYER="${PROGRAMFILES}\Mozilla Firefox\firefox.exe"
 '--------------------

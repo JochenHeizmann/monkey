@@ -14,8 +14,11 @@ Class Translator
 	Field lines:=New StringList
 	Field unreachable,broken
 	
+	'Munging needs a big cleanup!
+	
 	Field mungScope:=New StringMap<Decl>
 	Field mungStack:=New Stack< StringMap<Decl> >
+	Field funcMungs:=New StringMap<FuncDeclList>
 	
 	Method PushMungScope()
 		mungStack.Push mungScope
@@ -26,55 +29,90 @@ Class Translator
 		mungScope=mungStack.Pop()
 	End
 	
-	Method MungDecl( decl:Decl )
-		If decl.munged Return
-		
-		Local mungs:=mungScope
+	Method MungFuncDecl( fdecl:FuncDecl )
 
+		If fdecl.munged Return
+		
+		Local funcs:=funcMungs.Get( fdecl.ident )
+		If funcs
+			For Local tdecl:=Eachin funcs
+				If fdecl.EqualsArgs( tdecl )
+					fdecl.munged=tdecl.munged
+					Return
+				Endif
+			Next
+		Else
+			funcs=New FuncDeclList
+			funcMungs.Set fdecl.ident,funcs
+		Endif
+		
+		fdecl.munged="bbm_"+fdecl.ident
+		If Not funcs.IsEmpty() fdecl.munged+=String(funcs.Count()+1)
+		funcs.AddLast fdecl
+	End
+	
+	Method MungDecl( decl:Decl )
+
+		If decl.munged Return
+
+		Local fdecl:FuncDecl=FuncDecl( decl )
+		
+		If fdecl And fdecl.IsMethod() Return MungFuncDecl( fdecl )
+		
 		Local id$=decl.ident,munged$
 		
-		'apply module munging if necessary...
+		'this lot just makes output a bit more readable...
 		Select ENV_LANG
 		Case "js"
-			Local fdecl:FuncDecl=FuncDecl( decl )
 			If ModuleDecl( decl.scope ) Or GlobalDecl( decl ) Or (fdecl And Not fdecl.IsMethod())
-				munged=decl.ModuleScope().munged+id
+				munged=decl.ModuleScope().munged+"_"+id
 			Endif
 		Case "as"
 			If ModuleDecl( decl.scope )
-				munged=decl.ModuleScope().munged+id
+				munged=decl.ModuleScope().munged+"_"+id
 			Endif
 		Case "cs"
 			If ClassDecl( decl )
-				munged=decl.ModuleScope().munged+id
+				munged=decl.ModuleScope().munged+"_"+id
 			Endif
 		Case "java"
 			If ClassDecl( decl )
-				munged=decl.ModuleScope().munged+id
+				munged=decl.ModuleScope().munged+"_"+id
 			Endif
 		Case "cpp"
 			If ModuleDecl( decl.scope )
-				munged=decl.ModuleScope().munged+id
+				munged=decl.ModuleScope().munged+"_"+id
 			Endif
 		End Select
 		
-		If Not munged munged="bb"+id
+		If Not munged munged="bb_"+id
 		
-		If mungs.Contains( munged )
+		If mungScope.Contains( munged )
 			Local t$,i=1
 			Repeat
 				i+=1
 				t=munged+i
-			Until Not mungs.Contains( t )
+			Until Not mungScope.Contains( t )
 			munged=t
 		Endif
-		mungs.Insert munged,decl
+		mungScope.Insert munged,decl
 		decl.munged=munged
 	End
 	
 	Method Bra$( str$ )
 		If str.StartsWith( "(" ) And str.EndsWith( ")" )
-			If str.FindLast("(")<str.Find(")") Return str
+			Local n=1
+			For Local i=1 Until str.Length-1
+				Select str[i..i+1]
+				Case "("
+					n+=1
+				Case ")"
+					n-=1
+					If Not n Return "("+str+")"
+				End
+			Next
+			If n=1 Return str
+'			If str.FindLast("(")<str.Find(")") Return str
 		Endif
 		Return "("+str+")"
 	End
@@ -225,50 +263,62 @@ Class Translator
 		Return expr.expr.Trans()
 	End
 	
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		Return expr
+	End
+	
 	Method TransVarExpr$( expr:VarExpr )
-		Local decl:VarDecl=VarDecl( expr.decl.actual )
-		'
+		Local decl:=VarDecl( expr.decl.actual )
+		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,Null,[] )
-		'		
+		
 		If LocalDecl( decl ) Return decl.munged
+		
 		If FieldDecl( decl ) Return TransField( FieldDecl( decl ),Null )
+		
 		If GlobalDecl( decl ) Return TransGlobal( GlobalDecl( decl ) )
-		'
+		
 		InternalErr
 	End
 	
 	Method TransMemberVarExpr$( expr:MemberVarExpr )
-		Local decl:VarDecl=VarDecl( expr.decl.actual )
-		'
+		Local decl:=VarDecl( expr.decl.actual )
+		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr.expr,[] )
-		'		
+		
 		If FieldDecl( decl ) Return TransField( FieldDecl( decl ),expr.expr )
-		'
+
 		InternalErr
 	End
 	
 	Method TransInvokeExpr$( expr:InvokeExpr )
-		Local decl:FuncDecl=FuncDecl( expr.decl.actual )
-		'
+		Local decl:=FuncDecl( expr.decl.actual ),t$
+		
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,Null,expr.args )
-		'		
-		Return TransFunc( decl,expr.args,Null )
+		
+		If decl Return TransFunc( FuncDecl(decl),expr.args,Null )
+		
+		InternalErr
 	End
 	
 	Method TransInvokeMemberExpr$( expr:InvokeMemberExpr )
-		Local decl:FuncDecl=FuncDecl( expr.decl.actual )
-		'
+		Local decl:=FuncDecl( expr.decl.actual ),t$
+
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr.expr,expr.args )
-		'		
-		Return TransFunc( decl,expr.args,expr.expr )	
+		
+		If decl Return TransFunc( FuncDecl(decl),expr.args,expr.expr )	
+		
+		InternalErr
 	End
 	
 	Method TransInvokeSuperExpr$( expr:InvokeSuperExpr )
-		Local decl:FuncDecl=FuncDecl( expr.funcDecl.actual )
-		'
+		Local decl:=FuncDecl( expr.funcDecl.actual ),t$
+
 		If decl.munged.StartsWith( "$" ) Return TransIntrinsicExpr( decl,expr,[] )
-		'		
-		Return TransSuperFunc( decl,expr.args )
+		
+		If decl Return TransSuperFunc( FuncDecl( decl ),expr.args )
+		
+		InternalErr
 	End
 	
 	Method TransExprStmt$( stmt:ExprStmt )
@@ -276,6 +326,10 @@ Class Translator
 	End
 	
 	Method TransAssignStmt$( stmt:AssignStmt )
+	
+		If stmt.rhs Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
+		Return stmt.lhs.Trans()
+	
 		If stmt.rhs 
 			Return stmt.lhs.TransVar()+TransAssignOp(stmt.op)+stmt.rhs.Trans()
 		Endif
@@ -448,7 +502,8 @@ Class Translator
 	
 	'module
 	Method TransApp$( app:AppDecl ) Abstract
-	
+
+#rem	
 	Method MungOverrides( cdecl:ClassDecl )
 		For Local decl:=Eachin cdecl.Semanted
 			Local fdecl:=FuncDecl( decl )
@@ -459,6 +514,7 @@ Class Translator
 			Endif
 		Next
 	End
+#end
 	
 	Method PostProcess$( source$ ) 
 		Return source

@@ -60,9 +60,13 @@ class MonkeyData{
 		path="monkey/"+path;
 
 		try{
+			android.content.res.AssetFileDescriptor afd=getAssets().openFd( path );
+
 			MediaPlayer mp=new MediaPlayer();
-			mp.setDataSource( getAssets().openFd( path ).getFileDescriptor() );
+			mp.setDataSource( afd.getFileDescriptor(),afd.getStartOffset(),afd.getLength() );
 			mp.prepare();
+			
+			afd.close();
 			return mp;
 		}catch( IOException e ){
 		}

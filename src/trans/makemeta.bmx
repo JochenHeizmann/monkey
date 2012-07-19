@@ -4,11 +4,23 @@
 ' Don't forget to rename output file if using MaxIDE!!!!!
 '
 ' Should be one of:
-'
-'scandir_win32.exe
-'scandir_macos
-'scandir_linux
-'
+
+Strict
+
+Framework brl.blitz
+
+Import brl.pixmap
+Import brl.audiosample
+Import brl.filesystem
+
+Import brl.pngloader
+Import brl.jpgloader
+Import brl.bmploader
+Import brl.tgaloader
+
+Import brl.wavloader
+Import brl.oggloader
+
 
 Global meta$
 

@@ -6,6 +6,7 @@
 
 //***** ActionScript Runtime *****
 
+var obj_id:int=0;
 var err_info:String="";
 var err_stack:Array=[];
 
@@ -132,6 +133,15 @@ function resize_object_array( arr:Array,len:int ):Array{
 	arr.length=len;
 	while( i<len ) arr[i++]=null;
 	return arr;
+}
+
+function string_compare( lhs:String,rhs:String ):int{
+	var n:int=Math.min( lhs.length,rhs.length ),i:int,t:int;
+	for( i=0;i<n;++i ){
+		t=lhs.charCodeAt(i)-rhs.charCodeAt(i);
+		if( t ) return t;
+	}
+	return lhs.length-rhs.length;
 }
 
 function string_replace( str:String,find:String,rep:String ):String{	//no unregex replace all?!?

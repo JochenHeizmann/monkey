@@ -33,7 +33,7 @@ Class Toker
 	"for;to;step;next;return;"+
 	"interface;implements;inline;alias;"
 
-	Global _symbols$[]=[ "..","[]","()",":=","*=","/=","+=","-=","|=","&=","~=" ]
+	Global _symbols$[]=[ "..","[]",":=","*=","/=","+=","-=","|=","&=","~=" ]
 
 	Field _path$
 	Field _line
@@ -49,6 +49,15 @@ Class Toker
 		_toke=""
 		_tokeType=TOKE_EOF
 		_tokePos=0
+	End
+	
+	Method New( toker:Toker )
+		_path=toker._path
+		_line=toker._line
+		_source=toker._source
+		_toke=toker._toke
+		_tokeType=toker._tokeType
+		_tokePos=toker._tokePos
 	End
 	
 	Method Path$()
@@ -134,7 +143,7 @@ Class Toker
 			If _tokePos<_source.Length _tokePos+=1 Else _tokeType=TOKE_STRINGLITEX
 		Else If str="'"
 			_tokeType=TOKE_LINECOMMENT
-			While TSTR()<>"~n"
+			While TSTR() And TSTR()<>"~n"
 				_tokePos+=1
 			Wend
 			If _tokePos<_source.Length

@@ -24,10 +24,6 @@ Class Type
 		Return Self
 	End
 
-	Method GenInstance:Type( inst:ClassDecl )
-		Return Self
-	End
-	
 	Method GetClass:ClassDecl()
 		Return Null
 	End
@@ -42,7 +38,7 @@ Class Type
 	Global floatType:=New FloatType
 	Global stringType:=New StringType
 	Global emptyArrayType:ArrayType=New ArrayType( voidType )
-	Global objectType:IdentType=New IdentType( "lang.object",[] )
+	Global objectType:IdentType=New IdentType( "monkey.object",[] )
 	Global nullObjectType:=New IdentType( "",[] )
 
 End
@@ -89,7 +85,7 @@ Class IntType Extends NumericType
 			Local expr:Expr=New ConstExpr( Self,"" ).Semant()
 			Local ctor:FuncDecl=ty.GetClass().FindFuncDecl( "new",[expr],True )
 			Return ctor And ctor.IsCtor()
-		EndIf
+		Endif
 		Return NumericType( ty )<>Null Or StringType( ty )<>Null
 	End
 	
@@ -109,7 +105,7 @@ Class FloatType Extends NumericType
 			Local expr:Expr=New ConstExpr( Self,"" ).Semant()
 			Local ctor:FuncDecl=ty.GetClass().FindFuncDecl( "new",[expr],True )
 			Return ctor And ctor.IsCtor()
-		EndIf	
+		Endif	
 		Return NumericType( ty )<>Null Or StringType( ty )<>Null
 	End
 	
@@ -125,10 +121,6 @@ Class StringType Extends Type
 		
 	End
 
-	Method GenInstance:Type( inst:ClassDecl )
-		Return Self
-	End
-	
 	Method EqualsType( ty:Type )
 		Return StringType( ty )<>Null
 	End
@@ -138,7 +130,7 @@ Class StringType Extends Type
 			Local expr:Expr=New ConstExpr( Self,"" ).Semant()
 			Local ctor:FuncDecl=ty.GetClass().FindFuncDecl( "new",[expr],True )
 			Return ctor And ctor.IsCtor()
-		EndIf
+		Endif
 		Return EqualsType( ty )
 	End
 	
@@ -166,15 +158,12 @@ Class ArrayType Extends Type
 	Method ExtendsType( ty:Type )
 		Local arrayType:ArrayType=ArrayType( ty )
 		Return arrayType And ( VoidType( elemType ) Or elemType.EqualsType( arrayType.elemType ) )
-'		Return arrayType And ( VoidType( elemType ) Or elemType.ExtendsType( arrayType.elemType ) )
 	End
 	
 	Method Semant:Type()
-		Return New ArrayType( elemType.Semant() )
-	End
-	
-	Method GenInstance:Type( inst:ClassDecl )
-		Return New ArrayType( elemType.GenInstance( inst ) )
+		Local ty:=elemType.Semant()
+		If ty<>elemType Return New ArrayType( ty )
+		Return Self
 	End
 	
 	Method GetClass:ClassDecl()
@@ -203,7 +192,7 @@ Class ObjectType Extends Type
 	
 	Method EqualsType( ty:Type )
 		Local objty:ObjectType=ObjectType( ty )
-		Return objty And classDecl.EqualsClass( objty.classDecl )
+		Return objty And classDecl=objty.classDecl
 	End
 	
 	Method ExtendsType( ty:Type )
@@ -220,14 +209,9 @@ Class ObjectType Extends Type
 			op="ToString"
 		Else
 			Return False
-		EndIf
+		Endif
 		Local fdecl:FuncDecl=GetClass().FindFuncDecl( op,[],True )
 		Return fdecl And fdecl.IsMethod() And fdecl.retType.EqualsType( ty )
-	End
-	
-	Method GenInstance:Type( inst:ClassDecl )
-		Local cdecl:ClassDecl=ClassDecl( classDecl.GenInstance( inst ) )
-		Return New ObjectType( cdecl )
 	End
 	
 	Method GetClass:ClassDecl()
@@ -235,7 +219,7 @@ Class ObjectType Extends Type
 	End
 	
 	Method ToString$()
-		Return ":"+classDecl.ToString()
+		Return classDecl.ToString()
 	End
 End
 
@@ -246,7 +230,6 @@ Class IdentType Extends Type
 	Method New( ident$,args:IdentType[] )
 		Self.ident=ident
 		Self.args=args
-		
 	End
 	
 	Method EqualsType( ty:Type )
@@ -258,18 +241,18 @@ Class IdentType Extends Type
 	End
 	
 	Method Semant:Type()
-		If Not ident Return New ObjectType( ClassDecl.nullObjectClass )
-		Local classDecl:ClassDecl=FindClass()
-		Return New ObjectType( classDecl )
+		If ident Return New ObjectType( FindClass() )
+		Return New ObjectType( ClassDecl.nullObjectClass )
 	End
 	
 	Method FindClass:ClassDecl()
+	
 		Local argClasses:ClassDecl[args.Length]
 
 		For Local i=0 Until args.Length
 			argClasses[i]=args[i].FindClass()
 		Next
-
+		
 		Local clsid$
 		Local cdecl:ClassDecl
 		Local i=ident.Find( "." )
@@ -279,19 +262,21 @@ Class IdentType Extends Type
 		Else
 			Local modid$=ident[..i]
 			Local mdecl:ModuleDecl=_env.FindModuleDecl( modid )
-			If Not mdecl Err "module '"+modid+"' not found"
+			If Not mdecl Err "Module '"+modid+"' not found"
 			clsid=ident[i+1..]
 			cdecl=mdecl.FindClassDecl( clsid,argClasses )
-		EndIf
-		If Not cdecl Err "class '"+clsid+"' not found"
+		Endif
+		If Not cdecl Err "Class '"+clsid+"' not found"
 		Return cdecl
 	End
 	
-	Method GenInstance:Type( inst:ClassDecl )
-		InternalErr
-	End
-	
 	Method ToString$()
-		Return "'"+ident+"'"
+		Local t$
+		For Local arg:=Eachin args
+			If t t+=","
+			t+=arg.ToString()
+		Next
+		If t return "$"+ident+"<"+t.Replace("$","")+">"
+		Return "$"+ident
 	End
 End

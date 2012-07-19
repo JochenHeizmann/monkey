@@ -9,14 +9,13 @@ Import trans
 Class AsTranslator Extends Translator
 
 	Method TransType$( ty:Type )
-		ty=ty.Actual()
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "Boolean"
 		If IntType( ty ) Return "int"
 		If FloatType( ty ) Return "Number"
 		If StringType( ty ) Return "String"
 		If ArrayType( ty ) Return "Array"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.munged
+		If ObjectType( ty ) Return ObjectType( ty ).classDecl.actual.munged
 		InternalErr
 	End
 	
@@ -82,7 +81,14 @@ Class AsTranslator Extends Translator
 		Endif
 		InternalErr
 	End
-	
+
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
+			Return Bra( expr+" as "+TransType(ty) )
+		Endif
+		Return expr
+	End
+
 	Method TransGlobal$( decl:GlobalDecl )
 		Return TransStatic( decl )
 	End
@@ -119,6 +125,7 @@ Class AsTranslator Extends Translator
 	End
 
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
+		'
 		Local ctor:=FuncDecl( expr.ctor.actual )
 		Local cdecl:=ClassDecl( expr.classDecl.actual )
 		'
@@ -127,7 +134,7 @@ Class AsTranslator Extends Translator
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
 		Local texpr$=expr.expr.Trans()
-		Local ty:=expr.ty.elemType
+		Local ty:=expr.ty
 		If BoolType( ty ) Return "new_bool_array("+texpr+")"
 		If NumericType( ty ) Return "new_number_array("+texpr+")"
 		If StringType( ty ) Return "new_string_array("+texpr+")"
@@ -164,18 +171,14 @@ Class AsTranslator Extends Translator
 			If NumericType( src ) Return "String"+texpr
 			If StringType( src )  Return texpr
 		Endif
-
-		'upcast
-		If src.ExtendsType( dst )
+		
+		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
-		Endif
-
-		'downcast		
-		If dst.ExtendsType( src )
+		Else If dst.GetClass().ExtendsClass( src.GetClass() )
 			Return Bra( texpr + " as "+TransType( dst ) )
 		Endif
-		
-		InternalErr
+
+		Err "AS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
 	Method TransUnaryExpr$( expr:UnaryExpr )
@@ -255,6 +258,7 @@ Class AsTranslator Extends Translator
 			If ObjectType( ty ) Return "resize_object_array"+Bra( texpr+","+arg0 )
 			InternalErr
 		'string methods
+		Case "compare" Return "string_compare"+Bra( texpr+","+arg0 )
 		Case "find" Return texpr+".indexOf"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".lastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".lastIndexOf"+Bra( arg0+","+arg1 )
@@ -280,6 +284,7 @@ Class AsTranslator Extends Translator
 		Case "pow" Return "Math."+id+Bra( arg0+","+arg1 )
 		'
 		End Select
+
 		InternalErr
 	End
 	
@@ -303,45 +308,103 @@ Class AsTranslator Extends Translator
 	'***** Declarations *****
 	
 	Method EmitFuncDecl( decl:FuncDecl )
-	
 		PushMungScope
 
+		'Find decl we override
+		Local odecl:=decl
+		While odecl.overrides
+			odecl=odecl.overrides
+		Wend
+
+		'Generate 'args' string and arg casts
+		Local args$
+		Local argCasts:=New StringStack
+		For Local i=0 Until decl.argDecls.Length
+			Local arg:=decl.argDecls[i]
+			Local oarg:=odecl.argDecls[i]
+			MungDecl arg
+			If args args+=","
+			args+=arg.munged+":"+TransType( oarg.ty )
+			If arg.ty.EqualsType( oarg.ty ) Continue
+			Local t$=arg.munged
+			arg.munged=""
+			MungDecl arg
+			argCasts.Push "var "+arg.munged+":"+TransType(arg.ty)+"="+t+" as "+TransType(arg.ty)+";"
+		Next
+#rem
 		Local args$
 		For Local arg:=Eachin decl.argDecls
 			MungDecl arg
 			If args args+=","
 			args+=TransValDecl( arg )
 		Next
+#end
+		Local t$="function "+decl.munged+Bra( args )+":"+TransType( odecl.retType )
 		
-		Local t$="internal "
-		
-		If decl.overrides And Not decl.IsCtor() t+="override "
-		
-		If decl.IsStatic() And decl.ClassScope() t+="static "
-		
-		Emit t+"function "+decl.munged+Bra( args )+":"+TransType( decl.retType )+"{"
-		
-		If decl.IsAbstract()
-			If VoidType( decl.retType )
-				Emit "return;"
-			Else
-				Emit "return "+TransValue( decl.retType,"" )+";"
-			Endif
+		Local cdecl:=decl.ClassScope()
+		If cdecl And cdecl.IsInterface()
+			Emit t+";"
 		Else
-			EmitBlock decl
+			Local q$="internal "
+			If cdecl
+				q="public "
+				If decl.IsStatic() q+="static "
+				If decl.overrides q+="override "
+			Endif
+			
+			Emit q+t+"{"
+			If decl.IsAbstract()
+				If VoidType( decl.retType )
+					Emit "return;"
+				Else
+					Emit "return "+TransValue( decl.retType,"" )+";"
+				Endif
+			Else
+				For Local t$=Eachin argCasts
+					Emit t
+				Next
+				EmitBlock decl
+			Endif
+			Emit "}"
 		Endif
-
-		Emit "}"
 		
 		PopMungScope
 	End
 
 	Method EmitClassDecl( classDecl:ClassDecl )
-
-		Local classid$=classDecl.munged
+	
+		If classDecl.IsTemplateInst()
+			InternalErr
+		Endif
+	
+		Local classid$=classDecl.actual.munged
 		Local superid$=classDecl.superClass.actual.munged
+
+		If classDecl.IsInterface() 
+
+			Local bases$
+			For Local iface:=Eachin classDecl.implments
+				If bases bases+="," Else bases=" extends "
+				bases+=iface.actual.munged
+			Next
+
+			Emit "interface "+classid+bases+"{"
+			
+			For Local decl:=Eachin classDecl.Semanted
+				If Not FuncDecl( decl ) InternalErr
+				EmitFuncDecl FuncDecl( decl )
+			Next
+			Emit "}"
+			Return
+		Endif
+
+		Local bases$
+		For Local iface:=Eachin classDecl.implments
+			If bases bases+="," Else bases=" implements "
+			bases+=iface.actual.munged
+		Next
 		
-		Emit "class "+classid+" extends "+superid+"{"
+		Emit "class "+classid+" extends "+superid+bases+"{"
 		
 		'members...
 		For Local decl:=Eachin classDecl.Semanted
@@ -384,7 +447,7 @@ Class AsTranslator Extends Translator
 			
 			PushMungScope
 
-			MungOverrides cdecl
+'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 				If FuncDecl( decl ) And FuncDecl( decl ).IsCtor()

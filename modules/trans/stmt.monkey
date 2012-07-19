@@ -63,7 +63,7 @@ Class AssignStmt Extends Stmt
 		If InvokeExpr( lhs ) Or InvokeMemberExpr( lhs )
 			rhs=Null
 		Else
-			rhs=rhs.CastTo( lhs.exprType )
+			rhs=rhs.Cast( lhs.exprType )
 		Endif
 	End
 	
@@ -95,7 +95,6 @@ Class ReturnStmt Extends Stmt
 
 	Method New( expr:Expr )
 		Self.expr=expr
-		
 	End
 	
 	Method OnSemant()
@@ -103,7 +102,7 @@ Class ReturnStmt Extends Stmt
 		If expr
 			If fdecl.IsCtor() Err "Constructors may not return a value."
 			If VoidType( fdecl.retType ) Err "Void functions may not return a value."
-			expr=New CastExpr( fdecl.retType,expr ).Semant()
+			expr=expr.Semant( fdecl.retType )
 		Else If fdecl.IsCtor()
 			expr=New SelfExpr().Semant()
 		Else If Not VoidType( fdecl.retType )
@@ -153,7 +152,7 @@ Class IfStmt Extends Stmt
 	End
 	
 	Method OnSemant()
-		expr=expr.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
+		expr=expr.Semant( Type.boolType,CAST_EXPLICIT )
 		thenBlock.Semant
 		elseBlock.Semant
 	End
@@ -173,7 +172,7 @@ Class WhileStmt Extends Stmt
 	End
 	
 	Method OnSemant()
-		expr=expr.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
+		expr=expr.Semant( Type.boolType,CAST_EXPLICIT )
 		_loopnest+=1
 		block.Semant
 		_loopnest-=1
@@ -198,7 +197,7 @@ Class RepeatStmt Extends Stmt
 		_loopnest+=1
 		block.Semant
 		_loopnest-=1
-		expr=expr.Semant().CastTo( Type.boolType,CAST_EXPLICIT )
+		expr=expr.Semant( Type.boolType,CAST_EXPLICIT )
 	End
 	
 	Method Trans$()
@@ -220,10 +219,11 @@ Class ForStmt Extends Stmt
 	End
 	
 	Method OnSemant()
+
 		PushEnv block
 		init.Semant
 		PopEnv
-	
+		
 		expr=expr.Semant()
 		
 		_loopnest+=1

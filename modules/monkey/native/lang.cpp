@@ -39,19 +39,19 @@ template<class T> int t_memcmp( const T *x,const T *y,int n ){
 	return memcmp( x,y,n*sizeof(T) );
 }
 
-template<class X> int t_strlen( const X *p ){
-	const X *t=p++;
-	while( *t++ ){}
-	return t-p;
+template<class T> int t_strlen( const T *p ){
+	const T *q=p++;
+	while( *q++ ){}
+	return q-p;
 }
 
 template<class T> T *t_create( int n,T *p ){
-	for( int i=0;i<n;++i ) new(p+i) T();
+	for( int i=0;i<n;++i ) new(&p[i]) T();
 	return p+n;
 }
 
 template<class T> T *t_create( int n,T *p,const T *q ){
-	for( int i=0;i<n;++i ) new(p+i) T(q[i]);
+	for( int i=0;i<n;++i ) new(&p[i]) T(q[i]);
 	return p+n;
 }
 
@@ -143,6 +143,7 @@ void gc_sweep(){
 }
 
 void gc_collect(){
+
 	gc_mark();
 	
 	while( !gc_marked_queue.empty() ){
@@ -593,10 +594,8 @@ public:
 	}
 	
 	template<class C> C *ToCString()const{
-	
-//		C *p=(C*)gc_malloc( (rep->length+1) * sizeof(C) );		//Leaky!
 
-		C *p=&Array<C>( rep->length+1 )[0];					//Watertight?
+		C *p=&Array<C>( rep->length+1 )[0];
 		
 		for( int i=0;i<rep->length;++i ) p[i]=rep->data[i];
 		p[rep->length]=0;
@@ -657,6 +656,13 @@ String T( const wchar_t *p ){
 
 class Object : public gc_object{
 public:
+	virtual bool Equals( Object *obj ){
+		return this==obj;
+	}
+	
+	virtual int Compare( Object *obj ){
+		return (char*)this-(char*)obj;
+	}
 };
 
 // ***** print *****

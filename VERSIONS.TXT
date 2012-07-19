@@ -1,6 +1,39 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V39 *****
+
+Modules:
+
+Mojo SetColor now affects images.
+
+Added Compare method to String type.
+
+Fixed DrawImageRect with 0 sized src rect in Flash.
+
+Android mojo now works with API level 3.
+
+Fixed Android music.
+
+
+Trans (1.10)
+
+Fixed various parser issues.
+
+Added mserver, minimal monkey server. Very minimal.
+
+Android target now works with API level 3.
+
+Added 'm4a' (ie: aac) as recognized audio format.
+
+Added interfaces.
+
+Majorly cleaned up generics.
+
+Added Alias directive.
+
+Added #Error directive.
+
 
 ***** V38 *****
 

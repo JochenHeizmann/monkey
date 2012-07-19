@@ -12,6 +12,14 @@ Public
 
 Class Stack<T>
 
+	Method Equals?( lhs:T,rhs:T )
+		Return lhs=rhs
+	End
+	
+	Method Compare( lhs:T,rhs:T )
+		Error "Unable to compare items"
+	End
+	
 	Method Clear()
 		length=0
 	End
@@ -70,12 +78,12 @@ Class Stack<T>
 	Method RemoveEach( value:T )
 		Local i
 		While i<length
-			If Compare( data[i],value )<>0
+			If Not Equals( data[i],value )
 				i+=1
 				Continue
 			Endif
 			Local b=i,e=i+1
-			While e<length And Compare( data[e],value )=0
+			While e<length And Equals( data[e],value )=0
 				e+=1
 			Wend
 			While e<length
@@ -96,10 +104,6 @@ Class Stack<T>
 		Return New BackwardsStack<T>( Self )
 	End
 	
-	Method Compare( lhs:Object,rhs:Object )
-		Error "Stack elements cannot be compared"
-	End
-
 Private
 
 	Field data:T[]
@@ -181,13 +185,14 @@ Class IntStack Extends Stack<IntObject>
 		Return arr
 	End
 
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=IntObject( lhs ).value
-		Local r:=IntObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Equals?( lhs:IntObject,rhs:IntObject )
+		Return lhs.value=rhs.value
 	End
 	
+	Method Compare( lhs:IntObject,rhs:IntObject )
+		Return lhs.value-rhs.value
+	End
+
 End
 
 Class FloatStack Extends Stack<FloatObject>
@@ -201,13 +206,15 @@ Class FloatStack Extends Stack<FloatObject>
 		Return arr
 	End
 	
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=FloatObject( lhs ).value
-		Local r:=FloatObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Equals?( lhs:FloatObject,rhs:FloatObject )
+		Return lhs.value=rhs.value
 	End
-
+	
+	Method Compare( lhs:FloatObject,rhs:FloatObject )
+		If lhs.value<rhs.value Return -1
+		Return lhs.value>rhs.value
+	End
+	
 End
 
 Class StringStack Extends Stack<StringObject>
@@ -230,11 +237,12 @@ Class StringStack Extends Stack<StringObject>
 		Return separator.Join( bits )
 	End
 	
-	Method Compare( lhs:Object,rhs:Object )
-		Local l:=StringObject( lhs ).value
-		Local r:=StringObject( rhs ).value
-		If l<r Return -1
-		Return l>r
+	Method Equals?( lhs:StringObject,rhs:StringObject )
+		Return lhs.value=rhs.value
 	End
-	
+
+	Method Compare( lhs:StringObject,rhs:StringObject )
+		Return lhs.value.Compare( rhs.value )
+	End
+
 End

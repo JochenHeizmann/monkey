@@ -8,20 +8,19 @@ Class Test Extends App
 
 	Field image:Image
 	
+	Field tx#,ty#
+
+	Field c=7,r=255,g=255,b=255
+	
 	Method OnCreate()
+
 		image=LoadImage( "RedbrushAlpha.png",1,Image.MidHandle )
 		
 		SetUpdateRate 60
 	End
 	
-	Method Update()
-		If KeyDown( KEY_LMB ) Print "Yes!"
-	End
+	Method OnUpdate()
 
-	Field tx#=0,ty#=0
-
-	Method OnRender()
-	
 		If KeyDown( KEY_RIGHT )
 			tx+=.0125
 		Else If KeyDown( KEY_LEFT )
@@ -32,6 +31,18 @@ Class Test Extends App
 		Else If KeyDown( KEY_DOWN )
 			ty+=.0125
 		Endif
+
+		If KeyHit( KEY_LMB )
+			c+=1
+			If c=8 c=1
+			r=(c&1)* 255
+			g=(c&2) Shr 1 * 255
+			b=(c&4) Shr 2 * 255
+		Endif
+	End
+
+	Method OnRender()
+	
 		Translate tx,ty
 	
 		Cls 0,0,128
@@ -60,17 +71,14 @@ Class Test Extends App
 		SetColor 255,0,0
 		DrawLine 32,32,640-32,480-32
 		DrawLine 640-32,32,32,480-32
-		
-		If KeyDown( KEY_LMB )
-			'SetBlend 1
-			SetAlpha Sin(Millisecs*.3)*.5+.5
-			DrawImage image,320,240,0
-			SetBlend 0
-			SetAlpha 1
-		Endif
+
+		SetColor r,g,b
+		SetAlpha Sin(Millisecs*.3)*.5+.5
+		DrawImage image,320,240,0
+		SetAlpha 1
 		
 		SetColor 255,255,255
-		DrawText "The Quick Brown Fox Jumps Over The Lazy Dog",DeviceWidth/2,DeviceHeight/2,.5,.5
+		DrawText "The Quick Brown Fox Jumps Over The Lazy Dog",320,240,.5,.5
 		
 		PopMatrix
 		

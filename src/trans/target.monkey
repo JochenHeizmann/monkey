@@ -112,8 +112,17 @@ Class Target
 				If Not embedTextFiles 
 					CopyFile file,dir+"/"+StripDir( file )
 				Endif
+				
+			'graphic file formats
 			Case "png","jpg","bmp","wav","mp3","ogg"
+
 				CopyFile file,dir+"/"+StripDir( file )
+				
+			'audio file formats
+			Case "wav","ogg","aac","m4a","mp4","aif","caf","mp3"
+
+				CopyFile file,dir+"/"+StripDir( file )
+
 			End Select
 		Next
 		

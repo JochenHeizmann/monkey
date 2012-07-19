@@ -4,7 +4,7 @@ Import target
 Class FlashTarget Extends Target
 
 	Function IsValid()
-		If FLEX_PATH Return True
+		Return FLEX_PATH<>"" And FLASH_PLAYER<>""
 	End
 	
 	Method Begin()
@@ -62,7 +62,7 @@ Class FlashTarget Extends Target
 			Endif
 			
 			If OPT_RUN
-				Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.swf" )+"~q",False
+				Execute FLASH_PLAYER+" ~q"+RealPath( "MonkeyGame.html" )+"~q",False
 			Endif
 		Endif
 	End

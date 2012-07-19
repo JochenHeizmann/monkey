@@ -45,6 +45,7 @@ Class Decl
 	End
 	
 	Method ToString$()
+		If ClassDecl( scope ) Return scope.ToString()+"."+ident
 		Return ident
 	End
 	
@@ -67,7 +68,7 @@ Class Decl
 	Method IsSemanting()
 		Return (attrs & DECL_SEMANTING)<>0
 	End
-
+	
 	Method FuncScope:FuncDecl()
 		If FuncDecl( Self ) Return FuncDecl( Self )
 		If scope Return scope.FuncScope()
@@ -89,11 +90,13 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate()
-			If ModuleScope()=_env.ModuleScope()
-				Return
-			Endif
-			Err "Cannot access private declaration '"+ident+"'."
+		If IsPrivate() And ModuleScope()<>_env.ModuleScope() Return False
+		Return True
+	End
+	
+	Method AssertAccess()
+		If Not CheckAccess()
+			Err ToString() +" is private."
 		Endif
 	End
 	
@@ -101,6 +104,10 @@ Class Decl
 		If IsSemanted() Return
 		
 		If IsSemanting() Err "Cyclic declaration of '"+ident+"'."
+		
+		If actual<>Self
+			actual.Semant
+		Endif
 
 		PushErr errInfo
 		
@@ -110,13 +117,15 @@ Class Decl
 		
 		attrs|=DECL_SEMANTING
 
+		'If ident And ClassScope() Print "Semanting "+ToString()
+
 		OnSemant
 		
 		attrs&=~DECL_SEMANTING
+
 		attrs|=DECL_SEMANTED
 
 		If scope 
-		
 			If Not IsExtern()
 
 				scope.semanted.AddLast Self
@@ -132,24 +141,8 @@ Class Decl
 			Endif
 			
 			PopEnv
-
 		Endif
-#rem
-		If scope
 		
-			scope.semanted.AddLast Self
-			
-			If Not IsExtern And GlobalDecl( Self )
-				AppScope.semantedGlobals.AddLast GlobalDecl( Self )
-			Endif
-			
-			If Not IsExtern And ModuleDecl( scope )
-				AppScope.semanted.AddLast Self
-			Endif
-			
-			PopEnv
-		Endif
-#end
 		PopErr
 	End
 	
@@ -163,8 +156,8 @@ Class Decl
 		Return decl
 	End
 	
-	Method GenInstance:Decl( inst:ClassDecl )
-		Return Self
+	Method GenInstance:Decl()
+		InternalErr
 	End
 	
 	Method OnSemant() Abstract
@@ -172,29 +165,26 @@ Class Decl
 End
 
 Class ValDecl Extends Decl
+	'pre-semant
+	Field declTy:Type
+	Field declInit:Expr
+	'post-semant
 	Field ty:Type
 	Field init:Expr
 	
 	Method ToString$()
-		If ty Return ident+":"+ty.ToString()
-		Return ident+":???"
+		Local t$=Super.ToString()
+		If ty Return t+":"+ty.ToString()
+		If declTy Return t+":"+declTy.ToString()
+		Return t+":?"
 	End
 	
 	Method OnSemant()
-
-		If actual<>Self
-			actual.Semant
-			ty=ValDecl( actual ).ty
-			init=ValDecl( actual ).init
-			ty=ty.GenInstance( ClassScope ).Semant()
-			Return
-		Endif
-		
-		If ty
-			ty=ty.Semant()
-			If init init=init.Semant().CastTo( ty )
-		Else If init
-			init=init.Semant()
+		If declTy
+			ty=declTy.Semant()
+			If declInit init=declInit.Copy().Semant(ty)
+		Else If declInit
+			init=declInit.Copy().Semant()
 			ty=init.exprType
 		Else
 			InternalErr
@@ -209,18 +199,22 @@ Class ConstDecl Extends ValDecl
 	Method New( ident$,ty:Type,init:Expr,attrs )
 		Self.ident=ident
 		Self.munged=ident
-		Self.ty=ty
-		Self.init=init
+		Self.declTy=ty
+		Self.declInit=init
 		Self.attrs=attrs
+	End
+	
+	Method GenInstance:Decl()
+		Local inst:=New ConstDecl
+		InitInstance inst
+		inst.declTy=declTy
+		inst.declInit=declInit
+		Return inst
 	End
 	
 	Method OnSemant()
 		Super.OnSemant()
 		value=init.Eval()
-	End
-	
-	Method GenInstance:Decl( inst:ClassDecl )
-		Return InitInstance( New ConstDecl )
 	End
 	
 End
@@ -233,9 +227,13 @@ Class LocalDecl Extends VarDecl
 
 	Method New( ident$,ty:Type,init:Expr,attrs=0 )
 		Self.ident=ident
-		Self.ty=ty
-		Self.init=init
+		Self.declTy=ty
+		Self.declInit=init
 		Self.attrs=attrs
+	End
+	
+	Method ToString$()
+		Return "Local "+Super.ToString()
 	End
 
 End
@@ -244,49 +242,85 @@ Class ArgDecl Extends LocalDecl
 	
 	Method New( ident$,ty:Type,init:Expr,attrs=0 )
 		Self.ident=ident
-		Self.ty=ty
-		Self.init=init
+		Self.declTy=ty
+		Self.declInit=init
 		Self.attrs=attrs
 	End
-
-	Method GenInstance:Decl( inst:ClassDecl )
-		Return InitInstance( New ArgDecl )
+	
+	Method GenInstance:Decl()
+		Local inst:=New ArgDecl
+		InitInstance inst
+		inst.declTy=declTy
+		inst.declInit=declInit
+		Return inst
+	End
+	
+	Method ToString$()
+		Return Super.ToString()
 	End
 
+	
 End
 
 Class GlobalDecl Extends VarDecl
-	Field value$
+	
+	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+		Self.ident=ident
+		Self.declTy=ty
+		Self.declInit=init
+		Self.attrs=attrs
+	End
 
 	Method ToString$()
 		Return "Global "+Super.ToString()
 	End
-	
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
-		Self.ident=ident
-		Self.ty=ty
-		Self.init=init
-		Self.attrs=attrs
+
+	Method GenInstance:Decl()
+'		PushErr errInfo
+'		Err "Global variables cannot be used inside generic classes."
+		Local inst:=New GlobalDecl
+		InitInstance inst
+		inst.declTy=declTy
+		inst.declInit=declInit
+		Return inst
 	End
 	
 End
 
 Class FieldDecl Extends VarDecl
-	Field index
+
+	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+		Self.ident=ident
+		Self.declTy=ty
+		Self.declInit=init
+		Self.attrs=attrs
+	End
 
 	Method ToString$()
 		Return "Field "+Super.ToString()
 	End
 	
-	Method New( ident$,ty:Type,init:Expr,attrs=0 )
+	Method GenInstance:Decl()
+		Local inst:=New FieldDecl
+		InitInstance inst
+		inst.declTy=declTy
+		inst.declInit=declInit
+		Return inst
+	End
+	
+End
+
+Class AliasDecl Extends Decl
+
+	Field decl:Object
+	
+	Method New( ident$,decl:Object,attrs=0 )
 		Self.ident=ident
-		Self.ty=ty
-		Self.init=init
+		Self.decl=decl
 		Self.attrs=attrs
 	End
-
-	Method GenInstance:Decl( inst:ClassDecl )
-		Return InitInstance( New FieldDecl )
+	
+	Method OnSemant()
 	End
 	
 End
@@ -297,9 +331,8 @@ Private
 
 	Field decls:=New List<Decl>
 	Field semanted:=New List<Decl>
-	
-	Field vdecls:=New StringMap<Decl>
-	Field fdecls:=New StringMap<FuncDeclList>
+
+	Field declsMap:=New StringMap<Object>
 
 Public
 
@@ -307,54 +340,79 @@ Public
 		Return decls
 	End
 	
-	Method FieldDecls:List<FieldDecl>()
-		Local fdecls:=New List<FieldDecl>
-		For Local decl:Decl=Eachin decls
-			Local fdecl:=FieldDecl( decl )
-			If fdecl fdecls.AddLast fdecl
-		Next
-		Return fdecls
+	Method Semanted:List<Decl>()
+		Return semanted
 	End
 	
-	Method FuncDecls:List<FuncDecl>()
+	Method FuncDecls:List<FuncDecl>( id$="" )
 		Local fdecls:=New List<FuncDecl>
 		For Local decl:Decl=Eachin decls
+			If id And decl.ident<>id Continue
 			Local fdecl:=FuncDecl( decl )
 			If fdecl fdecls.AddLast fdecl
 		Next
 		Return fdecls
 	End
 	
-	Method Semanted:List<Decl>()
-		Return semanted
+	Method MethodDecls:List<FuncDecl>( id$="" )
+		Local fdecls:=New List<FuncDecl>
+		For Local decl:Decl=Eachin decls
+			If id And decl.ident<>id Continue
+			Local fdecl:=FuncDecl( decl )
+			If fdecl And fdecl.IsMethod() fdecls.AddLast fdecl
+		Next
+		Return fdecls
 	End
-
+	
+	Method SemantedFuncs:List<FuncDecl>( id$="" )
+		Local fdecls:=New List<FuncDecl>
+		For Local decl:Decl=Eachin semanted
+			If id And decl.ident<>id Continue
+			Local fdecl:=FuncDecl( decl )
+			If fdecl fdecls.AddLast fdecl
+		Next
+		Return fdecls
+	End
+	
+	Method SemantedMethods:List<FuncDecl>( id$="" )
+		Local fdecls:=New List<FuncDecl>
+		For Local decl:Decl=Eachin semanted
+			If id And decl.ident<>id Continue
+			Local fdecl:=FuncDecl( decl )
+			If fdecl And fdecl.IsMethod() fdecls.AddLast fdecl
+		Next
+		Return fdecls
+	End
+	
 	Method InsertDecl( decl:Decl )
 		If decl.scope InternalErr
 		
-		If Not decl.ident Return
+		Local ident$=decl.ident
+		If Not ident Return
 		
 		decl.scope=Self
 		decls.AddLast decl
 		
-		InsertAlias decl.ident,decl
-	End
-	
-	Method InsertAlias( id$,decl:Decl )
-		If ValDecl( decl ) Or ClassDecl( decl ) Or ModuleDecl( decl )
-			If vdecls.Contains( id ) Or fdecls.Contains( id ) Err "Duplicate identifier '"+decl.ident+"'."
-			vdecls.Insert id,decl
-		Else If FuncDecl( decl )
-			If vdecls.Contains( id ) Err "Duplicate identifier '"+decl.ident+"'."
-			Local funcs:=fdecls.ValueForKey( id )
-			If Not funcs
-				funcs=New FuncDeclList
-				fdecls.Insert id,funcs
+		Local decls:StringMap<Object>
+		Local tdecl:=declsMap.Get( ident )
+		
+		If FuncDecl( decl )
+			Local funcs:=FuncDeclList( tdecl )
+			If funcs Or Not tdecl
+				If Not funcs
+					funcs=New FuncDeclList
+					declsMap.Insert ident,funcs
+				Endif
+				funcs.AddLast FuncDecl( decl )
+			Else
+				Err "Duplicate identifier '"+ident+"'."
 			Endif
-			funcs.AddLast FuncDecl( decl )
+		Else If Not tdecl
+			declsMap.Insert ident,decl
 		Else
-			InternalErr
+			Err "Duplicate identifier '"+ident+"'."
 		Endif
+
 	End
 
 	Method InsertDecls( decls:List<Decl> )
@@ -365,9 +423,13 @@ Public
 	
 	'This is overridden by ClassDecl and ModuleDecl
 	Method GetDecl:Object( ident$ )
-		Local decl:Object=vdecls.ValueForKey( ident )
-		If decl Return decl
-		Return fdecls.ValueForKey( ident )
+		Local decl:=declsMap.Get( ident )
+		If Not decl Return
+		
+		Local adecl:=AliasDecl( decl )
+		If Not adecl Return decl
+		
+		If adecl.CheckAccess() Return adecl.decl
 	End
 	
 	Method FindDecl:Object( ident$ )
@@ -379,27 +441,27 @@ Public
 	Method FindValDecl:ValDecl( ident$ )
 		Local decl:ValDecl=ValDecl( FindDecl( ident ) )
 		If Not decl Return
+		decl.AssertAccess
 		decl.Semant
-		decl.CheckAccess
 		Return decl
 	End
 	
 	Method FindScopeDecl:ScopeDecl( ident$ )
-		Local decl:ScopeDecl=ScopeDecl( FindDecl( ident ) )
+		Local decl:=ScopeDecl( FindDecl( ident ) )
 		If Not decl Return
+		decl.AssertAccess
 		decl.Semant
-		decl.CheckAccess
 		Return decl
 	End
 	
 	Method FindClassDecl:ClassDecl( ident$,args:ClassDecl[] )
-		Local decl:ClassDecl=ClassDecl( GetDecl( ident ) )
+		Local decl:=ClassDecl( GetDecl( ident ) )
 		If Not decl
 			If scope Return scope.FindClassDecl( ident,args )
 			Return
 		Endif
+		decl.AssertAccess
 		decl.Semant
-		decl.CheckAccess
 		Return decl.GenClassInstance( args )
 	End
 	
@@ -409,24 +471,25 @@ Public
 			If scope Return scope.FindModuleDecl( ident )
 			Return
 		Endif
+		decl.AssertAccess
 		decl.Semant
-		decl.CheckAccess
 		Return decl
 	End
-		
+	
 	Method FindFuncDecl:FuncDecl( ident$,argExprs:Expr[],explicit=False )
 	
 		Local funcs:=FuncDeclList( FindDecl( ident ) )
 		If Not funcs Return
 	
-		For Local func:FuncDecl=Eachin funcs
-			func.Semant
+		For Local func:=Eachin funcs
+			func.Semant()
 		Next
 		
 		Local match:FuncDecl,isexact,err$
 
 		For Local func:FuncDecl=Eachin funcs
-
+			If Not func.CheckAccess() Continue
+			
 			Local argDecls:ArgDecl[]=func.argDecls
 			
 			If argExprs.Length>argDecls.Length Continue
@@ -435,11 +498,10 @@ Public
 			Local possible=True
 			
 			For Local i=0 Until argDecls.Length
-			
+
 				If i<argExprs.Length And argExprs[i]
 				
 					Local declTy:Type=argDecls[i].ty
-					
 					Local exprTy:Type=argExprs[i].exprType
 					
 					If exprTy.EqualsType( declTy ) Continue
@@ -449,17 +511,14 @@ Public
 					If Not explicit And exprTy.ExtendsType( declTy ) Continue
 
 				Else If argDecls[i].init
-				
+
 					exact=False
-					
+
 					If Not explicit Continue
-				
 				Endif
 			
 				possible=False
-				
 				Exit
-
 			Next
 			
 			If Not possible Continue
@@ -498,8 +557,8 @@ Public
 			Err "Unable to find overload for "+ident+"("+t+")."
 		Endif
 		
-		match.CheckAccess
-		
+		match.AssertAccess
+
 		Return match
 	End
 	
@@ -518,10 +577,6 @@ Class BlockDecl Extends ScopeDecl
 	
 	Method AddStmt( stmt:Stmt )
 		stmts.AddLast stmt
-	End
-	
-	Method GenInstance:Decl( inst:ClassDecl )
-		InternalErr
 	End
 	
 	Method OnSemant()
@@ -543,17 +598,28 @@ Const FUNC_PROPERTY=4
 Class FuncDecl Extends BlockDecl
 
 	Field retType:Type
+	Field retTypeExpr:Type
 	Field argDecls:ArgDecl[]
 
 	Field overrides:FuncDecl
 	Field superCtor:InvokeSuperExpr
-	Field index
 	
-	Method New( ident$,retType:Type,argDecls:ArgDecl[],attrs )
+	Method New( ident$,ty:Type,argDecls:ArgDecl[],attrs )
 		Self.ident=ident
-		Self.retType=retType
+		Self.retTypeExpr=ty
 		Self.argDecls=argDecls
 		Self.attrs=attrs
+	End
+	
+	Method GenInstance:Decl()
+		Local inst:=New FuncDecl
+		InitInstance inst
+		inst.retTypeExpr=retTypeExpr
+		inst.argDecls=argDecls[..]
+		For Local i=0 Until argDecls.Length
+			inst.argDecls[i]=ArgDecl( argDecls[i].GenInstance() )
+		Next
+		Return inst
 	End
 	
 	Method ToString$()
@@ -564,11 +630,17 @@ Class FuncDecl Extends BlockDecl
 		Next
 		Local q$
 		If IsCtor()
-			q="Method New"
+			q="Method "+Super.ToString()
 		Else
 			If IsMethod() q="Method " Else q="Function "
-			q+=ident+":"
-			If retType q+=retType.ToString() Else q+="???"
+			q+=Super.ToString()+":"
+			If retType
+				q+=retType.ToString()
+			Else If retTypeExpr 
+				q+=retTypeExpr.ToString()
+			Else
+				q+="?"
+			Endif
 		Endif
 		Return q+"("+t+")"
 	End
@@ -589,54 +661,41 @@ Class FuncDecl Extends BlockDecl
 		Return (attrs & FUNC_PROPERTY)<>0
 	End
 	
-	Method EqualsType( decl:FuncDecl )
-		If argDecls.Length=decl.argDecls.Length
-			If retType.EqualsType( decl.retType )
-				For Local i=0 Until argDecls.Length
-					If Not argDecls[i].ty.EqualsType( decl.argDecls[i].ty ) Return False
-				Next
-				Return True
-			Endif
-		Endif
-		Return False
+	Method EqualsArgs( decl:FuncDecl )
+		If argDecls.Length<>decl.argDecls.Length Return False
+		For Local i=0 Until argDecls.Length
+			If Not argDecls[i].ty.EqualsType( decl.argDecls[i].ty ) Return False
+		Next
+		Return True
 	End
 
-	Method GenInstance:Decl( inst:ClassDecl )
-		Return InitInstance( New FuncDecl )
+	Method EqualsFunc( decl:FuncDecl )
+		Return retType.EqualsType( decl.retType ) And EqualsArgs( decl )
 	End
-	
+
 	Method OnSemant()
-	
-		'template version?
-		If actual<>Self
-			actual.Semant
-			Local decl:=FuncDecl( actual )
 
-			retType=decl.retType.GenInstance( ClassScope ).Semant()
-
-			argDecls=decl.argDecls[..]
-			For Local i=0 Until argDecls.Length
-				argDecls[i]=ArgDecl( argDecls[i].GenInstance( ClassScope ) )
-				InsertDecl argDecls[i]
-				argDecls[i].Semant
-			Next
-
-			Return
-		Endif
-		
-		'get cdecl, sclasss
-		Local cdecl:=ClassDecl( scope )
-		Local sclass:ClassDecl
-		If cdecl sclass=ClassDecl( cdecl.superClass )
-		
 		'semant ret type
-		retType=retType.Semant()
+		retType=retTypeExpr.Semant()
 		
 		'semant args
 		For Local arg:ArgDecl=Eachin argDecls
 			InsertDecl arg
 			arg.Semant
 		Next
+		
+		If actual<>Self Return
+		
+		'check for duplicate decl
+		For Local decl:=Eachin scope.SemantedFuncs( ident )
+			If decl<>Self And EqualsArgs( decl )
+				Err "Duplicate declaration "+ToString()
+			Endif
+		Next
+		
+		'get cdecl, sclasss
+		Local cdecl:=ClassScope(),sclass:ClassDecl
+		If cdecl sclass=ClassDecl( cdecl.superClass )
 		
 		'prefix call to super ctor if necessary
 		If IsCtor() And superCtor=Null 
@@ -654,7 +713,7 @@ Class FuncDecl Extends BlockDecl
 			Else
 				stmt=New ReturnStmt( New ConstExpr( retType,"" ) )
 			Endif
-			stmt.errInfo=errInfo	'""
+			stmt.errInfo=errInfo
 			stmts.AddLast stmt
 		Endif
 
@@ -662,18 +721,21 @@ Class FuncDecl Extends BlockDecl
 		If sclass And IsMethod()
 			While sclass
 				Local found
-				For Local decl:=Eachin sclass.FuncDecls
-					If decl.ident<>ident Or Not decl.IsMethod() Continue
+				For Local decl:=Eachin sclass.MethodDecls( ident )
 					found=True
 					decl.Semant
-					If EqualsType( decl )
+					If EqualsFunc( decl ) 
 						overrides=FuncDecl( decl.actual )
+						If overrides.munged
+							If munged InternalErr
+							munged=overrides.munged
+						Endif
 					Endif
 				Next
-				If found And Not overrides
-					Err "Overriding method does not match any overridden method."
+				If found
+					If Not overrides Err "Overriding method does not match any overridden method."
+					Exit
 				Endif
-				If found Exit
 				sclass=sclass.superClass
 			Wend
 		Endif
@@ -695,16 +757,14 @@ Class ClassDecl Extends ScopeDecl
 	Field args:ClassDecl[]
 	Field superTy:IdentType
 	Field impltys:IdentType[]
-	
+
 	Field superClass:ClassDecl
-	Field implments:ClassDecl[]
 	
-	Field argindex=-1					'for args
+	Field implments:ClassDecl[]			'interfaces immediately implemented
+	Field implmentsAll:ClassDecl[]		'all interfaces implemented
+	
 	Field instanceof:ClassDecl			'for instances
 	Field instances:List<ClassDecl>		'for actual (non-arg, non-instance)
-	
-	Field fields:FieldDecl[]			'ALL fields - length=instance size
-	Field methods:FuncDecl[]			'ALL methods - length=vtable size
 	
 	Global nullObjectClass:=New ClassDecl( "{NULL}",[],Null,[],DECL_ABSTRACT|DECL_EXTERN )
 	
@@ -714,6 +774,10 @@ Class ClassDecl Extends ScopeDecl
 		Self.superTy=superTy
 		Self.impltys=impls
 		Self.attrs=attrs
+		If args
+			instances=New List<ClassDecl>
+			instances.AddLast Self
+		Endif
 	End
 	
 	Method ToString$()
@@ -726,108 +790,61 @@ Class ClassDecl Extends ScopeDecl
 		Return ident+t
 	End
 	
-	Method GenInstance:Decl( inst:ClassDecl )
+	Method GenClassInstance:ClassDecl( instArgs:ClassDecl[] )
 		If Not IsSemanted() InternalErr
 		
-		If IsTemplateArg()
-			For Local arg:ClassDecl=Eachin inst.instanceof.args
-				If arg=Self Return inst.args[argindex]
+		'no args
+		If Not instArgs
+			If Not args Return Self
+			If instanceof Return Self
+			For Local inst:=Eachin instances
+				If _env.ClassScope()=inst Return inst
 			Next
-			InternalErr
 		Endif
 		
-		Local instArgs:ClassDecl[args.Length]
-
-		For Local i=0 Until args.Length
-		
-			Local arg:ClassDecl=args[i]
-			
-			If arg.IsTemplateArg()
-			
-'				Print "Self.ident="+Self.ident+" inst.ident="+inst.ident+
-'				" arg.ident="+arg.ident+" arg.argindex="+arg.argindex+", inst.args.Length="+inst.args.Length
-				
-				instArgs[i]=inst.args[arg.argindex]
-			Else
-				instArgs[i]=arg
-			Endif
-	
-		Next
-		
-		Local cdecl:=GenClassInstance( instArgs )
-		Return cdecl
-	End
-	
-	Method GenClassInstance:ClassDecl( instArgs:ClassDecl[] )
-		If Not IsSemanted InternalErr
-		
-		If _env.ClassScope()=Self And Not instArgs.Length
-			instArgs=args
-		Endif
-		
-		If IsTemplateInst() 
-			Return instanceof.GenClassInstance( instArgs )
-		Endif
+		'If Not instanceof And Not instArgs Return Self
 		
 		'check number of args
-		If args.Length<>instArgs.Length
-			Return Null
-			'Err "incorrect number of template arguments"
+		If instanceof Or args.Length<>instArgs.Length
+			Err "Wrong number of class arguments for "+ToString()
 		Endif
-
-		If Not args.Length Return Self
-
-		'can't create instance of arg
-		If IsTemplateArg() InternalErr
-		
-		'check arg types and use self if possible - eg: ref. to Blah<T> inside Blah<T>
-		Local equal=True
-		For Local i=0 Until args.Length
-			If Not instArgs[i].ExtendsClass( args[i] )
-				Err "Invalid template argument type."
-			Endif
-		
-			If Not (instArgs[i]=args[i]) equal=False
-		Next
-		If equal Return Self
 		
 		'look for existing instance
-		If instances
-			For Local decl:ClassDecl=Eachin instances
-				Local equal=True
-				For Local i=0 Until args.Length
-					If Not (instArgs[i]=decl.args[i])
-						equal=False
-						Exit
-					Endif
-				Next
-				If equal Return decl
+		For Local inst:=Eachin instances
+			Local equal=True
+			For Local i=0 Until args.Length
+				If inst.args[i]=instArgs[i] Continue
+				equal=False
+				Exit
 			Next
-		Else
-			instances=New List<ClassDecl>
-		Endif
+			If equal Return inst
+		Next
 		
-		'have to create new instance!
 		Local inst:ClassDecl=New ClassDecl
+
 		InitInstance inst
+
 		inst.scope=scope
-		'
-		inst.superTy=superTy
+		inst.attrs|=CLASS_TEMPLATEINST
 		inst.args=instArgs
-		inst.attrs|=CLASS_TEMPLATEINST|DECL_SEMANTED
-		inst.superClass=ClassDecl( superClass.GenInstance( inst ) )
+		inst.superTy=superTy
 		inst.instanceof=Self
+		instances.AddLast inst
 		
 		For Local i=0 Until args.Length
-			inst.InsertAlias args[i].ident,instArgs[i]
+			inst.InsertDecl New AliasDecl( args[i].ident,instArgs[i] )
 		Next
 		
 		For Local decl:Decl=Eachin decls
-			If Not ClassDecl( decl ) inst.InsertDecl decl.GenInstance( inst )
+			If ClassDecl( decl ) Continue
+			inst.InsertDecl decl.GenInstance()
 		Next
-		
-		instances.AddLast inst
 
+		'inst.Semant
+		'A bit cheeky...
+		inst.OnSemant
+		inst.attrs|=DECL_SEMANTED
+		
 		Return inst
 	End
 
@@ -843,45 +860,83 @@ Class ClassDecl Extends ScopeDecl
 		Return (attrs & CLASS_TEMPLATEINST)<>0
 	End
 	
+	Method IsInstanced()
+		Return (attrs & CLASS_INSTANCED)<>0
+	End
+	
 	Method GetDecl:Object( ident$ )
+	
 		Local cdecl:ClassDecl=Self
 		While cdecl
-			Local decl:Object=cdecl.GetDecl2( ident )
+			Local decl:=cdecl.GetDecl2( ident )
 			If decl Return decl
+			
 			cdecl=cdecl.superClass
 		Wend
-	End
 
+	End
+	
 	'needs this 'coz you can't go blah.Super.GetDecl()...
 	Method GetDecl2:Object( ident$ )
 		Return Super.GetDecl( ident )
 	End
 	
-	Method EqualsClass( cdecl:ClassDecl )
-		Local tdecl:=Self
-		If tdecl.IsTemplateArg() tdecl=tdecl.superClass
-		If cdecl.IsTemplateArg() cdecl=cdecl.superClass
-		Return tdecl=cdecl
+	Method FindFuncDecl:FuncDecl( ident$,args:Expr[],explicit=False )
+	
+		If Not IsInterface()
+			Return FindFuncDecl2( ident,args,explicit )
+		Endif
+		
+		Local fdecl:=FindFuncDecl2( ident,args,True )
+		
+		For Local iface:=Eachin implmentsAll
+			Local decl:=iface.FindFuncDecl2( ident,args,True )
+			If Not decl Continue
+			
+			If fdecl
+				If fdecl.EqualsFunc( decl ) Continue
+				Err "Unable to determine overload to use: "+fdecl.ToString()+" or "+decl.ToString()+"."
+			Endif
+			fdecl=decl
+		Next
+		
+		If fdecl Or explicit Return fdecl
+		
+		fdecl=FindFuncDecl2( ident,args,False )
+		
+		For Local iface:=Eachin implmentsAll
+			Local decl:=iface.FindFuncDecl2( ident,args,False )
+			If Not decl Continue
+			
+			If fdecl
+				If fdecl.EqualsFunc( decl ) Continue
+				Err "Unable to determine overload to use: "+fdecl.ToString()+" or "+decl.ToString()+"."
+			Endif
+			fdecl=decl
+		Next
+		
+		Return fdecl
+	End
+	
+	Method FindFuncDecl2:FuncDecl( ident$,args:Expr[],explicit )
+		Return Super.FindFuncDecl( ident,args,explicit )
 	End
 	
 	Method ExtendsClass( cdecl:ClassDecl )
 		If Self=nullObjectClass Return True
 		
-		If cdecl.IsInterface()
-			For Local tdecl:=Eachin implments
-				If tdecl=cdecl Return True
-			Next
-			Return False
-		Endif
-		
 		If cdecl.IsTemplateArg()
-			cdecl=cdecl.superClass
-			If Not cdecl Return True
+			cdecl=Type.objectType.FindClass()
 		Endif
 		
 		Local tdecl:=Self
 		While tdecl
 			If tdecl=cdecl Return True
+			If cdecl.IsInterface()
+				For Local iface:=Eachin tdecl.implmentsAll
+					If iface=cdecl Return True
+				Next
+			Endif
 			tdecl=tdecl.superClass
 		Wend
 		
@@ -889,31 +944,72 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	Method OnSemant()
-	
-		'Semant arg classes
-		For Local i=0 Until args.Length
-			Local arg:ClassDecl=args[i]
-			arg.argindex=i
-			arg.superClass=arg.superTy.FindClass()
-			arg.actual=arg.superClass.actual
-			arg.attrs|=DECL_SEMANTED
-			InsertDecl arg
-		Next
+
+		'Print "Semanting "+ToString()
+		
+		PushEnv Self
+
+		If Not IsTemplateInst()
+			For Local i=0 Until args.Length
+				InsertDecl args[i]
+				args[i].Semant
+			Next
+		Endif
 		
 		'Semant superclass		
 		If superTy
-			PushEnv Self
 			superClass=superTy.FindClass()
-			PopEnv
+			If superClass.IsInterface() Err superClass.ToString()+" is an interface, not a class."
 		Endif
 		
 		'Semant implemented interfaces
-		implments=implments.Resize( impltys.Length )
+		Local impls:=New ClassDecl[impltys.Length]
+		Local implsall:=New Stack<ClassDecl>
 		For Local i=0 Until impltys.Length
-			PushEnv Self
-			implments[i]=impltys[i].FindClass()
-			PopEnv
+			Local cdecl:=impltys[i].FindClass()
+			If Not cdecl.IsInterface()
+				Err cdecl.ToString()+" is a class, not an interface."
+			Endif
+			For Local j=0 Until i
+				If impls[j]=cdecl
+					Err "Duplicate interface "+cdecl.ToString()+"."
+				Endif
+			Next
+			impls[i]=cdecl
+			implsall.Push cdecl
+			For Local tdecl:=Eachin cdecl.implmentsAll
+				implsall.Push tdecl
+			Next
 		Next
+		implmentsAll=New ClassDecl[implsall.Length]
+		For Local i=0 Until implsall.Length
+			implmentsAll[i]=implsall.Get(i)
+		Next
+		implments=impls
+
+		#rem
+		If IsInterface()
+			'add implemented methods to our methods
+			For Local iface:=Eachin implmentsAll
+				For Local decl:=Eachin iface.FuncDecls
+					InsertAlias decl.ident,decl
+				Next
+			Next
+		Endif
+		#end
+		
+'		attrs|=DECL_SEMANTED
+		
+		PopEnv
+		
+		If IsTemplateArg()
+			actual=Type.objectType.FindClass()
+			Return
+		Endif
+		
+		If IsTemplateInst()
+			Return
+		Endif
 		
 		'Are we abstract?
 		If Not IsAbstract()
@@ -925,7 +1021,7 @@ Class ClassDecl Extends ScopeDecl
 				Endif
 			Next
 		Endif
-		
+
 		If Not IsExtern() And Not IsInterface()
 			Local fdecl:FuncDecl
 			For Local decl:FuncDecl=Eachin FuncDecls
@@ -950,37 +1046,52 @@ Class ClassDecl Extends ScopeDecl
 	End
 	
 	'Ok, this dodgy looking beast 'resurrects' methods that may not currently be alive, but override methods that ARE.
-	Method UpdateLiveMethods()	
+	Method UpdateLiveMethods()
 	
+		If IsInterface() Return
+
 		If Not superClass Return
-		
-		'Print "Update Live: "+ToString()
-		
+
 		Local n
-		For Local decl:=Eachin FuncDecls
-			If Not decl.IsMethod() Continue
+		For Local decl:=Eachin MethodDecls
 			If decl.IsSemanted() Continue
 			
 			Local live
 			Local unsem:=New List<FuncDecl>
+			
 			unsem.AddLast decl
 			
-			Local sclass:=ClassDecl( superClass.actual )
-
+			Local sclass:=superClass
 			While sclass
-				For Local decl2:=Eachin sclass.FuncDecls
-					If Not decl2.IsMethod() Continue
-					If decl.ident<>decl2.ident Continue
-
+				For Local decl2:=Eachin sclass.MethodDecls( decl.ident )
 					If decl2.IsSemanted()
 						live=True
 					Else
 						unsem.AddLast decl2
 						If decl2.IsExtern() live=True
+						If decl2.actual.IsSemanted() live=True
 					Endif
 				Next
 				sclass=sclass.superClass
 			Wend
+			
+			If Not live
+				Local cdecl:=Self
+				While cdecl
+					For Local iface:=Eachin cdecl.implmentsAll
+						For Local decl2:=Eachin iface.MethodDecls( decl.ident )
+							If decl2.IsSemanted()
+								live=True
+							Else
+								unsem.AddLast decl2
+								If decl2.IsExtern() live=True
+								If decl2.actual.IsSemanted() live=True
+							Endif
+						Next
+					Next
+					cdecl=cdecl.superClass
+				Wend
+			Endif
 			
 			If Not live Continue
 			
@@ -989,149 +1100,59 @@ Class ClassDecl Extends ScopeDecl
 				n+=1
 			Next
 		Next
+		
 		Return n
 	End
 	
-	'Check for duplicate method decls
-	Method CheckDuplicateDecls()
+	Method FinalizeClass()
 
-		For Local decl:=Eachin FuncDecls
-			If Not decl.IsSemanted Continue
-			
-			For Local decl2:=Eachin FuncDecls
-				If decl=decl2 Continue
-				If decl.ident<>decl2.ident Continue
-				If decl.argDecls.Length<>decl2.argDecls.Length Continue
-				
-				If Not decl2.IsSemanted InternalErr
-
-				Local match=True
-				For Local i=0 Until decl.argDecls.Length
-					If decl.argDecls[i].ty.EqualsType( decl2.argDecls[i].ty ) Continue
-					match=False
-					Exit
-				Next
-
-				If match
-					PushErr decl2.errInfo
-					Err "Duplicate declaration: "+decl2.ToString()+"."
-				Endif
-			Next
-		Next
-	End
-	
-	Method UpdateAttrs()
-	
 		PushErr errInfo
 		
-		Local nfields,nmethods
-		
-		For Local decl:Decl=Eachin decls
-			If FieldDecl( decl )
-				nfields+=1
-			Else If FuncDecl( decl ) And FuncDecl( decl ).IsMethod() 
-				nmethods+=1
-			Endif
-		Next
-		
-		If Not superClass
-		
-			Local j=0
-			methods=New FuncDecl[nmethods]
-			For Local decl:FuncDecl=Eachin FuncDecls
-				If Not decl.IsMethod() Continue
-				decl.index=j
-				methods[j]=decl
-				j+=1
-			Next
-
-			Local i=0
-			fields=New FieldDecl[nfields]
-			For Local decl:FieldDecl=Eachin FieldDecls
-				decl.index=i
-				fields[i]=decl
-				i+=1
-			Next
-			
-		Else
-		
-			Local sclass:=superClass
-			
-			superClass=ClassDecl( superClass.actual )
-			
-			'Print "Update attrs: "+ToString()+", Super="+sclass.ToString()+", Actual="+superClass.ToString()
-
-			Local j=superClass.methods.Length
-
-			methods=superClass.methods.Resize( j+nmethods )
-			
-			For Local decl:FuncDecl=Eachin FuncDecls
-				If Not decl.IsMethod() Continue
-				If Not decl.IsSemanted() Continue
-				
-				If decl.overrides
-					decl.index=decl.overrides.index
-					If decl.overrides.munged decl.munged=decl.overrides.munged
-					methods[decl.index]=decl
-					Continue
-				Endif
-				
-				#rem
-				decl.index=-1
-				Local match
-				For Local decl2:FuncDecl=Eachin superClass.methods
-					If Not decl2.IsMethod() Continue
-					If decl.ident<>decl2.ident Continue
-					
-					match=True
-					If decl.EqualsType( decl2 )
-						decl.overrides=decl2
-						decl.index=decl2.index
-						methods[decl.index]=decl
-						If decl2.munged decl.munged=decl2.munged
-						Exit
-					EndIf
-				Next
-				If decl.index<>-1 Continue
-				If match
-					PushErr decl.errInfo
-					Print ":"
-					
-					Print decl.ToString()+", candidates:"
-					For Local decl2:FuncDecl=Eachin superClass.methods
-						If Not decl2.IsMethod() Continue
-						If decl.ident<>decl2.ident Continue
-						Print decl2.ToString()
-					Next
-					Err "Overriding method does not match any overridden method."
-				Endif
-				#end
-				
-				decl.index=j
-				methods[j]=decl
-				j+=1
-			Next
-			
-			methods=methods.Resize( j )
-			
-			'Do this second because semanting methods above may have activated more fields
-			'		
-			Local i=superClass.fields.Length
-			fields=superClass.fields.Resize( i+nfields )
+		If Not IsInterface()
 			'
-			For Local decl:FieldDecl=Eachin FieldDecls
-				decl.index=i
-				fields[i]=decl
-				i+=1
-			Next
-			
-		Endif
-		
-		If attrs & CLASS_INSTANCED
-			For Local decl:=Eachin methods
-				If decl.IsAbstract()
-					Err "Cannot create instance of class "+ToString()+" due to abstract method "+decl.ToString()+"."
-				Endif
+			'Check we implement all abstract methods!
+			'
+			If IsInstanced()
+				Local cdecl:=Self
+				Local impls:=New List<FuncDecl>
+				While cdecl
+					For Local decl:=Eachin cdecl.SemantedMethods()
+						If decl.IsAbstract()
+							Local found
+							For Local decl2:=Eachin impls
+								If decl.EqualsFunc( decl2 )
+									found=True
+									Exit
+								Endif
+							Next
+							If Not found
+								Err "Can't create instance of class "+ToString()+" due to abstract method "+decl.ToString()+"."
+							Endif
+						Else
+							impls.AddLast decl
+						Endif
+					Next
+					cdecl=cdecl.superClass
+				Wend
+			Endif
+			'
+			'Check we implement all interface methods!
+			'
+			For Local iface:=Eachin implmentsAll
+				For Local decl:=Eachin iface.SemantedMethods()
+					Local found
+					For Local decl2:=Eachin SemantedMethods( decl.ident )
+						If decl.EqualsFunc( decl2 )
+							If decl2.munged
+								Err "Extern methods cannot be used to implement interface methods."
+							Endif
+							found=True
+						Endif
+					Next
+					If Not found
+						Err decl.ToString()+" must be implemented by class "+ToString()
+					Endif
+				Next
 			Next
 		Endif
 		
@@ -1164,12 +1185,8 @@ Class ModuleDecl Extends ScopeDecl
 		Return (attrs & MODULE_STRICT)<>0
 	End
 	
-	Method GenInstance:Decl( inst:ClassDecl )
-		InternalErr
-	End
-	
-	'Ok, this gets a bit fun!
 	Method GetDecl:Object( ident$ )
+	
 		Local todo:=New List<ModuleDecl>
 		Local done:=New StringMap<ModuleDecl>
 		
@@ -1181,18 +1198,19 @@ Class ModuleDecl Extends ScopeDecl
 		While Not todo.IsEmpty()
 	
 			Local mdecl:ModuleDecl=todo.RemoveLast()
-			Local decl2:Object=mdecl.GetDecl2( ident )
-			If decl2 And decl2<>decl
-				If mdecl=Self Return decl2
+			Local tdecl:=mdecl.GetDecl2( ident )
+			
+			If tdecl And tdecl<>decl
+				If mdecl=Self Return tdecl
 				If decl
 					Err "Duplicate identifier '"+ident+"' found in module '"+declmod+"' and module '"+mdecl.ident+"'."
 				Endif
-				decl=decl2
+				decl=tdecl
 				declmod=mdecl.ident
 			Endif
 			
 			Local imps:=mdecl.imported
-			If mdecl<>Self imps=mdecl.pubImported
+			If mdecl<>_env.ModuleScope() imps=mdecl.pubImported
 
 			For Local mdecl2:=Eachin imps.Values()
 				If Not done.Contains( mdecl2.filepath )
@@ -1224,8 +1242,8 @@ Class AppDecl Extends ScopeDecl
 	Field mainModule:ModuleDecl							'main module
 	Field mainFunc:FuncDecl
 		
-	Field semantedClasses:=New List<ClassDecl>			'list of semanted classes
-	Field semantedGlobals:=New List<GlobalDecl>			'in-order list of semanted globals
+	Field semantedClasses:=New List<ClassDecl>			'in-order (ie: base before derived) list of semanted classes
+	Field semantedGlobals:=New List<GlobalDecl>			'in-order (ie: dependancy sorted) list of semanted globals
 
 	Field transCode$									'translated code!
 	
@@ -1245,10 +1263,6 @@ Class AppDecl Extends ScopeDecl
 		Endif
 	End
 	
-	Method GenInstance:Decl( inst:ClassDecl )
-		InternalErr
-	End
-	
 	Method OnSemant()
 		
 		mainFunc=mainModule.FindFuncDecl( "Main",[] )
@@ -1259,19 +1273,15 @@ Class AppDecl Extends ScopeDecl
 		Endif
 
 		Repeat
-			Local n
+			Local more
 			For Local cdecl:=Eachin semantedClasses
-				n+=cdecl.UpdateLiveMethods()
+				more+=cdecl.UpdateLiveMethods()
 			Next
-			If Not n Exit
+			If Not more Exit
 		Forever
 		
 		For Local cdecl:=Eachin semantedClasses
-			cdecl.CheckDuplicateDecls
-		Next
-
-		For Local cdecl:=Eachin semantedClasses
-			cdecl.UpdateAttrs
+			cdecl.FinalizeClass
 		Next
 	End
 	

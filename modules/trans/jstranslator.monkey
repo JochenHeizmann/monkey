@@ -10,7 +10,6 @@ Class JsTranslator Extends Translator
 
 	Method TransValue$( ty:Type,value$ )
 		If value
-			If IntType( ty ) And value.StartsWith( "$" ) Return "0x"+value[1..]
 			If BoolType( ty ) Return "true"
 			If NumericType( ty ) Return value
 			If StringType( ty ) Return Enquote( value )
@@ -90,6 +89,7 @@ Class JsTranslator Extends Translator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
+		'
 		Local ctor:FuncDecl=FuncDecl( expr.ctor.actual )
 		Local cdecl:ClassDecl=ClassDecl( expr.classDecl.actual )
 		'
@@ -136,17 +136,17 @@ Class JsTranslator Extends Translator
 			If StringType( src )  Return texpr
 		Endif
 		
-		'upcast
-		If src.ExtendsType( dst )
+		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
+		Else If dst.GetClass().ExtendsClass( src.GetClass() )
+			If dst.GetClass().IsInterface()
+				Return "object_implements"+Bra( texpr+",~q"+dst.GetClass.actual.munged+"~q" )
+			Else
+				Return "object_downcast"+Bra( texpr+","+dst.GetClass().actual.munged )
+			Endif
 		Endif
-		
-		'downcast
-		If dst.ExtendsType( src )
-			Return "object_downcast"+Bra( texpr+","+dst.GetClass().actual.munged )
-		Endif
-	
-		InternalErr
+
+		Err "JS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
 	Method TransUnaryExpr$( expr:UnaryExpr )
@@ -241,6 +241,7 @@ Class JsTranslator Extends Translator
 			If ObjectType( ty ) Return "resize_object_array"+Bra( texpr+","+arg0 )
 			InternalErr
 		'string methods
+		Case "compare" Return "string_compare"+Bra( texpr+","+arg0 )
 		Case "find" Return texpr+".indexOf"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".lastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".lastIndexOf"+Bra( arg0+","+arg1 )
@@ -292,16 +293,22 @@ Class JsTranslator Extends Translator
 		Endif
 
 		EmitBlock decl
-		
 		Emit "}"
 		
 		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
-		If classDecl.IsInterface() Return
+	
+		If classDecl.IsTemplateInst()
+			InternalErr
+		Endif
+	
+		If classDecl.IsInterface() 
+			Return
+		Endif
 		
-		PushEnv classDecl
+		'PushEnv classDecl	'WTF?!?
 		
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.actual.munged
@@ -309,12 +316,32 @@ Class JsTranslator Extends Translator
 		'JS constructor - initializes fields
 		'
 		Emit "function "+classid+"(){"
+		
 		Emit superid+".call(this);"
 		
 		For Local decl:=Eachin classDecl.Semanted
 			Local fdecl:=FieldDecl( decl )
 			If fdecl Emit "this."+fdecl.munged+"="+fdecl.init.Trans()+";"
 		Next
+		
+		'Create 'implments' set for each class - possibly not optimal...?
+		'
+		Local impls$
+		Local tdecl:=classDecl
+		Local iset:=New StringSet
+		While tdecl
+			For Local iface:=Eachin tdecl.implmentsAll
+				Local t$=iface.actual.munged
+				If iset.Contains( t ) Continue
+				iset.Insert t
+				If impls impls+=","
+				impls+=t+":1"
+			Next
+			tdecl=tdecl.superClass
+		Wend
+		If impls 
+			Emit "this.implments={"+impls+"};"
+		Endif
 		
 		Emit "}"
 		
@@ -341,7 +368,7 @@ Class JsTranslator Extends Translator
 
 		Next
 	
-		PopEnv
+		'PopEnv
 	End
 	
 	Method TransApp$( app:AppDecl )
@@ -369,7 +396,7 @@ Class JsTranslator Extends Translator
 			'local mungs
 			PushMungScope
 			
-			MungOverrides cdecl
+'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 				MungDecl decl

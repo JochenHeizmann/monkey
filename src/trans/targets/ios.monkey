@@ -30,8 +30,7 @@ Class IosTarget Extends Target
 
 			If OPT_RUN
 
-				Local ver$="4.2"	'put output app here…
-				
+				Local ver$="4.2"	'put output app here…				
 				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/MonkeyGame.app"
 
 				'Woah, freaky, got this from: http://www.somacon.com/p113.php
@@ -40,16 +39,17 @@ Class IosTarget Extends Target
 				
 				Local home$=GetEnv( "HOME" )
 				
-				Local dst$=home+"/Library/Application Support/iPhone Simulator/"+ver+"/Applications"
+				Local dst$=home+"/Library/Application Support/iPhone Simulator/"+ver
+				CreateDir dst
+
+				dst+="/Applications"
 				CreateDir dst
 				
-				dst+="/"+uuid		
-		
+				dst+="/"+uuid
+
 				If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst
 				
 				If Not CreateDir( dst ) Die "Failed to create dir:"+dst
-				
-'				SaveString "(version 1)~n(debug any)~n(allow default)~n",dst+"/MonkeyGame.sb"
 				
 				'Need to use this 'coz it does the permissions thang - fix CopyDir!
 				'

@@ -9,14 +9,13 @@ Import trans
 Class CsTranslator Extends Translator
 
 	Method TransType$( ty:Type )
-		ty=ty.Actual()
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "bool"
 		If IntType( ty ) Return "int"
 		If FloatType( ty ) Return "float"
 		If StringType( ty ) Return "String"
-		If ArrayType( ty ) Return TransType( ArrayType( ty ).elemType )+"[]"
-		If ObjectType( ty ) Return ObjectType( ty ).classDecl.munged
+		If ArrayType( ty ) Return TransType( ArrayType(ty).elemType )+"[]"
+		If ObjectType( ty ) Return ty.GetClass().actual.munged
 		InternalErr
 	End
 	
@@ -31,7 +30,6 @@ Class CsTranslator Extends Translator
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
 			If StringType( ty ) Return "~q~q"
-'			If ArrayType( ty ) Return Bra( "new "+TransType(ArrayType(ty).elemType)+"[0]" )
 			If ArrayType( ty ) 
 				Local elemTy:=ArrayType( ty ).elemType
 				Local t$="[0]"
@@ -92,6 +90,13 @@ Class CsTranslator Extends Translator
 			Return decl.scope.munged+"."+decl.munged
 		Endif
 		InternalErr
+	End
+
+	Method TransTemplateCast$( ty:Type,src:Type,expr$ )
+		If ObjectType(ty) And ObjectType(src) And ty.GetClass().actual<>src.GetClass().actual
+			Return "(("+TransType(ty)+")"+Bra(expr)+")"
+		Endif
+		Return expr
 	End
 	
 	Method TransGlobal$( decl:GlobalDecl )
@@ -172,20 +177,16 @@ Class CsTranslator Extends Translator
 			If StringType( src ) Return texpr
 		Endif
 		
-		'upcast
-		If src.ExtendsType( dst )
+		If src.GetClass().ExtendsClass( dst.GetClass() )
 			Return texpr
-		Endif
-
-		'downcast		
-		If dst.ExtendsType( src )
-			Local tmp:=New LocalDecl( "",src,expr.expr )
+		Else If dst.GetClass().ExtendsClass( src.GetClass() )
+			Local tmp:=New LocalDecl( "",src,Null )
 			MungDecl tmp
-			Emit TransDecl( tmp )+"="+tmp.init.Trans()+";"
+			Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
 			Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
 		Endif
-		
-		InternalErr
+
+		Err "CS translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
 	Method TransUnaryExpr$( expr:UnaryExpr )
@@ -203,20 +204,6 @@ Class CsTranslator Extends Translator
 		Local t_rhs$=TransSubExpr( expr.rhs,pri-1 )
 		Return t_lhs+TransBinaryOp( expr.op )+t_rhs
 
-#rem	
-		Local lhs$=expr.lhs.Trans()
-		Local rhs$=expr.rhs.Trans()
-		
-		'String compare
-		If BinaryCompareExpr( expr ) And StringType( expr.lhs.exprType ) And StringType( expr.rhs.exprType )
-			Return Bra( lhs+".CompareTo"+Bra(rhs)+TransBinaryOp( expr.op )+"0" )
-		Endif
-		Local pri=ExprPri( expr )
-		If ExprPri( expr.lhs )>pri lhs=Bra( lhs )
-		If ExprPri( expr.rhs )>=pri rhs=Bra( rhs )
-
-		Return lhs+TransBinaryOp( expr.op )+rhs
-#end
 	End
 	
 	Method TransIndexExpr$( expr:IndexExpr )
@@ -232,13 +219,6 @@ Class CsTranslator Extends Translator
 		If expr.from t_args=expr.from.Trans()
 		If expr.term t_args+=","+expr.term.Trans()
 		Return "(("+TransType( expr.exprType )+")bb_std_lang.slice("+t_expr+","+t_args+"))"
-#rem	
-		Local texpr$=expr.expr.Trans()
-		Local from$=",0",term$
-		If expr.from from=","+expr.from.Trans()
-		If expr.term term=","+expr.term.Trans()
-		Return "(("+TransType( expr.exprType )+")bb_std_lang.slice("+texpr+from+term+"))"
-#end
 	End
 
 	Method TransArrayExpr$( expr:ArrayExpr )
@@ -279,6 +259,7 @@ Class CsTranslator Extends Translator
 		Case "resize" Return "("+TransType( expr.exprType )+")bb_std_lang.resize"+Bra( texpr+","+arg0 )
 		'
 		'string methods
+		Case "compare" Return texpr+".CompareTo"+Bra( arg0 )
 		Case "find" Return texpr+".IndexOf"+Bra( arg0+","+arg1 )
 		Case "findlast" Return texpr+".LastIndexOf"+Bra( arg0 )
 		Case "findlast2" Return texpr+".LastIndexOf"+Bra( arg0+","+arg1 )
@@ -314,38 +295,86 @@ Class CsTranslator Extends Translator
 	Method EmitFuncDecl( decl:FuncDecl )
 		PushMungScope
 		
+		'Find decl we override
+		Local odecl:=decl
+		While odecl.overrides
+			odecl=odecl.overrides
+		Wend
+
+		'Generate 'args' string and arg casts
 		Local args$
-		For Local arg:=Eachin decl.argDecls
+		Local argCasts:=New StringStack
+		For Local i=0 Until decl.argDecls.Length
+			Local arg:=decl.argDecls[i]
+			Local oarg:=odecl.argDecls[i]
 			MungDecl arg
 			If args args+=","
-			args+=TransDecl( arg )
+			args+=TransType( oarg.ty )+" "+arg.munged
+			If arg.ty.EqualsType( oarg.ty ) Continue
+			Local t$=arg.munged
+			arg.munged=""
+			MungDecl arg
+			argCasts.Push TransDecl( arg )+"="+Bra(TransType(arg.ty))+Bra(t)+";"
 		Next
-		
-		Local t$="public "
-		If decl.IsStatic()
-			t+="static "
+
+		Local t$=TransType( odecl.retType )+" "+decl.munged+Bra( args )
+
+		If decl.ClassScope() And decl.ClassScope().IsInterface()
+			Emit t+";"
 		Else
-			If decl.overrides And Not decl.IsCtor()
-				t+="override "
+			Local q$="public "
+			If decl.IsStatic()
+				q+="static "
 			Else
-				t+="virtual "
+				If decl.overrides And Not decl.IsCtor()
+					q+="override "
+				Else
+					q+="virtual "
+				Endif
 			Endif
+			
+			Emit q+t+"{"
+			For Local t$=Eachin argCasts
+				Emit t
+			Next
+			EmitBlock decl
+			Emit "}"
 		Endif
 		
-		Emit t+TransType( decl.retType )+" "+decl.munged+Bra( args )+"{"
-		
-		EmitBlock decl
-		
-		Emit "}"
-
 		PopMungScope
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
+	
+		If classDecl.IsTemplateInst()
+			InternalErr
+		Endif
+	
 		Local classid$=classDecl.munged
 		Local superid$=classDecl.superClass.actual.munged
 		
-		Emit "class "+classid+" : "+superid+"{"
+		If classDecl.IsInterface() 
+		
+			Local bases$
+			For Local iface:=Eachin classDecl.implments
+				If bases bases+="," Else bases=" : "
+				bases+=iface.actual.munged
+			Next
+			
+			Emit "interface "+classid+bases+"{"
+			For Local decl:=Eachin classDecl.Semanted
+				If Not FuncDecl( decl ) InternalErr
+				EmitFuncDecl FuncDecl( decl )
+			Next
+			Emit "}"
+			Return
+		Endif
+	
+		Local bases$=" : "+superid
+		For Local iface:=Eachin classDecl.implments
+			bases+=","+iface.actual.munged
+		Next
+		Emit "class "+classid+bases+"{"
 		
 		For Local decl:=Eachin classDecl.Semanted
 			Local tdecl:=FieldDecl( decl )
@@ -373,6 +402,7 @@ Class CsTranslator Extends Translator
 	Method TransApp$( app:AppDecl )
 		
 		app.mainModule.munged="bb_"
+		app.mainFunc.munged="bb_Main"
 		
 		For Local decl:=Eachin app.imported.Values
 			MungDecl decl
@@ -387,7 +417,7 @@ Class CsTranslator Extends Translator
 			
 			PushMungScope
 			
-			MungOverrides cdecl
+'			MungOverrides cdecl
 			
 			For Local decl:=Eachin cdecl.Semanted
 			

@@ -434,7 +434,7 @@ Class VirtualDisplay
 			sx = Max (0.0, sx)
 			sy = Max (0.0, sy)
 			sw = Min (sw, fdw)
-			sh = Min (sh, fdw)
+			sh = Min (sh, fdh)
 			
 			SetScissor sx, sy, sw, sh
 			
@@ -443,7 +443,7 @@ Class VirtualDisplay
 			sx = Max (0.0, widthborder)
 			sy = Max (0.0, heightborder)
 			sw = Min (fdw - widthborder * 2.0, fdw)
-			sh = Min (fdh - heightborder * 2.0, fdw)
+			sh = Min (fdh - heightborder * 2.0, fdh)
 
 			SetScissor sx, sy, sw, sh
 

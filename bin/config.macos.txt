@@ -1,16 +1,14 @@
 
 '--------------------
-'Android SDK and tool paths.
+'HTML player path.
 '
-'Must be set to a valid for for ANDROID target support
+'Must be set for HTML5 target support.
 '
-'Android SDK
-ANDROID_PATH="${HOME}/android-sdk-mac_x86"
-ANDROID_PATH="${HOME}/android-sdk-mac_86"
+HTML_PLAYER=open -n "${TRANSDIR}/mserver_macos.app" --args
 '--------------------
 
 '--------------------
-'Flex SDK path.
+'Flex SDK and flash player path.
 '
 'Must be set for FLASH target support.
 '
@@ -20,4 +18,15 @@ FLEX_PATH="${HOME}/flex_sdk_4.0.0.14159"
 FLEX_PATH="${HOME}/flex_sdk_4.0"
 FLEX_PATH="${HOME}/flex_sdk_4"
 FLEX_PATH="${HOME}/flex_sdk"
+FLASH_PLAYER=open -n "${TRANSDIR}/mserver_macos.app" --args
+'--------------------
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support
+'
+'Android SDK
+ANDROID_PATH="${HOME}/android-sdk-mac_x86"
+ANDROID_PATH="${HOME}/android-sdk-mac_86"
 '--------------------

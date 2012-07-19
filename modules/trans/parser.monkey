@@ -15,8 +15,16 @@ Class ScopeExpr Extends Expr
 		Self.scope=scope
 	End
 	
+	Method Copy:Expr()
+		Return Self
+	End
+
+	Method ToString$()
+		Print "ScopeExpr("+scope.ToString()+")"
+	End
+		
 	Method Semant:Expr()
-		SyntaxErr
+		Err "Syntax error."
 	End
 
 	Method SemantScope:ScopeDecl()
@@ -73,7 +81,7 @@ Class ForEachinStmt Extends Stmt
 			block.AddStmt whileStmt
 		
 		Else If ObjectType( expr.exprType )
-
+		
 			Local enumerInit:Expr=New FuncCallExpr( New IdentExpr( "ObjectEnumerator",expr ),[] )
 			Local enumerTmp:LocalDecl=New LocalDecl( "",Null,enumerInit )
 
@@ -94,7 +102,7 @@ Class ForEachinStmt Extends Stmt
 			block.AddStmt whileStmt
 
 		Else
-			SyntaxErr
+			InternalErr
 		Endif
 		
 		block.Semant
@@ -115,12 +123,19 @@ Class IdentExpr Extends Expr
 		Self.expr=expr
 	End
 	
+	Method Copy:Expr()
+		Return New IdentExpr( ident,CopyExpr(expr) )
+	End
+	
 	Method ToString$()
-		Return ident
+		Local t$="IdentExpr(~q"+ident+"~q"
+		If expr t+=","+expr.ToString()
+		Return t+")"
 	End
 	
 	Method IdentScope:ScopeDecl()
 		If Not expr Return _env
+		
 		Local scope:ScopeDecl=expr.SemantScope()
 		If scope
 			expr=Null
@@ -164,23 +179,22 @@ Class IdentExpr Extends Expr
 	
 		Local vdecl:ValDecl=scope.FindValDecl( ident )
 		If vdecl
+		
 			If ConstDecl( vdecl )
 				If rhs Err "Constant '"+ident+"' cannot be modified."
 				Return New ConstExpr( vdecl.ty,ConstDecl( vdecl ).value ).Semant()
 			Else If FieldDecl( vdecl )
-			
 				If expr Return New MemberVarExpr( expr,VarDecl( vdecl ) ).Semant()
-				
 				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
 			Endif
-
+			
 			Return New VarExpr( VarDecl( vdecl ) ).Semant()
 		Endif
 		
 		If op And op<>"="
 
 			Local fdecl:FuncDecl=scope.FindFuncDecl( ident,[] )
-			If Not fdecl IdentErr scope	'Err "identifier '"+ident+"' not found"
+			If Not fdecl IdentErr scope
 
 			If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
 			Local lhs:Expr
@@ -209,7 +223,7 @@ Class IdentExpr Extends Expr
 		If rhs args=[rhs]
 		
 		Local fdecl:FuncDecl=scope.FindFuncDecl( ident,args )
-		If Not fdecl IdentErr scope	'Err "identifier '"+ident+"' not found"
+		If Not fdecl IdentErr scope
 
 		If _env.ModuleScope().IsStrict() And Not fdecl.IsProperty() Err "Identifier '"+ident+"' cannot be used in this way."
 		
@@ -222,10 +236,10 @@ Class IdentExpr Extends Expr
 	End
 
 	Method SemantFunc:Expr( args:Expr[] )
-
+	
 		Local scope:ScopeDecl=IdentScope()
-		
 		Local fdecl:FuncDecl=scope.FindFuncDecl( ident,args )
+	
 		If fdecl
 			If Not fdecl.IsStatic()
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
@@ -236,12 +250,10 @@ Class IdentExpr Extends Expr
 		
 		If args.Length=1 And args[0] And ObjectType( args[0].exprType )
 			Local cdecl:ClassDecl=ClassDecl( scope.FindScopeDecl( ident ) )
-			If cdecl Return New CastExpr( New ObjectType( cdecl ),args[0],CAST_EXPLICIT ).Semant()
+			If cdecl Return args[0].Cast( New ObjectType(cdecl),CAST_EXPLICIT )
 		Endif
 		
 		IdentErr scope
-		
-'		Err "function '"+ident+"' not found"
 
 		Return Null
 	End
@@ -251,7 +263,7 @@ Class IdentExpr Extends Expr
 		Local scope:ScopeDecl=expr.SemantScope()
 		If scope Return scope.FindScopeDecl( ident )
 	End
-	
+		
 End
 
 Class FuncCallExpr Extends Expr
@@ -263,8 +275,20 @@ Class FuncCallExpr Extends Expr
 		Self.args=args
 	End
 	
+	Method Copy:Expr()
+		Return New FuncCallExpr( CopyExpr(expr),CopyArgs(args) )
+	End
+	
+	Method ToString$()
+		Local t$="FuncCallExpr("+expr.ToString()
+		For Local arg:=Eachin args
+			t+=","+arg.ToString()
+		Next
+		Return t+")"
+	End
+	
 	Method Semant:Expr()
-		SemantArgs args
+		args=SemantArgs( args )
 		Return expr.SemantFunc( args )
 	End
 
@@ -276,6 +300,7 @@ Class Parser
 	Field _toker:Toker
 	Field _toke$
 	Field _tokeType
+	Field _tokeSpace
 	Field _tokerStack:=New List<Toker>
 	
 	Field _block:BlockDecl
@@ -313,10 +338,14 @@ Class Parser
 	Method NextToke$()
 		Local toke$=_toke
 		
+		_tokeSpace=False
+		
 		Repeat
 			_toke=_toker.NextToke()
 			_tokeType=_toker.TokeType()
-		Until _tokeType<>TOKE_SPACE
+			If _tokeType<>TOKE_SPACE Exit
+			_tokeSpace=True
+		Forever
 		
 		If _tokeType=TOKE_KEYWORD _toke=_toke.ToLower()
 
@@ -326,7 +355,7 @@ Class Parser
 	End
 	
 	Method Parse( toke$ )
-		If _toke<>toke SyntaxErr
+		If _toke<>toke Err "Syntax error - expecting '"+toke+"'."
 		NextToke
 	End
 	
@@ -357,7 +386,8 @@ Class Parser
 		Select _toke
 		Case "@" NextToke
 		Case "string","array","object"
-		Default	If _tokeType<>TOKE_IDENT SyntaxErr
+		Default	
+			If _tokeType<>TOKE_IDENT Err "Syntax error - expecting identifier."
 		End
 		Local id$=_toke
 		NextToke
@@ -411,53 +441,13 @@ Class Parser
 			NextToke
 			ty=ParseNewType()
 		Default
-			If _module.IsStrict() SyntaxErr
+			If _module.IsStrict() Err "Illegal type expression."
 			ty=Type.intType
 		End Select
 		While CParse( "[]" )
 			ty=New ArrayType( ty )
 		Wend
 		Return ty
-	End
-
-	Method ParseStmtArgs:Expr[]()
-		Local args:Expr[]
-		If CParse( "()" ) Return args
-		Local nargs
-		If Not AtEos()
- 			Repeat
-				Local arg:Expr
-				If Not AtEos() And _toke<>"," arg=ParseExpr()
-				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=arg
-				nargs+=1
-				If CParse( ")" ) Exit 'stmt args kludge!
-				If AtEos() Exit
-				Parse ","
- 			Forever
-		Endif
-		Return args[..nargs]
-	End
-	
-	Method ParseArgs:Expr[]( stmt )
-		If stmt Return ParseStmtArgs()
-		Local args:Expr[]
-		If CParse( "()" ) Return args
-		If Not CParse( "(" ) Return args
-		Local nargs
-		If _toke<>")"
- 			Repeat
-				Local arg:Expr
-				If _toke<>")" And _toke<>"," arg=ParseExpr()
-				If args.Length=nargs args=args.Resize( nargs+10 )
-				args[nargs]=arg
-				nargs+=1
-				If _toke=")" Exit
-				Parse ","
- 			Forever
-  		Endif
-		Parse ")"
-		Return args[..nargs]
 	End
 	
 	Method ParseArrayExpr:ArrayExpr()
@@ -474,14 +464,76 @@ Class Parser
 		Return New ArrayExpr( args )
 	End
 	
+	Method ParseArgs:Expr[]( stmt )
+
+		Local args:Expr[]
+		
+		If stmt
+			If AtEos() Return args
+		Else
+			If _toke<>"(" Return args
+		Endif
+		
+		Local nargs,eat
+		
+		If _toke="("
+			If stmt
+				Local toker:=New Toker( _toker ),bra=1
+				Repeat
+					toker.NextToke
+					toker.SkipSpace
+					Select toker.Toke().ToLower()
+					Case "","~n","else"
+						Err "Parenthesis mismatch error."
+					Case "("
+						bra+=1
+					Case ","
+						If bra<>1 Continue
+						eat=True
+						Exit
+					Case ")"
+						bra-=1
+						If bra Continue
+						toker.NextToke
+						toker.SkipSpace
+						Select toker.Toke().ToLower()
+						Case ".","(","[","","~n","Else"
+							eat=True
+						End
+						Exit
+					End
+				Forever
+			Else
+				eat=True
+			Endif
+			If eat And NextToke()=")" 
+				NextToke
+				Return args
+			Endif
+		Endif
+		
+		Repeat
+			Local arg:Expr
+			If _toke<>"," And Not AtEos() arg=ParseExpr()
+			If args.Length=nargs args=args.Resize( nargs+10 )
+			args[nargs]=arg
+			nargs+=1
+		Until Not CParse(",")
+		args=args[..nargs]
+		
+		If eat Parse ")"
+		
+		Return args
+	End
+	
 	Method ParsePrimaryExpr:Expr( stmt )
 	
 		Local expr:Expr
+
 		Select _toke
 		Case "("
 			NextToke
 			expr=ParseExpr()
-			If _toke="," Return expr	'stmt args kludge!
 			Parse ")"
 		Case "["
 			expr=ParseArrayExpr()
@@ -538,30 +590,7 @@ Class Parser
 			Case TOKE_IDENT
 				expr=New IdentExpr( ParseIdent() )
 			Case TOKE_INTLIT
-				Local t$=_toke
-				#rem 'moved to ConstExpr ctor
-				If _toke.StartsWith( "%" )
-					Local val=0
-					For Local i=1 Until t.Length
-						Local ch=_toke[i]
-						val=val Shl 1 | (ch-48)
-					Next
-					t=String( val )
-				Else If _toke.StartsWith( "$" )
-					Local val=0
-					t=t.ToUpper()
-					For Local i=1 Until t.Length
-						Local ch=_toke[i]
-						If ch>=48 And ch<58
-							val=val Shl 4 | (ch & 15)
-						Else
-							val=val Shl 4 | ((ch & 15)+9)
-						Endif
-					Next
-					t=String( val )
-				Endif
-				#end
-				expr=New ConstExpr( Type.intType,t )
+				expr=New ConstExpr( Type.intType,_toke )
 				NextToke
 			Case TOKE_FLOATLIT
 				expr=New ConstExpr( Type.floatType,_toke )
@@ -570,18 +599,24 @@ Class Parser
 				expr=New ConstExpr( Type.stringType,BmxUnquote( _toke ) )
 				NextToke
 			Default
-				Err "Error parsing '"+_toke+"'."
+				Err "Syntax error - unexpected token '"+_toke+"'"
 			End Select
 		End Select
 
 		Repeat
+			
 			Select _toke
 			Case "."
+
 				NextToke
 				expr=New IdentExpr( ParseIdent(),expr )
-			Case "(","()"
+				
+			Case "("
+			
 				expr=New FuncCallExpr( expr,ParseArgs( stmt ) )
+
 			Case "["
+			
 				NextToke
 				If CParse( ".." )
 					If _toke="]"
@@ -734,7 +769,6 @@ Class Parser
 	End
 	
 	Method ParseExpr:Expr()
-
 		Return ParseOrExpr()
 	End
 	
@@ -760,12 +794,12 @@ Class Parser
 			Select _toke
 			Case "endif"
 				If term="end" Exit
-				SyntaxErr
+				Err "Syntax error - expecting 'End'."
 			Case "else","elseif"
 				Local elif=_toke="elseif"
 				NextToke
 				If _block=elseBlock
-					SyntaxErr
+					Err "If statement can only have one 'else' block."
 				Endif
 				PopBlock
 				PushBlock elseBlock
@@ -779,12 +813,8 @@ Class Parser
 		PopBlock
 
 		If eatTerm
-			If _toke="end"
-				NextToke
-				CParse "if"
-			Else
-				NextToke
-			Endif
+			NextToke
+			If term="end" CParse "if"
 		Endif
 		
 		Local stmt:IfStmt=New IfStmt( expr,thenBlock,elseBlock )
@@ -877,6 +907,7 @@ Class Parser
 			Local stmt:ForEachinStmt=New ForEachinStmt( varid,varty,varlocal,expr,block )
 			
 			_block.AddStmt stmt
+
 			Return
 		Endif
 		
@@ -992,7 +1023,7 @@ Class Parser
 				
 				block=elseBlock
 			Default
-				SyntaxErr
+				Err "Syntax error - expecting 'Case', 'Default' or 'End'."
 			End Select
 		Wend
 		
@@ -1041,7 +1072,6 @@ Class Parser
 		Case "~n"
 			NextToke
 		Default
-		
 			Local expr:Expr=ParsePrimaryExpr( True )
 			
 			Select _toke
@@ -1055,21 +1085,19 @@ Class Parser
 					Endif
 					_block.AddStmt New AssignStmt( op,expr,ParseExpr() )
 				Else
-					SyntaxErr
+					Err "Assignment operator '"+_toke+"' cannot be used this way."
 				Endif
 				Return
 			End
 			
-			If IdentExpr( expr ) 
+			If IdentExpr( expr )
 			
-				expr=New FuncCallExpr( expr,ParseStmtArgs() )
+				expr=New FuncCallExpr( expr,ParseArgs( True ) )
 				
 			Else If FuncCallExpr( expr) Or InvokeSuperExpr( expr ) Or NewObjectExpr( expr )
-			
+
 			Else
-			
-				SyntaxErr
-				
+				Err "Expression cannot be used as a statement."
 			Endif
 			
 			_block.AddStmt New ExprStmt( expr )
@@ -1170,28 +1198,26 @@ Class Parser
 		Endif
 		
 		Local args:ArgDecl[]
-		If CParse( "()" )
-		Else
-			Parse "("
-			SkipEols
-			If _toke<>")"
-				Local nargs
-				Repeat
-					Local id$=ParseIdent()
-					Local ty:Type=ParseDeclType()
-					Local init:Expr
-					If CParse( "=" ) init=ParseExpr()
-					Local arg:ArgDecl=New ArgDecl( id,ty,init )
-					If args.Length=nargs args=args.Resize( nargs+10 )
-					args[nargs]=arg
-					nargs+=1
-					If _toke=")" Exit
-					Parse ","
-				Forever
-				args=args[..nargs]
-			Endif
-			Parse ")"
+		
+		Parse "("
+		SkipEols
+		If _toke<>")"
+			Local nargs
+			Repeat
+				Local id$=ParseIdent()
+				Local ty:Type=ParseDeclType()
+				Local init:Expr
+				If CParse( "=" ) init=ParseExpr()
+				Local arg:ArgDecl=New ArgDecl( id,ty,init )
+				If args.Length=nargs args=args.Resize( nargs+10 )
+				args[nargs]=arg
+				nargs+=1
+				If _toke=")" Exit
+				Parse ","
+			Forever
+			args=args[..nargs]
 		Endif
+		Parse ")"
 
 		Repeat		
 			If CParse( "final" )
@@ -1218,7 +1244,7 @@ Class Parser
 				
 				'Array $resize hack!
 				If funcDecl.munged="$resize"
-					funcDecl.retType=Type.emptyArrayType
+					funcDecl.retTypeExpr=Type.emptyArrayType
 				Endif
 				
 			Endif
@@ -1275,9 +1301,19 @@ Class Parser
 		Endif
 		
 		If CParse( "<" )
+		
 			If attrs & DECL_EXTERN
 				Err "Extern classes cannot be generic."
 			Endif
+			
+			If attrs & CLASS_INTERFACE
+				Err "Interfaces cannot be generic."
+			Endif
+			
+			If attrs & CLASS_TEMPLATEARG
+				Err "Class parameters cannot be generic."
+			Endif
+			
 			Local nargs
 			Repeat
 				Local decl:ClassDecl=ParseClassDecl( "",CLASS_TEMPLATEARG )
@@ -1286,42 +1322,59 @@ Class Parser
 				nargs+=1
 			Until Not CParse(",")
 			args=args[..nargs]
+			
 			Parse ">"
 		Endif
 		
 		If CParse( "extends" )
+		
+			If attrs & CLASS_TEMPLATEARG
+				Err "Extends cannot be used with class parameters."
+			Endif
+			
 			If CParse( "null" )
+			
 				If attrs & CLASS_INTERFACE
-					Err "Interfaces cannot extend Null"
-				Else If Not (attrs & DECL_EXTERN)
-					Err "Only extern objects can extend Null."
+					Err "Interfaces cannot extend null"
 				Endif
+				
+				If Not (attrs & DECL_EXTERN)
+					Err "Only extern objects can extend null."
+				Endif
+				
 				superTy=Null
+				
+			Else If attrs & CLASS_INTERFACE
+			
+				Local nimps
+				Repeat
+					If imps.Length=nimps imps=imps.Resize( nimps+10 )
+					imps[nimps]=ParseIdentType()
+					nimps+=1
+				Until Not CParse(",")
+				imps=imps[..nimps]
+				superTy=Type.objectType
 			Else
-				If attrs & CLASS_INTERFACE
-					Local nimps
-					Repeat
-						If imps.Length=nimps imps=imps.Resize( nimps+10 )
-						imps[nimps]=ParseIdentType()
-						nimps+=1
-					Until Not CParse(",")
-					imps=imps[..nimps]
-				Else
-					superTy=ParseIdentType()
-				Endif
+				superTy=ParseIdentType()
 			Endif
 		Else
-			If Not (attrs & CLASS_INTERFACE)
-				superTy=New IdentType( "object",[] )
-			Endif
+			superTy=Type.objectType
 		Endif
-#rem		
+
 		If CParse( "implements" )
+		
 			If attrs & DECL_EXTERN
-				Err "Extern classes cannot use implements"
-			Else If attrs & CLASS_INTERFACE
-				Err "Interfaces cannot use implements"
+				Err "Implements cannot be used with external classes."
 			Endif
+		
+			If attrs & CLASS_INTERFACE
+				Err "Implements cannot be used with interfaces."
+			Endif
+			
+			If attrs & CLASS_TEMPLATEARG
+				Err "Implements cannot be used with class parameters."
+			Endif
+			
 			Local nimps
 			Repeat
 				If imps.Length=nimps imps=imps.Resize( nimps+10 )
@@ -1330,17 +1383,22 @@ Class Parser
 			Until Not CParse(",")
 			imps=imps[..nimps]
 		Endif
-#end
+
 		Repeat
 			If CParse( "final" )
+			
 				If attrs & CLASS_INTERFACE
-					Err "Interfaces cannot be declared 'Final'"
+					Err "Final cannot be used with interfaces."
 				Endif
+				
 				attrs|=DECL_FINAL
+				
 			Else If CParse( "abstract" )
+			
 				If attrs & CLASS_INTERFACE
-					Err "Interfaces cannot be declared 'Abstract'"
+					Err "Abstract cannot be used with interfaces."
 				Endif
+				
 				attrs|=DECL_ABSTRACT
 			Else
 				Exit
@@ -1357,20 +1415,12 @@ Class Parser
 		If classDecl.IsTemplateArg() Return classDecl
 
 		Local decl_attrs=(attrs & DECL_EXTERN)
-
+		
+		Local method_attrs=decl_attrs|FUNC_METHOD
+		If attrs & CLASS_INTERFACE method_attrs|=DECL_ABSTRACT
+		
 		Repeat
-			'
 			SkipEols
-			'
-			If attrs & CLASS_INTERFACE
-				If _toke<>"method"
-					Select _toke
-					Case "private","public","const","global","field","function"
-						Err "Interfaces may only contain method declarations."
-					End
-				Endif
-			Endif
-			'
 			Select _toke
 			Case "end"
 				NextToke
@@ -1382,21 +1432,22 @@ Class Parser
 				NextToke
 				decl_attrs=decl_attrs & ~DECL_PRIVATE
 			Case "const","global","field"
+				If (attrs & CLASS_INTERFACE) And _toke<>"const"
+					Err "Interfaces can only contain constants and methods."
+				Endif
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
 			Case "method"
-				If attrs & CLASS_INTERFACE
-					Local decl:=ParseFuncDecl( _toke,decl_attrs|FUNC_METHOD|DECL_ABSTRACT )
-					classDecl.InsertDecl decl
-				Else
-					Local decl:=ParseFuncDecl( _toke,decl_attrs|FUNC_METHOD )
-					If decl.IsCtor() decl.retType=New ObjectType( classDecl )
-					classDecl.InsertDecl decl
-				Endif
+				Local decl:=ParseFuncDecl( _toke,method_attrs )
+				If decl.IsCtor() decl.retTypeExpr=New ObjectType( classDecl )
+				classDecl.InsertDecl decl
 			Case "function"
+				If (attrs & CLASS_INTERFACE) And _toke<>"const"
+					Err "Interfaces can only contain constants and methods."
+				Endif
 				Local decl:FuncDecl=ParseFuncDecl( _toke,decl_attrs )
 				classDecl.InsertDecl decl
 			Default
-				SyntaxErr
+				Err "Syntax error - expecting class member declaration."
 			End Select
 		Forever
 		
@@ -1437,7 +1488,7 @@ Class Parser
 		
 	End
 	
-	Method ImportModule( modpath$,pub )
+	Method ImportModule( modpath$,attrs )
 	
 		Local filepath$
 		
@@ -1479,10 +1530,10 @@ Class Parser
 		Endif
 		
 		_module.imported.Insert mdecl.filepath,mdecl
-	
-		If pub _module.pubImported.Insert mdecl.filepath,mdecl
-
-		_module.InsertAlias mdecl.ident,mdecl
+		
+		If Not (attrs & DECL_PRIVATE) _module.pubImported.Insert mdecl.filepath,mdecl
+		
+		_module.InsertDecl New AliasDecl( mdecl.ident,mdecl,attrs )
 
 	End
 	
@@ -1520,8 +1571,8 @@ Class Parser
 
 		_app.InsertModule _module
 		
-		ImportModule "monkey.lang",False
-		ImportModule "monkey",False
+		ImportModule "monkey.lang",0
+		ImportModule "monkey",0
 		
 		Local attrs
 		
@@ -1542,15 +1593,19 @@ Class Parser
 				If _tokeType=TOKE_STRINGLIT
 					ImportFile ReplaceEnvTags( ParseStringLit() )
 				Else
-					ImportModule ParseModPath(),(attrs & DECL_PRIVATE)=0
+					ImportModule ParseModPath(),attrs
 				Endif
 			Case "alias"
 				NextToke
 				Repeat
 					Local ident$=ParseIdent()
 					Parse "="
+					
 					Local decl:Object
 					Local scope:ScopeDecl=_module
+					
+					_env=_module	'naughty! Shouldn't be doing GetDecl in parser...
+					
 					Repeat
 						Local id$=ParseIdent()
 						decl=scope.FindDecl( id )
@@ -1559,14 +1614,11 @@ Class Parser
 						scope=ScopeDecl( decl )
 						If Not scope Or FuncDecl( scope ) Err "Invalid scope '"+id+"'."
 					Forever
-					Local funcs:=FuncDeclList( decl )
-					If funcs
-						For Local decl:=Eachin funcs
-							_module.InsertAlias ident,decl
-						Next
-					Else
-						_module.InsertAlias ident,Decl( decl )
-					Endif
+					
+					_env=Null	'/naughty
+
+					_module.InsertDecl New AliasDecl( ident,decl,attrs )
+					
 				Until Not CParse(",")
 			Default
 				Exit
@@ -1598,14 +1650,12 @@ Class Parser
 				_module.InsertDecls ParseDecls( _toke,attrs )
 			Case "class"
 				_module.InsertDecl ParseClassDecl( _toke,attrs )
-#rem				
 			Case "interface"
 				_module.InsertDecl ParseClassDecl( _toke,attrs|CLASS_INTERFACE|DECL_ABSTRACT )
-#end
 			Case "function"
 				_module.InsertDecl ParseFuncDecl( _toke,attrs )
 			Default
-				SyntaxErr
+				Err "Syntax error - expecting declaration."
 			End Select
 		Wend
 		
@@ -1672,7 +1722,7 @@ Function PreProcess$( path$ )
 	
 		If stm="end" Or stm="else"
 			If toker.TokeType=TOKE_SPACE toker.NextToke
-			If toker.Toke="if" 
+			If toker.Toke.ToLower()="if" 
 				toker.NextToke
 				stm+="if"
 			Endif
@@ -1720,9 +1770,11 @@ Function PreProcess$( path$ )
 			Endif
 			
 		Case "error"
+		
 			If con=ifnest
 				Err ReplaceEnvTags( Eval( toker,Type.stringType ) )
 			Endif
+
 		Default
 			Err "Unrecognized preprocessor directive '"+stm+"'."
 		End
@@ -1779,9 +1831,9 @@ Function Eval$( source$,ty:Type )
 	
 	Local expr:=parser.ParseExpr()
 	
-	If ty expr=New CastExpr( ty,expr,CAST_EXPLICIT )
-	
 	expr=expr.Semant()
+	
+	If ty expr=expr.Cast( ty )
 	
 	Local val$=expr.Eval()
 	

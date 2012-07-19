@@ -15,10 +15,12 @@ Class @String Extends Null="String"
 
 	Method Length:Int() Property="$length"
 	
+	Method Compare:Int( str:String )="$compare"
+
 	Method Find:Int( str:String,start:Int=0 )="$find"
 	Method FindLast:Int( str:String )="$findlast"
 	Method FindLast:Int( str:String,start:Int )="$findlast2"
-
+	
 	Method Trim:String()="$trim"
 	Method Join:String( bits:String[] )="$join"
 	Method Split:String[]( sep:String )="$split"
@@ -43,5 +45,9 @@ Class @Array Extends Null="Array"
 End
 
 Class @Object Extends Null="Object"
+
+'	Method Equals?( obj:Object )
+	
+'	Method Compare( obj:Object )
 
 End

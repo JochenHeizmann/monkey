@@ -32,14 +32,14 @@ Function SelectTarget:Target( target$ )
 		Return New Html5Target
 	Case "flash"
 		Return New FlashTarget
-	Case "xna"
-		Return New XnaTarget
 	Case "android"
 		Return New AndroidTarget
-	Case "ios"
-		Return New IosTarget
 	Case "glfw"
 		Return New GlfwTarget
+	Case "xna"
+		Return New XnaTarget
+	Case "ios"
+		Return New IosTarget
 	Case "stdcpp"
 		Return New StdcppTarget
 	Default
