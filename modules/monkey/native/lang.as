@@ -89,36 +89,49 @@ function new_object_array( len:int ):Array{
 	return arr;
 }
 
+function resize_bool_array( arr:Array,len:int ):Array{
+	var i:int=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=false;
+	return arr;
+}
+
 function resize_number_array( arr:Array,len:int ):Array{
-   var res:Array=new Array( len );
-   var n:int=Math.min( arr.length,len );
-   for( var i:int=0;i<n;++i ) res[i]=arr[i];
-   for( var j:int=n;j<len;++j ) res[j]=0;
-   return res;
+	var i:int=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=0;
+	return arr;
 }
 
 function resize_string_array( arr:Array,len:int ):Array{
-   var res:Array=new Array( len );
-   var n:int=Math.min( arr.length,len );
-   for( var i:int=0;i<n;++i ) res[i]=arr[i];
-   for( var j:int=n;j<len;++j ) res[j]='';
-   return res;
+	var i:int=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]="";
+	return arr;
 }
 
 function resize_array_array( arr:Array,len:int ):Array{
-   var res:Array=new Array( len );
-   var n:int=Math.min( arr.length,len );
-   for( var i:int=0;i<n;++i ) res[i]=arr[i];
-   for( var j:int=n;j<len;++j ) res[j]=[];
-   return res;
+	var i:int=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=[];
+	return arr;
 }
 
 function resize_object_array( arr:Array,len:int ):Array{
-   var res:Array=new Array( len );
-   var n:int=Math.min( arr.length,len );
-   for( var i:int=0;i<n;++i ) res[i]=arr[i];
-   for( var j:int=n;j<len;++j ) res[j]=null;
-   return res;
+	var i:int=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=null;
+	return arr;
 }
 
 function string_replace( str:String,find:String,rep:String ):String{	//no unregex replace all?!?

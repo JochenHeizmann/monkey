@@ -5,5 +5,5 @@ APP_LABEL=Monkey Game
 'Java package to create - must be valid java package identifier and must be UNIQUE per app, eg: com.mybizid.mygameid
 APP_PACKAGE=com.monkey
 
-'Must be one of: user, portrait, langscape, behind, sensor, nosensor, unspecified - experiment!
+'Must be one of: user, portrait, landscape, behind, sensor, nosensor, unspecified - experiment!
 SCREEN_ORIENTATION=portrait

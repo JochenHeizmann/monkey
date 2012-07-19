@@ -248,8 +248,10 @@ Class AsTranslator Extends Translator
 		'array methods
 		Case "resize"
 			Local ty:=ArrayType( expr.exprType ).elemType
+			If BoolType( ty ) Return "resize_bool_array"+Bra( texpr+","+arg0 )
 			If NumericType( ty ) Return "resize_number_array"+Bra( texpr+","+arg0 )
 			If StringType( ty ) Return "resize_string_array"+Bra( texpr+","+arg0 )
+			If ArrayType( ty ) Return "resize_array_array"+Bra( texpr+","+arg0 )
 			If ObjectType( ty ) Return "resize_object_array"+Bra( texpr+","+arg0 )
 			InternalErr
 		'string methods

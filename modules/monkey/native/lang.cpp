@@ -116,6 +116,9 @@ struct gc_object{
 	}
 };
 
+//queue to use to prevent ultra recursive stack overuse!
+std::vector<gc_object*> gc_marked_queue;
+
 void gc_mark();
 
 void gc_sweep(){
@@ -139,6 +142,18 @@ void gc_sweep(){
 	gc_marked=0;
 }
 
+void gc_collect(){
+	gc_mark();
+	
+	while( !gc_marked_queue.empty() ){
+		gc_object *p=gc_marked_queue.back();
+		gc_marked_queue.pop_back();
+		p->mark();
+	}
+	
+	gc_sweep();
+}
+
 void gc_mark( char t ){
 }
 
@@ -151,6 +166,7 @@ void gc_mark( int t ){
 void gc_mark( float t ){
 }
 
+//This marks an object AND call it's mark routine
 void gc_mark( gc_object *p ){
 	if( !p || (p->flags & 1)==gc_markbit ) return;
 	p->flags^=1;
@@ -158,9 +174,12 @@ void gc_mark( gc_object *p ){
 	p->mark();
 }
 
-void gc_collect(){
-	gc_mark();
-	gc_sweep();
+//This marks an object but queues it's mark routine for later execution.
+void gc_mark_q( gc_object *p ){
+	if( !p || (p->flags & 1)==gc_markbit ) return;
+	p->flags^=1;
+	++gc_marked;
+	gc_marked_queue.push_back( p );
 }
 
 // ***** Monkey Types *****

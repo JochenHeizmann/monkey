@@ -299,6 +299,8 @@ Class JsTranslator Extends Translator
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
+		If classDecl.IsInterface() Return
+		
 		PushEnv classDecl
 		
 		Local classid$=classDecl.munged

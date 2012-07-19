@@ -86,43 +86,48 @@ function new_object_array( len ){
 }
 
 function resize_bool_array( arr,len ){
-   var res=Array( len );
-   var n=Math.min( arr.length,len );
-   for( var i=0;i<n;++i ) res[i]=arr[i];
-   for( var j=n;j<len;++j ) res[j]=false;
-   return res;
+	var i=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=false;
+	return arr;
 }
 
 function resize_number_array( arr,len ){
-   var res=Array( len );
-   var n=Math.min( arr.length,len );
-   for( var i=0;i<n;++i ) res[i]=arr[i];
-   for( var j=n;j<len;++j ) res[j]=0;
-   return res;
+	var i=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=0;
+	return arr;
 }
 
 function resize_string_array( arr,len ){
-   var res=Array( len );
-   var n=Math.min( arr.length,len );
-   for( var i=0;i<n;++i ) res[i]=arr[i];
-   for( var j=n;j<len;++j ) res[j]='';
-   return res;
+	var i=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]="";
+	return arr;
 }
 
 function resize_array_array( arr,len ){
-   var res=Array( len );
-   var n=Math.min( arr.length,len );
-   for( var i=0;i<n;++i ) res[i]=arr[i];
-   for( var j=n;j<len;++j ) res[j]=[];
-   return res;
+	var i=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=[];
+	return arr;
 }
 
 function resize_object_array( arr,len ){
-   var res=Array( len );
-   var n=Math.min( arr.length,len );
-   for( var i=0;i<n;++i ) res[i]=arr[i];
-   for( var j=n;j<len;++j ) res[j]=null;
-   return res;
+	var i=arr.length;
+	arr=arr.slice(0,len);
+	if( len<=i ) return arr;
+	arr.length=len;
+	while( i<len ) arr[i++]=null;
+	return arr;
 }
 
 function string_replace( str,find,rep ){	//no unregex replace all?!?

@@ -1,6 +1,31 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+
+***** V38 *****
+
+Modules:
+
+lang.cpp - Fixed C++ GC stack thrash crash.
+
+iOS mojo.audio - reverted to old custom WAV loader for wav files due to mystery 'pops' in ExtAudioFileRead based loader.
+
+
+Trans (1.09):
+
+Fixed weird bug with MSBUILD using 'Platform' Env var.
+
+Fixed astranslator array resize not handling bool/array arrays!
+
+Implemented JS/AS array resize tweak.
+
+Fixed GLFW target WINDOW_TITLE.
+
+Fixed trans/flash target file type checking to work with upper/lower exts.
+
+cpptranslater - Fixed C++ GC stack thrash crash.
+
+
 ***** V37 *****
 
 Modules:

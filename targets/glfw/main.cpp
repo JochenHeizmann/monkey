@@ -72,7 +72,6 @@ int main( int argc,const char *argv[] ){
 	if( !h ) h=desktopMode.Height;
 	
 	glfwOpenWindowHint( GLFW_WINDOW_NO_RESIZE,WINDOW_NO_RESIZE );
-	glfwSetWindowTitle( WINDOW_TITLE );
 	
 	if( !glfwOpenWindow( w,h, 0,0,0,0,0,0, WINDOW_MODE ) ){
 		puts( "glfwOpenWindow failed" );
@@ -81,6 +80,8 @@ int main( int argc,const char *argv[] ){
 
 	glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );	
 
+	glfwSetWindowTitle( WINDOW_TITLE );
+	
 	ALCdevice *alcDevice=alcOpenDevice( 0 );
 	if( !alcDevice ){
 		puts( "alcOpenDevice failed" );

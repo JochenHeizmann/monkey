@@ -34,7 +34,7 @@ Class GlfwTarget Extends Target
 			If OPT_BUILD
 
 				ChangeDir "vc2010"
-				Execute MSBUILD_PATH+" /p:Configuration="+CASED_CONFIG+" MonkeyGame.sln"
+				Execute MSBUILD_PATH+" /p:Configuration="+CASED_CONFIG+";Platform=~qwin32~q MonkeyGame.sln"
 				
 				If OPT_RUN
 					ChangeDir CASED_CONFIG

@@ -13,6 +13,7 @@
 #end
 
 Import webgl
+Import websocket
 
 Import "dom.js"
 
@@ -338,8 +339,8 @@ Class Element Extends Node
 	
 	Method getAttribute$( qualifiedName$ )
 	Method getAttributeNS$( namespace$,localName$ )
-	Method SetAttribute( qualifiedName$,value$ )
-	Method SetAttributeNS( namespace$,localName$,value$ )
+	Method setAttribute( qualifiedName$,value$ )
+	Method setAttributeNS( namespace$,localName$,value$ )
 	Method removeAttribute( qualifiedName$ )
 	Method removeAttributeNS( namespace$,localName$ )
 	Method hasAttribute?( qualifiedName$ )

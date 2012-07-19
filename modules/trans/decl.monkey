@@ -641,7 +641,6 @@ Class FuncDecl Extends BlockDecl
 		'prefix call to super ctor if necessary
 		If IsCtor() And superCtor=Null 
 			If sclass.FindFuncDecl( "new",[] )
-'			If _env.ClassScope().superClass.FindFuncDecl( "new",[] )
 				superCtor=New InvokeSuperExpr( "new",[] )
 				stmts.AddFirst New ExprStmt( superCtor )
 			Endif
@@ -693,24 +692,27 @@ Const CLASS_INSTANCED=8		'class used in New?
 
 Class ClassDecl Extends ScopeDecl
 
-	Field superTy:IdentType
 	Field args:ClassDecl[]
+	Field superTy:IdentType
+	Field impltys:IdentType[]
 	
 	Field superClass:ClassDecl
+	Field implments:ClassDecl[]
 	
 	Field argindex=-1					'for args
-	Field instances:List<ClassDecl>		'for actual (non-arg, non-instance)
 	Field instanceof:ClassDecl			'for instances
+	Field instances:List<ClassDecl>		'for actual (non-arg, non-instance)
 	
 	Field fields:FieldDecl[]			'ALL fields - length=instance size
 	Field methods:FuncDecl[]			'ALL methods - length=vtable size
 	
-	Global nullObjectClass:=New ClassDecl( "{NULL}",Null,[],DECL_ABSTRACT|DECL_EXTERN )
+	Global nullObjectClass:=New ClassDecl( "{NULL}",[],Null,[],DECL_ABSTRACT|DECL_EXTERN )
 	
-	Method New( ident$,superTy:IdentType,args:ClassDecl[],attrs )
+	Method New( ident$,args:ClassDecl[],superTy:IdentType,impls:IdentType[],attrs )
 		Self.ident=ident
-		Self.superTy=superTy
 		Self.args=args
+		Self.superTy=superTy
+		Self.impltys=impls
 		Self.attrs=attrs
 	End
 	
@@ -865,6 +867,13 @@ Class ClassDecl Extends ScopeDecl
 	Method ExtendsClass( cdecl:ClassDecl )
 		If Self=nullObjectClass Return True
 		
+		If cdecl.IsInterface()
+			For Local tdecl:=Eachin implments
+				If tdecl=cdecl Return True
+			Next
+			Return False
+		Endif
+		
 		If cdecl.IsTemplateArg()
 			cdecl=cdecl.superClass
 			If Not cdecl Return True
@@ -898,6 +907,14 @@ Class ClassDecl Extends ScopeDecl
 			PopEnv
 		Endif
 		
+		'Semant implemented interfaces
+		implments=implments.Resize( impltys.Length )
+		For Local i=0 Until impltys.Length
+			PushEnv Self
+			implments[i]=impltys[i].FindClass()
+			PopEnv
+		Next
+		
 		'Are we abstract?
 		If Not IsAbstract()
 			For Local decl:Decl=Eachin decls
@@ -909,8 +926,7 @@ Class ClassDecl Extends ScopeDecl
 			Next
 		Endif
 		
-		If Not IsExtern()
-		
+		If Not IsExtern() And Not IsInterface()
 			Local fdecl:FuncDecl
 			For Local decl:FuncDecl=Eachin FuncDecls
 				If Not decl.IsCtor() Continue
@@ -922,13 +938,11 @@ Class ClassDecl Extends ScopeDecl
 				fdecl=decl
 				Exit
 			Next
-		
 			If Not fdecl
 				fdecl=New FuncDecl( "new",New ObjectType( Self ),[],FUNC_CTOR )
 				fdecl.AddStmt New ReturnStmt( Null )
 				InsertDecl fdecl
 			Endif
-			
 		Endif
 
 		'NOTE: do this AFTER super semant so UpdateAttrs order is cool.

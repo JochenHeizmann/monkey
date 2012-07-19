@@ -4,7 +4,7 @@ Import target
 Class FlashTarget Extends Target
 
 	Function IsValid()
-		If FLEX_PATH Return true
+		If FLEX_PATH Return True
 	End
 	
 	Method Begin()
@@ -25,15 +25,15 @@ Class FlashTarget Extends Target
 			Local stk:=New StringStack
 			For Local t$=Eachin LoadDir( "data",True )
 				If t.StartsWith( "." ) Continue
-				Select ExtractExt( t )
+				Select ExtractExt( t ).ToLower()
 				Case "png","jpg","mp3"
 					Local munged$="_"
-					For Local t$=EachIn StripExt( t ).Split( "/" )
-						For Local i=0 Until t.Length
-							If IsAlpha( t[i] ) Or IsDigit( t[i] ) Or t[i]=95 Continue
-							Die "Invalid character in flash filename"
+					For Local q$=Eachin StripExt( t ).Split( "/" )
+						For Local i=0 Until q.Length
+							If IsAlpha( q[i] ) Or IsDigit( q[i] ) Or q[i]=95 Continue
+							Die "Invalid character in flash filename: "+t+"."
 						Next
-						munged+=t.Length+t
+						munged+=q.Length+q
 					Next
 					stk.Push "[Embed(source=~qdata/"+t+"~q)]"
 					stk.Push "public static var "+munged+":Class;"

@@ -1266,13 +1266,18 @@ Class Parser
 		If toke Parse toke
 		
 		Local id$=ParseIdent()
-		Local superTy:IdentType
 		Local args:ClassDecl[]
+		Local superTy:IdentType
+		Local imps:IdentType[]
+		
+		If (attrs & CLASS_INTERFACE) And (attrs & DECL_EXTERN)
+			Err "Interfaces cannot be extern."
+		Endif
+		
 		If CParse( "<" )
 			If attrs & DECL_EXTERN
-				Err "Extern classes cannot be templates."
+				Err "Extern classes cannot be generic."
 			Endif
-'			args=New ClassDecl[]
 			Local nargs
 			Repeat
 				Local decl:ClassDecl=ParseClassDecl( "",CLASS_TEMPLATEARG )
@@ -1286,31 +1291,65 @@ Class Parser
 		
 		If CParse( "extends" )
 			If CParse( "null" )
-				If (attrs & DECL_EXTERN)
-					superTy=Null
-				Else
-					Err "Only extern objects can extend null."
+				If attrs & CLASS_INTERFACE
+					Err "Interfaces cannot extend Null"
+				Else If Not (attrs & DECL_EXTERN)
+					Err "Only extern objects can extend Null."
 				Endif
+				superTy=Null
 			Else
-				superTy=ParseIdentType()
+				If attrs & CLASS_INTERFACE
+					Local nimps
+					Repeat
+						If imps.Length=nimps imps=imps.Resize( nimps+10 )
+						imps[nimps]=ParseIdentType()
+						nimps+=1
+					Until Not CParse(",")
+					imps=imps[..nimps]
+				Else
+					superTy=ParseIdentType()
+				Endif
 			Endif
 		Else
-			superTy=New IdentType( "object",[] )
+			If Not (attrs & CLASS_INTERFACE)
+				superTy=New IdentType( "object",[] )
+			Endif
 		Endif
-		
+#rem		
+		If CParse( "implements" )
+			If attrs & DECL_EXTERN
+				Err "Extern classes cannot use implements"
+			Else If attrs & CLASS_INTERFACE
+				Err "Interfaces cannot use implements"
+			Endif
+			Local nimps
+			Repeat
+				If imps.Length=nimps imps=imps.Resize( nimps+10 )
+				imps[nimps]=ParseIdentType()
+				nimps+=1
+			Until Not CParse(",")
+			imps=imps[..nimps]
+		Endif
+#end
 		Repeat
 			If CParse( "final" )
+				If attrs & CLASS_INTERFACE
+					Err "Interfaces cannot be declared 'Final'"
+				Endif
 				attrs|=DECL_FINAL
 			Else If CParse( "abstract" )
+				If attrs & CLASS_INTERFACE
+					Err "Interfaces cannot be declared 'Abstract'"
+				Endif
 				attrs|=DECL_ABSTRACT
 			Else
 				Exit
 			Endif
 		Forever
 
-		Local classDecl:ClassDecl=New ClassDecl( id,superTy,args,attrs )
+		Local classDecl:ClassDecl=New ClassDecl( id,args,superTy,imps,attrs )
 		
-		If classDecl.IsExtern() 
+		If classDecl.IsExtern()
 			classDecl.munged=classDecl.ident
 			If CParse( "=" ) classDecl.munged=ParseStringLit()
 		Endif
@@ -1318,12 +1357,24 @@ Class Parser
 		If classDecl.IsTemplateArg() Return classDecl
 
 		Local decl_attrs=(attrs & DECL_EXTERN)
-		
-		While _toke<>"end"
-			SetErr
+
+		Repeat
+			'
+			SkipEols
+			'
+			If attrs & CLASS_INTERFACE
+				If _toke<>"method"
+					Select _toke
+					Case "private","public","const","global","field","function"
+						Err "Interfaces may only contain method declarations."
+					End
+				Endif
+			Endif
+			'
 			Select _toke
-			Case "~n"
+			Case "end"
 				NextToke
+				Exit
 			Case "private"
 				NextToke
 				decl_attrs=decl_attrs | DECL_PRIVATE
@@ -1333,18 +1384,21 @@ Class Parser
 			Case "const","global","field"
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
 			Case "method"
-				Local decl:FuncDecl=ParseFuncDecl( _toke,decl_attrs|FUNC_METHOD )
-				If decl.IsCtor() decl.retType=New ObjectType( classDecl )
-				classDecl.InsertDecl decl
+				If attrs & CLASS_INTERFACE
+					Local decl:=ParseFuncDecl( _toke,decl_attrs|FUNC_METHOD|DECL_ABSTRACT )
+					classDecl.InsertDecl decl
+				Else
+					Local decl:=ParseFuncDecl( _toke,decl_attrs|FUNC_METHOD )
+					If decl.IsCtor() decl.retType=New ObjectType( classDecl )
+					classDecl.InsertDecl decl
+				Endif
 			Case "function"
 				Local decl:FuncDecl=ParseFuncDecl( _toke,decl_attrs )
 				classDecl.InsertDecl decl
 			Default
 				SyntaxErr
 			End Select
-		Wend
-		
-		NextToke
+		Forever
 		
 		If toke CParse toke
 		
@@ -1544,6 +1598,10 @@ Class Parser
 				_module.InsertDecls ParseDecls( _toke,attrs )
 			Case "class"
 				_module.InsertDecl ParseClassDecl( _toke,attrs )
+#rem				
+			Case "interface"
+				_module.InsertDecl ParseClassDecl( _toke,attrs|CLASS_INTERFACE|DECL_ABSTRACT )
+#end
 			Case "function"
 				_module.InsertDecl ParseFuncDecl( _toke,attrs )
 			Default

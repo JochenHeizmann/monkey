@@ -399,8 +399,14 @@ Class CppTranslator Extends Translator
 		Emit "};"
 	End
 	
-	Method EmitMark( id$,ty:Type )
-		If ObjectType( ty ) Or ArrayType( ty )
+	Method EmitMark( id$,ty:Type,queue? )
+		If ObjectType( ty )
+			If queue
+				Emit "gc_mark_q("+id+");"
+			Else
+				Emit "gc_mark("+id+");"
+			Endif
+		Else If ArrayType( ty )
 			Emit "gc_mark("+id+");"
 			Return
 		Endif
@@ -443,7 +449,7 @@ Class CppTranslator Extends Translator
 		Endif
 		For Local tdecl:=Eachin classDecl.Semanted
 			Local decl:=FieldDecl( tdecl )
-			If decl EmitMark decl.munged,decl.ty
+			If decl EmitMark decl.munged,decl.ty,True
 		Next
 		Emit "}"
 
@@ -530,7 +536,7 @@ Class CppTranslator Extends Translator
 
 		Emit "void gc_mark(){"
 		For Local decl:=Eachin app.semantedGlobals
-			EmitMark TransGlobal( decl ),decl.ty
+			EmitMark TransGlobal( decl ),decl.ty,False
 		Next
 		Emit "}"
 
