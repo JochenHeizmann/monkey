@@ -9,7 +9,6 @@ Import kernpair
 'PC: http://www.angelcode.com/products/bmfont/
 'Mac/PC: http://slick.cokeandcode.com/demos/hiero.jnlp
 
-
 Class AngelFont
 	Private
 	
@@ -58,6 +57,7 @@ Class AngelFont
 	End
 
 	Method LoadFont:Void(url:String)
+		
 		error = ""
 		current = Self
 		iniText = LoadString(url+".txt")
@@ -280,18 +280,3 @@ Class AngelFont
 	End
 
 End Class
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

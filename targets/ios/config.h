@@ -14,3 +14,8 @@
 // off by default.
 //
 #define DISPLAY_LINK_ENABLED 0
+
+// Garbage collection mode.
+// Set to 1 for incremental GC (experimental), 0 for mark-and-sweep (stable).
+//
+#define INCREMENTAL_GC 0

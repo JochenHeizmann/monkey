@@ -589,6 +589,7 @@ Class CastExpr Extends Expr
 				expr=New InvokeMemberExpr( expr,fdecl,[] ).Semant()
 
 			Endif
+
 			exprType=ty
 
 		Else If BoolType( ty )
@@ -617,6 +618,7 @@ Class CastExpr Extends Expr
 		Endif
 		
 		If ConstExpr( expr ) Return EvalConst()
+
 		Return Self
 	End
 	
@@ -957,6 +959,7 @@ Class IndexExpr Extends Expr
 	
 	Method SemantSet:Expr( op$,rhs:Expr )
 		Semant
+		If StringType( expr.exprType ) Err "Strings are read only."
 		Return Self
 	End
 

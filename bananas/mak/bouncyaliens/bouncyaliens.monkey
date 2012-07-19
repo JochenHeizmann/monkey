@@ -4,11 +4,22 @@ Import mojo
 Const WIDTH#=320
 Const HEIGHT#=240
 
+Interface I
+	Method Test()
+End
+
+Class F Implements I
+	Method Test()
+	End
+End
+
 Class Sprite
 
 	Field x#,vx#
 	Field y#,vy#
 	Field f#,vf#
+	
+	Field tmp:I[10]
 	
 	Method New()
 		x=Rnd( WIDTH )
@@ -18,8 +29,12 @@ Class Sprite
 		vy=Rnd(1,2)
 		If Rnd(1)>=.5 vy=-vy
 		vf=Rnd( .5,1.5 )
-	End
 		
+		For Local i=0 Until 10
+			tmp[i]=New F
+		Next
+	End
+
 	Method Update()
 		x+=vx
 		If x<0 Or x>=WIDTH vx=-vx
@@ -27,6 +42,10 @@ Class Sprite
 		If y<0 Or y>=HEIGHT vy=-vy
 		f+=vf
 		If f>=8 f-=8
+		
+		For Local i=0 Until 10
+			tmp[i].Test
+		Next
 	End
 	
 End
@@ -48,7 +67,7 @@ Class MyApp Extends App
 		image1=LoadImage( "alien1.png",8,Image.MidHandle )
 		image2=LoadImage( "alien2.png",8,Image.MidHandle )
 		
-		For Local i=0 Until 100
+		For Local i=0 Until 500
 			sprites.Push New Sprite
 		Next
 		

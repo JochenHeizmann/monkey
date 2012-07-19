@@ -1,6 +1,24 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V49 *****
+
+Modules:
+
+flash mojo - fixed alpha bug introduced by fix for dark rendering.
+
+monkey.lang, c++ mojos - added tweaks for incremental GC.
+
+
+Trans (1.26)
+
+Fixed generic class downcast parsing bug.
+
+Added check for naughty assignments to indexed string chars.
+
+Cpp translator now emits incremental gc friendly code - must be enabled via appropriate target config.h file.
+
+
 ***** V48 *****
 
 Modules:
@@ -14,7 +32,7 @@ ios mojo - Fixed issue with backspace not working when no chars typed.
 ios mojo - added DISPLAY_LINK_ENABLED to ios config.h file to enable 60hz 'vsync' kludge. Defaults to 'off' due to issues with input lag.
 
 
-Trans (1.25)
+Trans (1.25, forgot to bump from 1.24...)
 
 Moved ios target config #defines to separate config.h file.
 

@@ -24,7 +24,7 @@ Const QUICKTRANS=False
 
 Const trans$="../bin/trans_macos"
 Const trans2$=trans
-'Const trans2$="../bin/trans_macos_v40"
+'Const trans2$="../bin/trans_macos_v48"
 Const newtrans$="trans/trans.build/stdcpp/main_macos"
 Const makemeta$="../bin/makemeta_macos"
 Const mserver$="../bin/mserver_macos"
@@ -63,7 +63,7 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 ?
 	Else
 	
-		system trans2+" -clean -target=stdcpp -config=debug trans/trans.monkey"
+		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 
 		Delay 100
 		

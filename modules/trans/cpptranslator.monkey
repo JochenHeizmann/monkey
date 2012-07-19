@@ -51,25 +51,6 @@ Class CppTranslator Extends Translator
 		Return Bra(t)
 	End
 	
-	Method TransPtrCast$( ty:Type,src:Type,expr$,cast$ )
-	
-		If Not ObjectType(ty) Or Not ObjectType(src) InternalErr
-		
-		Local t$=TransType(ty)
-		
-		If src.GetClass().IsInterface() Or ty.GetClass().IsInterface() cast="dynamic"
-		
-		If src.GetClass().IsInterface() And Not ty.GetClass().IsInterface()
-			Return cast+"_cast<"+TransType(ty)+">"+Bra( expr )
-		End
-		
-		'upcast?
-		If src.GetClass().ExtendsClass( ty.GetClass() ) Return expr
-		
-		Return cast+"_cast<"+TransType(ty)+">"+Bra( expr )
-		
-	End
-	
 	'***** Utility *****
 	
 	Method TransLocalDecl$( munged$,init:Expr )
@@ -181,10 +162,11 @@ Class CppTranslator Extends Translator
 			If IntType( src ) Return "String"+Bra( t )
 			If FloatType( src ) Return "String"+Bra( t )
 			If StringType( src ) Return t
+		Else If ObjectType( src ) And ObjectType( dst )
+			If src.GetClass().ExtendsClass( dst.GetClass() ) Return t
+			If dst.GetClass().ExtendsClass( src.GetClass() ) Return "dynamic_cast<"+TransType(dst)+">"+Bra( t )
 		Endif
 		
-		Return TransPtrCast( dst,src,t,"dynamic" )
-
 		Err "C++ translator can't convert "+src.ToString()+" to "+dst.ToString()
 	End
 	
@@ -323,16 +305,42 @@ Class CppTranslator Extends Translator
 
 	'***** Statements *****
 
-#rem	
+'#rem	
+
 	Method TransAssignStmt2$( stmt:AssignStmt )
-		Local objTy:=ObjectType( stmt.lhs.exprType )
-		If objTy
-			Local cdecl:=stmt.lhs.exprType.GetClass()
-			Return "gc_assign(&("+stmt.lhs.TransVar()+"),"+stmt.rhs.Trans()+")"
+		'
+		Local ty:=stmt.lhs.exprType
+		
+		If ObjectType( ty ) Or ArrayType( ty )
+		
+			'Ignore 'unmanaged' objects...
+			If ObjectType( ty ) And Not ty.GetClass().ExtendsObject()
+				Return Super.TransAssignStmt2( stmt )
+			Endif
+			
+			'Ignore const assignments, ie: =Null
+			If ConstExpr( stmt.rhs )
+				Return Super.TransAssignStmt2( stmt )
+			Endif
+
+			'Ignore local var assignments
+			Local varExpr:=VarExpr( stmt.lhs )
+			If varExpr And LocalDecl( varExpr.decl )
+				Return Super.TransAssignStmt2( stmt )
+			Endif
+			
+			Local t_lhs:=stmt.lhs.TransVar()
+			Local t_rhs:=stmt.rhs.Trans()
+
+'			If t_lhs.EndsWith( ".p" ) t_rhs="dynamic_cast<gc_object*>("+t_rhs+")"
+'			If t_lhs.EndsWith( ".p" ) t_lhs=t_lhs[..-2]
+
+			Return "gc_assign("+t_lhs+","+t_rhs+")"
+			
 		Endif
 		Return Super.TransAssignStmt2( stmt )
 	End
-#end
+'#end
 	
 	'***** Declarations *****
 	
@@ -462,25 +470,19 @@ Class CppTranslator Extends Translator
 	
 	Method EmitMark( id$,ty:Type,queue? )
 	
-		If ObjectType( ty )
-			Local clas:=ty.GetClass()
-			If Not clas.ExtendsObject() Return
-			
-			If id.EndsWith( ".p" )
-				If clas.IsInterface() id=id[..-2] Else InternalErr
-			Else 
-				If clas.IsInterface() InternalErr
-			Endif
+		If ObjectType( ty ) Or ArrayType( ty )
 
+			'Ignore 'unmanaged' objects...
+			If ObjectType( ty ) And Not ty.GetClass().ExtendsObject() Return
+
+			If id.EndsWith( ".p" ) id=id[..-2]
 			If queue
 				Emit "gc_mark_q("+id+");"
 			Else
 				Emit "gc_mark("+id+");"
 			Endif
-		Else If ArrayType( ty )
-			Emit "gc_mark("+id+");"
-			Return
 		Endif
+
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
@@ -610,10 +612,10 @@ Class CppTranslator Extends Translator
 
 		Emit "void gc_mark(){"
 		For Local decl:=Eachin app.semantedGlobals
-			EmitMark TransGlobal( decl ),decl.type,False
+			EmitMark TransGlobal( decl ),decl.type,True
 		Next
 		Emit "}"
-
+		
 		Return JoinLines()
 	End
 	

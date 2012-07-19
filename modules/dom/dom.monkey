@@ -383,7 +383,7 @@ Class HTMLElement Extends Element
 	Field disabled?
 	Field checked?
 
-	'Field style:CSSStyleDeclaration
+	Field style:CSSStyleDeclaration
 	
 	Method getElementsByClassName:NodeList( classNames$ )
 	Method insertAdjacentHTML( postion$,text$ )
@@ -1358,3 +1358,131 @@ End
 Class CanvasPixelArray Extends DOMObject
 	Field length
 End
+
+'This from skidracer!
+
+Class CSSStyleDeclaration
+	Field azimuth$
+	Field background$
+	Field backgroundAttachment$
+	Field backgroundColor$
+	Field backgroundImage$
+	Field backgroundPosition$
+	Field backgroundRepeat$
+	Field border$
+	Field borderCollapse$
+	Field borderColor$
+	Field borderSpacing$
+	Field borderStyle$
+	Field borderTop$
+	Field borderRight$
+	Field borderBottom$
+	Field borderLeft$
+	Field borderTopColor$
+	Field borderRightColor$
+	Field borderBottomColor$
+	Field borderLeftColor$
+	Field borderTopStyle$
+	Field borderRightStyle$
+	Field borderBottomStyle$
+	Field borderLeftStyle$
+	Field borderTopWidth$
+	Field borderRightWidth$
+	Field borderBottomWidth$
+	Field borderLeftWidth$
+	Field borderWidth$
+	Field bottom$
+	Field captionSide$
+	Field clear$
+	Field clip$
+	Field color$
+	Field content$
+	Field counterIncrement$
+	Field counterReset$
+	Field cue$
+	Field cueAfter$
+	Field cueBefore$
+	Field cursor$	
+	Field direction$
+	Field display$
+	Field elevation$
+	Field emptyCells$
+	Field cssFloat$
+	Field font$
+	Field fontFamily$
+	Field fontSize$
+	Field fontSizeAdjust$
+	Field fontStretch$
+	Field fontStyle$
+	Field fontVariant$
+	Field fontWeight$
+	Field height$
+	Field left$
+	Field letterSpacing$	
+	Field lineHeight$		
+	Field listStyle$
+	Field listStyleImage$
+	Field listStylePosition$
+	Field listStyleType$
+	Field margin$
+	Field marginTop$
+	Field marginRight$
+	Field marginBottom$
+	Field marginLeft$
+	Field markerOffset$
+	Field marks$
+	Field maxHeight$
+	Field maxWidth$
+	Field minHeight$
+	Field minWidth$
+	Field orphans$
+	Field outline$
+	Field outlineColor$
+	Field outlineStyle$
+	Field outlineWidth$
+	Field overflow$
+	Field padding$
+	Field paddingTop$
+	Field paddingRight$
+	Field paddingBottom$
+	Field paddingLeft$
+	Field page$	
+	Field pageBreakAfter$	
+	Field pageBreakBefore$	
+	Field pageBreakInside$	
+	Field pause$
+	Field pauseAfter$
+	Field pauseBefore$
+	Field pitch$
+	Field pitchRange$
+	Field playDuring$
+	Field position$
+	Field quotes$
+	Field richness$
+	Field right$
+	Field size$
+	Field speak$
+	Field speakHeader$
+	Field speakNumeral$
+	Field speakPunctuation$
+	Field speechRate$
+	Field stress$
+	Field tableLayout$
+	Field textAlign$
+	Field textDecoration$
+	Field textIndent$
+	Field textShadow$
+	Field textTransform$
+	Field top$
+	Field unicodeBidi$
+	Field verticalAlign$
+	Field visibility$
+	Field voiceFamily$
+	Field volume$
+	Field whiteSpace$
+	Field widows$
+	Field width$	
+	Field wordSpacing$
+	Field zIndex$
+End
+

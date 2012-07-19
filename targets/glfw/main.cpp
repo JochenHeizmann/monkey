@@ -83,8 +83,8 @@ int main( int argc,const char *argv[] ){
 
 	glfwSetWindowTitle( WINDOW_TITLE );
 	
-	if( alcDevice=alcOpenDevice( 0 ) ){
-		if( alcContext=alcCreateContext( alcDevice,0 ) ){
+	if( (alcDevice=alcOpenDevice( 0 )) ){
+		if( (alcContext=alcCreateContext( alcDevice,0 )) ){
 			if( alcMakeContextCurrent( alcContext ) ){
 				//alc all go!
 			}else{

@@ -480,19 +480,22 @@ Class Parser
 		Return New IdentType( id,args )
 	End
 	
-	Method CParseIdentType:IdentType()
+	Method CParseIdentType:IdentType( inner?=False )
 		If _tokeType<>TOKE_IDENT Return
 		Local id:=ParseIdent()
 		If CParse( "." )
 			If _tokeType<>TOKE_IDENT Return
 			id+="."+ParseIdent()
 		End
-		If Not CParse( "<" ) Return
+		If Not CParse( "<" ) 
+			If inner Return New IdentType( id,[] )
+			Return
+		Endif
 		Local args:Type[],nargs
 		Repeat
 			Local arg:Type=CParsePrimitiveType()
 			If Not arg 
-				arg=CParseIdentType()
+				arg=CParseIdentType( True )
 				If Not arg Return
 			Endif
 			While CParse( "[]" )

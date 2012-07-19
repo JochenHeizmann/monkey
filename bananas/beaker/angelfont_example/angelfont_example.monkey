@@ -6,6 +6,7 @@ Import simpleinput
 Import simpletextbox
 
 Class AngelFontExample Extends App
+
 	Field font:AngelFont
 	
 	Field inp:SimpleInput
@@ -18,6 +19,7 @@ Class AngelFontExample Extends App
 		EnableKeyboard
 		
 		font = New AngelFont()
+
 		font.italicSkew = 0.15
 		'font.LoadFont("angel3")
 		font.LoadFont("angel_verdana")
@@ -26,13 +28,16 @@ Class AngelFontExample Extends App
 		
 '		textBoxText = LoadString("simpletextboxtext.txt")
 		textBoxText = LoadString("simpletextboxhtml.txt")
+		
 	End
 
 	Method OnUpdate()
+		
 		inp.Update()
 	End
 	
 	Method OnRender()
+		
 		Cls 50,50,50
 		
 		'font.DrawText("Testing angel fonts", DeviceWidth/2,5, AngelFont.ALIGN_CENTER)		
@@ -49,6 +54,7 @@ Class AngelFontExample Extends App
 '			SimpleTextBox.Draw(textBoxText,DeviceWidth(),180,1260, AngelFont.ALIGN_CENTER)
 			SimpleTextBox.DrawHTML(textBoxText,426,180,832, AngelFont.ALIGN_CENTER)
 		PopMatrix()
+
 	End
 
 	

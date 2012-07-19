@@ -223,8 +223,6 @@ Class Translator
 	
 	Method TransExprNS$( expr:Expr )
 		If Not expr.SideEffects() Return expr.Trans()
-'		If VarExpr( expr ) Return expr.Trans()
-'		If ConstExpr( expr ) Return expr.Trans()
 		Return CreateLocal( expr )
 	End
 
