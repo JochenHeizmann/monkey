@@ -10,6 +10,8 @@ Alias FloatObject=monkey.boxes.FloatObject
 Alias StringObject=monkey.boxes.StringObject
 Alias ArrayObject=monkey.boxes.ArrayObject
 
+Const ARRAY_PREFIX:="monkey.boxes.ArrayObject<"
+
 Public
 
 'Bitmasks returned by Attributes() methods
@@ -77,8 +79,8 @@ Function StringClass:ClassInfo()
 	Return _stringClass
 End
 
-Function ArrayClass:ClassInfo( elementType$ )
-	Return GetClass( "monkey.boxes.ArrayObject<"+elementType+">" )
+Function ArrayClass:ClassInfo( elemType:String )
+	Return GetClass( ARRAY_PREFIX+elemType+">" )
 End
 
 Class ConstInfo
@@ -276,12 +278,32 @@ Class ClassInfo
 		Return _ifaces
 	End
 	
+	Method ElementType:ClassInfo() Property
+		Return Null
+	End
+	
+	Method ArrayLength:Int( inst:Object )
+		Error "Class is not an array class"
+	End
+	
+	Method GetElement:Object( inst:Object,index )
+		Error "Class is not an array class"
+	End
+	
+	Method SetElement:Void( inst:Object,index,value:Object )
+		Error "Class is not an array class"
+	End
+	
 	Method NewInstance:Object()
-		Error "Can't create instance of class: "+_name
+		Error "Can't create instance of class"
+	End
+	
+	Method NewArray:Object( length )
+		Error "Can't create instance of array"
 	End
 	
 	Method ExtendsClass?( clas:ClassInfo )
-	
+
 		If clas=Self Return True
 		
 		If clas._attrs & ATTRIBUTE_INTERFACE

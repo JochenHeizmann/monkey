@@ -1,14 +1,24 @@
 
 'Little app to dump app decls in your app!
 
-'#REFLECTION_FILTER="appdecls|mojo*"
+'#REFLECTION_FILTER="reflectiontest*"
+
 Import reflection
 Import mojo
 Import os
 
 Class Test
+	Field x,y#,z$
+	Field xs[],ys#[],zs$[]
+	
 	Method New()
 		Print "New Test object!"
+	End
+	
+	Method Update( elapsed# )
+	End
+	
+	Method Render( woopsie# )
 	End
 End
 
@@ -47,7 +57,9 @@ Function AppDecls()
 		Print "Function "+info.Name+Ret( info.ReturnType )+Args( info.ParameterTypes )+Attribs( info.Attributes() )
 	Next
 	For Local cinfo:=Eachin GetClasses()
-		Print "Class "+cinfo.Name+Attribs( cinfo.Attributes() )
+		Local exts$
+		If cinfo.SuperClass exts+=" Extends "+cinfo.SuperClass.Name
+		Print "Class "+cinfo.Name+Attribs( cinfo.Attributes() )+exts
 		For Local info:=Eachin cinfo.GetConstructors()
 			Print "  Method New"+Args( info.ParameterTypes )+Attribs( info.Attributes() )
 		Next

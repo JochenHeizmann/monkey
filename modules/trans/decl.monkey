@@ -128,8 +128,10 @@ Class Decl
 		If IsSemanted() Return
 		
 		If IsSemanting() Err "Cyclic declaration of '"+ident+"'."
-		
-		If ClassDecl( scope ) And ClassDecl( scope ).IsFinalized() InternalErr
+
+		Local cscope:=ClassDecl( scope )
+
+		If cscope cscope.attrs&=~CLASS_FINALIZED
 		
 		PushErr errInfo
 		
@@ -139,7 +141,7 @@ Class Decl
 		
 		attrs|=DECL_SEMANTING
 
-'		If ident Print "Semanting "+ToString()
+'		If ident Print "Semanting: "+ident
 
 		OnSemant
 		
@@ -1187,6 +1189,7 @@ Class ClassDecl Extends ScopeDecl
 End
 
 Const MODULE_STRICT=1
+Const MODULE_SEMANTALL=2
 
 Class ModuleDecl Extends ScopeDecl
 
@@ -1260,19 +1263,33 @@ Class ModuleDecl Extends ScopeDecl
 	Method SemantAll()	
 		For Local decl:=Eachin Decls()
 			If AliasDecl( decl ) Continue
+
 			Local cdecl:=ClassDecl( decl )
-			If cdecl And cdecl.args Continue
+			
 '			Print decl.ident
-			decl.Semant
 			If cdecl
-				For Local decl:=Eachin cdecl.Decls()
-'					Print " "+decl.ident
+				If cdecl.args
+					For Local inst:=Eachin cdecl.instances
+						For Local decl:=Eachin inst.Decls()
+							If AliasDecl( decl ) Continue
+							decl.Semant
+						Next
+					Next
+				Else
 					decl.Semant
-				Next
+					For Local decl:=Eachin cdecl.Decls()
+						If AliasDecl( decl ) Continue
+	'					Print " "+decl.ident
+						decl.Semant
+					Next
+				Endif
+			Else
+				decl.Semant
 			Endif
 		Next
-	End	
-
+		attrs|=MODULE_SEMANTALL
+	End
+	
 End
 
 Class AppDecl Extends ScopeDecl

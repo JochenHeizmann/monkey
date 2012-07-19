@@ -1,9 +1,17 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
-***** V54 *****
+***** V54c *****
+
+Monk
+
+Added Set, FloatSet, IntSet, StringSet to keywords.
 
 Modules:
+
+mojo xna - WP7 touch emulates mouse.
+
+mojo xna - added WP7 support for fullscreen via XNA_WINDOW_FULLSCREEN_PHONE app config setting, defaults to true.
 
 reflection module added!
 
@@ -22,9 +30,11 @@ monkey.lang - added String.FromChars( chars:Int[] )
 
 Targets:
 
+xna - Added XNA_WINDOW_FULLSCREEN_PHONE=true to xna/CONFIG.TXT
+
 xna - Target solution now includes windows phone project.
 
-xna - Added XNA_ACCELEROMETER_ENABLED="true" to xna CONFIG.TXT
+xna - Added XNA_ACCELEROMETER_ENABLED=true to xna/CONFIG.TXT
 
 glfw - tweaked compiler settings a bit so debug builds go a bit faster.
 
@@ -32,6 +42,10 @@ stdcpp/glfw/ios - moved #includes to separate main.h files. Hoping to precompile
 
 
 Trans (v1.30):
+
+Fixed bool boxing.
+
+Fixed reflection filter (pt 1 no doubt).
 
 Reflection support added!
 

@@ -76,7 +76,7 @@ Const MonkeyFunctions$=";"+..
 	"ChannelState;LoadSound;MusicState;PauseChannel;PauseMusic;PlayMusic;PlaySound;ResumeChannel;ResumeMusic;SetChannelPan;SetChannelRate;SetChannelVolume;SetMusicVolume;StopChannel;StopMusic;"+..
 	"HALFPI;Pi;TWOPI;"+..
 	"ACos;ACosr;ASin;ASinr;ATan;ATan2;ATan2r;ATanr;Abs;Ceil;Clamp;Cos;Cosr;Exp;Floor;Log;Max;Min;Pow;Sgn;Sin;Sinr;Sqrt;Tan;Tanr;"+..
-	"List;Map;Stack;FloatList;FloatMap;FloatStack;IntList;IntMap;IntStack;StringList;StringMap;StringStack;"+..
+	"List;Map;Stack;Set;FloatList;FloatMap;FloatStack;FloatSet;IntList;IntMap;IntStack;IntSet;StringList;StringMap;StringStack;StringSet;"+..
 	"AppArgs;AppPath;ChangeDir;CopyDir;CopyFile;CreateDir;CurrentDir;DeleteDir;DeleteFile;Execute;ExitApp;ExtractDir;FileSize;FileTime;FileType;GetEnv;LoadDir;LoadString;RealPath;SaveString;SetEnv;StripAll;StripDir;StripExt;"
 
 ?MacOS

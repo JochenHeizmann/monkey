@@ -437,7 +437,7 @@ Class NodeEnumerator<K,V>
 		Self.node=node
 	End
 	
-	Method HasNext()
+	Method HasNext:Bool()
 		Return node<>Null
 	End
 	
@@ -459,7 +459,7 @@ Class KeyEnumerator<K,V>
 		Self.node=node
 	End
 	
-	Method HasNext()
+	Method HasNext:Bool()
 		Return node<>Null
 	End
 	
@@ -481,7 +481,7 @@ Class ValueEnumerator<K,V>
 		Self.node=node
 	End
 	
-	Method HasNext()
+	Method HasNext:Bool()
 		Return node<>Null
 	End
 	

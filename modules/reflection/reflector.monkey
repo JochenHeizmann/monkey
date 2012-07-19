@@ -1,16 +1,20 @@
 
 Import trans
 
+Const ARRAY_PREFIX:="monkey.boxes.ArrayObject<"
+
 Class Reflector
 
 	Field debug?
 	
 	Field refmod:ModuleDecl
+	Field langmod:ModuleDecl
 	Field boxesmod:ModuleDecl
 	
 	Field output:=New StringStack
 	Field munged:=New StringMap<Int>
 	
+	Field refmods:=New StringSet			'mods to reflect
 	Field modpaths:=New StringMap<String>
 	Field modexprs:=New StringMap<String>
 	
@@ -125,19 +129,6 @@ Class Reflector
 		Return False
 	End
 	
-	Method AddClass( cdecl:ClassDecl )
-
-		Local name:=DeclExpr( cdecl,True )
-		Local expr:=DeclExpr( cdecl )
-		Local ident:=Mung( name )
-
-		Local id:=classdecls.Length
-		classids.Set name,id
-		classdecls.Push cdecl
-		
-		Return id
-	End
-	
 	Method TypeInfo$( ty:Type )
 		If VoidType( ty ) Return "Null"
 		If BoolType( ty ) Return "_boolClass"
@@ -148,10 +139,10 @@ Class Reflector
 			Local elemType:=ArrayType(ty).elemType
 			Local name:="monkey.boxes.ArrayObject<"+TypeExpr( elemType,True )+">"
 			If classids.Contains( name ) Return "_classes["+classids.Get( name )+"]"
+			If debug Print "Instantiating class: "+name
 			Local cdecl:=boxesmod.FindType( "ArrayObject",[elemType] ).GetClass()
 			For Local decl:=Eachin cdecl.Decls()
-				If AliasDecl( decl ) Continue
-				decl.Semant
+				If Not AliasDecl( decl ) decl.Semant
 			Next
 			Local id:=classdecls.Length
 			classids.Set name,id
@@ -182,7 +173,7 @@ Class Reflector
 		If FieldDecl( decl ) Return decl.ident
 		
 		If FuncDecl( decl ) And FuncDecl( decl ).IsMethod() Return decl.ident
-		
+
 		Local mdecl:=ModuleDecl( decl )
 		If mdecl
 			If path Return modpaths.Get( mdecl.filepath )
@@ -190,7 +181,10 @@ Class Reflector
 		Endif
 		
 		Local cdecl:=ClassDecl( decl )
-		If cdecl And cdecl.munged="Object" Return "Object"
+		If cdecl And cdecl.munged="Object"
+			If path Return "monkey.lang.Object"
+			Return "Object"
+		Endif
 	
 		Local ident:=DeclExpr( decl.scope,path )+"."+decl.ident
 		
@@ -206,10 +200,21 @@ Class Reflector
 		Return ident
 	End
 	
-	Method BadType?( ty:Type )
-		If ArrayType( ty ) Return BadType( ArrayType(ty).elemType )
-		If ObjectType( ty ) And Not classids.Contains( DeclExpr( ty.GetClass(),True ) ) Return True
-		Return False
+	Method ValidType?( ty:Type )
+		If ArrayType( ty ) Return ValidType( ArrayType( ty ).elemType )
+		If ObjectType( ty ) Return ValidClass( ty.GetClass() )
+		Return True
+	End
+	
+	Method ValidClass?( cdecl:ClassDecl )
+		If cdecl.munged="Object" Return True
+		If Not cdecl.ExtendsObject() Return False
+		If Not refmods.Contains( cdecl.ModuleScope().filepath ) Return False
+		For Local arg:=Eachin cdecl.instArgs
+			If ObjectType( arg ) And Not ValidClass( arg.GetClass() ) Return False
+		Next
+		If cdecl.superClass Return ValidClass( cdecl.superClass )
+		Return True
 	End
 	
 	Method Emit( t$ )
@@ -219,9 +224,9 @@ Class Reflector
 	Method Attrs( decl:Decl )
 		Return (decl.attrs Shr 8) & 255
 	End
-
+	
 	Method Emit$( tdecl:ConstDecl )
-		If BadType( tdecl.type ) Return
+		If Not ValidType( tdecl.type ) Return
 		
 		Local name:=DeclExpr( tdecl,True )
 		Local expr:=DeclExpr( tdecl )
@@ -231,7 +236,7 @@ Class Reflector
 	End
 	
 	Method Emit$( gdecl:GlobalDecl )
-		If BadType( gdecl.type ) Return
+		If Not ValidType( gdecl.type ) Return
 		
 		Local name:=DeclExpr( gdecl,True )
 		Local expr:=DeclExpr( gdecl )
@@ -254,7 +259,7 @@ Class Reflector
 	End
 	
 	Method Emit$( tdecl:FieldDecl )
-		If BadType( tdecl.type ) Return
+		If Not ValidType( tdecl.type ) Return
 	
 		Local name:=tdecl.ident
 		Local ident:=Mung( name )
@@ -278,9 +283,9 @@ Class Reflector
 	End
 	
 	Method Emit$( fdecl:FuncDecl )
-		If BadType( fdecl.retType ) Return
+		If Not ValidType( fdecl.retType ) Return
 		For Local arg:=Eachin fdecl.argDecls
-			If BadType( arg.type ) Return
+			If Not ValidType( arg.type ) Return
 		Next
 		
 		Local name:=DeclExpr( fdecl,True )
@@ -349,7 +354,7 @@ Class Reflector
 			If ifaces ifaces+=","
 			ifaces+=TypeInfo( idecl.objectType )
 		Next
-		
+
 		Local consts:=New StringStack
 		Local globals:=New StringStack		
 		Local fields:=New StringStack
@@ -357,9 +362,18 @@ Class Reflector
 		Local functions:=New StringStack
 		Local ctors:=New StringStack
 		
-		For Local decl:=Eachin cdecl.Semanted
-'			If decl.IsPrivate() Continue
+		For Local decl:=Eachin cdecl.Decls	'emit in declaration order...
+			If AliasDecl( decl )
+'				Local ty:=Type( AliasDecl( decl ).decl )
+'				If ty
+'					'Maps generic param to concrete type, eg: T->Actor
+'					Print "Class:"+name+", alias:"+decl.ident+"->"+ty.ToString()
+'				Endif
+				Continue
+			Endif
 			
+			If Not decl.IsSemanted() Continue
+
 			Local pdecl:=ConstDecl( decl )
 			If pdecl
 				Local p:=Emit( pdecl )
@@ -411,6 +425,28 @@ Class Reflector
 			Emit "  _stringClass=Self"
 		End
 		Emit " End"
+		
+		If name.StartsWith( ARRAY_PREFIX )
+			Local elemType:=cdecl.instArgs[0]
+			Local elemExpr:=TypeExpr( elemType )
+			Local ARRAY_PREFIX:=modexprs.Get( boxesmod.filepath )+".ArrayObject<"
+			Emit " Method ElementType:ClassInfo() Property"
+			Emit "  Return "+TypeInfo( elemType )
+			Emit " End"
+			Emit " Method ArrayLength:Int(i:Object) Property"
+			Emit "  Return "+ARRAY_PREFIX+elemExpr+">(i).value.Length"
+			Emit " End"
+			Emit " Method GetElement:Object(i:Object,e)"
+			Emit "  Return "+Box( elemType,ARRAY_PREFIX+elemExpr+">(i).value[e]" )
+			Emit " End"
+			Emit " Method SetElement:Void(i:Object,e,v:Object)"
+			Emit "  "+ARRAY_PREFIX+elemExpr+">(i).value[e]="+Unbox( elemType,"v" )
+			Emit " End"
+			Emit " Method NewArray:Object(l:Int)"
+			Emit "  Return "+Box( elemType.ArrayOf(),"New "+elemExpr+"[l]" )
+			Emit " End"
+		Endif
+
 		If Not cdecl.IsAbstract() And Not cdecl.IsExtern()
 			Emit " Method NewInstance:Object()"
 			Emit "  Return New "+expr
@@ -462,53 +498,61 @@ Class Reflector
 
 	Method Semant( app:AppDecl )
 	
-		Local reflect:=Env.Get( "REFLECTION_FILTER" )
-		If Not reflect Return
-		
-		For Local mdecl:=Eachin app.imported.Values()
-			If ModPath( mdecl )="reflection" 
-				refmod=mdecl
-				Exit
-			Endif
-		Next
-		If Not refmod Error "reflection module not found!"
+		Local filter:=Env.Get( "REFLECTION_FILTER" )
+		If Not filter Return
 		
 		debug=Env.Get( "DEBUG_REFLECTION" )="true"
 		
 		For Local mdecl:=Eachin app.imported.Values()
+			Local path:=ModPath( mdecl )
+			If path="reflection"
+				refmod=mdecl
+			Else If path="monkey.lang"
+				langmod=mdecl
+			Else If path="monkey.boxes"
+				boxesmod=mdecl
+			Endif
+		Next
+		If Not refmod Error "reflection module not found!"
+		
+		If debug Print "Semanting all"
 
+		For Local mdecl:=Eachin app.imported.Values()
 			Local path:=ModPath( mdecl )
 			
-			If path="monkey.boxes"
-				boxesmod=mdecl
-				mdecl.SemantAll
-			Else If MatchPath( path,reflect )
-				mdecl.SemantAll
-			Else
-				Continue
-			Endif
-
-			Local expr:=Mung( path )
-
-			refmod.InsertDecl New AliasDecl( expr,0,mdecl )
+			If mdecl<>boxesmod And mdecl<>langmod And Not MatchPath( path,filter ) Continue
+'			If mdecl<>boxesmod And Not MatchPath( path,filter ) Continue
 			
+			Local expr:=Mung( path )
+			refmod.InsertDecl New AliasDecl( expr,0,mdecl )
 			modpaths.Set mdecl.filepath,path
 			modexprs.Set mdecl.filepath,expr
+			
+			refmods.Insert mdecl.filepath
+			mdecl.SemantAll
 		Next
+		
+		Repeat
+			Local n:=app.allSemantedDecls.Count()
+			For Local mdecl:=Eachin app.imported.Values()
+				If Not refmods.Contains( mdecl.filepath ) Continue
+				mdecl.SemantAll
+			Next
+			n=app.allSemantedDecls.Count()-n
+			If Not n Exit
+			If debug Print "Semanting more: "+n
+		Forever
 
 		'Enum classes in 'super first' order...
 		For Local decl:=Eachin app.allSemantedDecls
 '			If decl.IsPrivate() Continue
 			
-			If Not modpaths.Contains( decl.ModuleScope().filepath ) Continue
+			If Not refmods.Contains( decl.ModuleScope().filepath ) Continue
 			
 			Local cdecl:=ClassDecl( decl )
-			If cdecl And cdecl.ExtendsObject()
-
-				Local name:=DeclExpr( cdecl,True )
-				classids.Set name,classdecls.Length
+			If cdecl And ValidClass( cdecl )
+				classids.Set DeclExpr( cdecl,True ),classdecls.Length
 				classdecls.Push cdecl
-
 				Continue
 			Endif
 		Next
@@ -518,10 +562,12 @@ Class Reflector
 		Local globals:=New StringStack
 		Local functions:=New StringStack
 		
+		If debug Print "Generating reflection info"
+		
 		For Local decl:=Eachin app.allSemantedDecls
 '			If decl.IsPrivate() Continue
 			
-			If Not modpaths.Contains( decl.ModuleScope().filepath ) Continue
+			If Not refmods.Contains( decl.ModuleScope().filepath ) Continue
 			
 			Local pdecl:=ConstDecl( decl )
 			If pdecl
@@ -543,11 +589,14 @@ Class Reflector
 				If f functions.Push f
 				Continue
 			Endif
-
 		Next
 		
-		'Updates ABSTRACT attribute...
+		If debug Print "Finalizing classes"
+		
+		'Need to do this to update ABSTRACT attribute...
 		app.FinalizeClasses
+		
+		If debug Print "Generating class reflection info"
 		
 		For Local i:=0 Until classdecls.Length
 			classes.Push Emit( classdecls.Get(i) )
@@ -589,9 +638,9 @@ Class Reflector
 		Emit " Method GetClass:ClassInfo(o:Object)"
 		For Local i=classes.Length-1 To 0 Step -1
 			Local expr:=DeclExpr( classdecls.Get(i) )
-			Emit "  If "+expr+"(o) Return _classes["+i+"]"
+			Emit "  If "+expr+"(o)<>Null Return _classes["+i+"]"
 		Next
-		Emit "  Return Null"
+		Emit "  Return _unknownClass"
 		Emit " End"
 		Emit "End"
 		

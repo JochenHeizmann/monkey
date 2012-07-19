@@ -67,6 +67,11 @@ Class BoolType Extends Type
 	End
 	
 	Method ExtendsType( ty:Type )
+		If ObjectType( ty )
+			Local expr:Expr=New ConstExpr( Self,"" ).Semant()
+			Local ctor:FuncDecl=ty.GetClass().FindFuncDecl( "new",[expr],True )
+			Return ctor And ctor.IsCtor()
+		Endif
 		Return IntType( ty )<>Null Or BoolType( ty )<>Null
 	End
 	
@@ -207,7 +212,6 @@ Class ObjectType Extends Type
 		If objty Return classDecl.ExtendsClass( objty.classDecl )
 		Local op$
 		If BoolType( ty )
-			Return False	'!!!!!
 			op="ToBool"
 		Else If IntType( ty ) 
 			op="ToInt"
