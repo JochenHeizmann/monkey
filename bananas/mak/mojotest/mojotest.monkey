@@ -63,7 +63,7 @@ Class Test Extends App
 		
 		SetScissor sx,sy,sw,sh
 		
-		Cls 255,128,0
+		Cls 255,32,0'255,128,0
 		
 		PushMatrix
 		
@@ -76,6 +76,14 @@ Class Test Extends App
 		SetColor 128,255,0
 		DrawRect 32,32,640-64,480-64
 
+		SetColor 255,255,0
+		For Local y=0 Until 480
+			For Local x=16 Until 640 Step 32
+				SetAlpha Min( Abs( y-240.0 )/120.0,1.0 )
+				DrawPoint x,y
+			Next
+		Next
+		
 		SetColor 0,128,255
 		DrawOval 64,64,640-128,480-128
 

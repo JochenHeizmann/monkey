@@ -1,9 +1,27 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V50 *****
+
+Modules:
+
+mojo.graphics - added DrawPoint(x#,y#).
+
+html5 mojo - added touch event support - note: touch emulates mouse and vice versa.
+
+android mojo - added touch event opts as suggested by Samah.
+
+
+Targets:
+
+android - added inPurgable bitmap option to LoadBitmap to conserve memory.
+
+
 ***** V49 *****
 
 Modules:
+
+dom - added skidracers stylesheet stuff.
 
 flash mojo - fixed alpha bug introduced by fix for dark rendering.
 
@@ -16,7 +34,7 @@ Fixed generic class downcast parsing bug.
 
 Added check for naughty assignments to indexed string chars.
 
-Cpp translator now emits incremental gc friendly code - must be enabled via appropriate target config.h file.
+Cpp translator now emits incremental gc friendly code - must be enabled via appropriate target config.h file.
 
 
 ***** V48 *****

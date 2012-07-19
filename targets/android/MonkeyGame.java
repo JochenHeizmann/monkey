@@ -94,7 +94,9 @@ class MonkeyData{
 		path="monkey/"+path;
 
 		try{
-			return BitmapFactory.decodeStream( getAssets().open( path ) );
+			BitmapFactory.Options opts = new BitmapFactory.Options(); 
+			opts.inPurgeable=true; 
+			return BitmapFactory.decodeStream( getAssets().open( path ),null,opts );
 		}catch( IOException e ){
 		}
 		return null;
