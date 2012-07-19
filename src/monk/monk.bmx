@@ -1,6 +1,9 @@
 
 ' monk.bmx 
 
+' new offline docs vars WIKI_LOCAL and WIKI_LOCAL_SUFFIX
+' added Error and Print to Monkey function list
+
 Strict
 
 Framework MaxGUI.Drivers
@@ -25,8 +28,8 @@ Import "monk.o"
 
 AppTitle = "Monk"
 
-Const ABOUT$="Monk 0.36 - a free editor for monkey coders by Simon Armstrong"
-Const IDE_VERSION$="0.35 Release Version"
+Const ABOUT$="Monk 0.37 - a free editor for monkey coders by Simon Armstrong"
+Const IDE_VERSION$="0.37 Release Version"
 
 Incbin "monktoolbar.png"
 
@@ -40,18 +43,41 @@ Global BCC_VERSION$="{unknown}"	'not valid until codeplay opened
 
 Const EOL$="~n"
 
-Const FileTypes$="bmx,bbdoc,txt,ini,doc,plist,bb,cpp,c,cc,m,cxx,s,glsl,hlsl,lua,py,h,hpp,html,htm,css,js,bat,mm,as,java,bbx,cs,monkey,xml,properties,template"
+Const FileTypes$="monkey,bmx,bbdoc,txt,ini,doc,plist,bb,cpp,c,cc,m,cxx,s,glsl,hlsl,lua,py,h,hpp,html,htm,css,js,bat,mm,as,java,bbx,cs,xml,properties,template"
 Const FileTypeFilters$="Code Files:"+FileTypes$+";All Files:*"
 
-'Const HOMEPAGE$="/docs/html/index.html"
-'Const HOMEPAGE$="/docs/langref.html"
-'Const HOMEPAGE$="localhost:8080/docs/index.htm"
+Const WIKI_URL$="http://blitz-wiki.appspot.com/"
+Const WIKI_LOCAL$="/docs/blitz-wiki.appspot.com/"
+Const WIKI_LOCAL_SUFFIX$="4d8a.html"
 
-?Win32
-Const HOMEPAGE$="monkey:/docs/index_winmonk.htm"
-?Not Win32
-Const HOMEPAGE$="monkey:/docs/index.htm"
-?
+Const WIKI_ARGS$="?format=mobile"
+Const WIKI_HOST$="blitz-wiki.appspot.com"
+Const WIKI_INDEX$="w/index"
+Const WIKI_RSS_INDEX$="w/index.rss"
+Const WIKI_SITE_INDEX$="sitemap.xml"
+
+Const CLOUDHOST$="commondatastorage.googleapis.com"
+Const CLOUD$="http://"+CLOUDHOST+"/monkeycoder.co.nz/"
+
+Const MonkeyWords$=";"+..
+	"void;strict;public;private;property;"+..
+	"bool;int;float;string;array;object;mod;continue;exit;"+..
+	"include;import;module;extern;"+..
+	"new;self;super;eachin;true;false;null;not;"+..
+	"extends;abstract;final;native;select;case;default;"+..
+	"const;local;global;field;method;function;class;interface;implements;"+..
+	"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;for;to;step;next;return;inline;"+..
+	"#rem;"
+
+Const MonkeyFunctions$=";"+..
+	"Error;Print;LoadState;LoadString;Millisecs;SaveState;SetUpdateRate;UpdateRate;"+..
+	"Cls;DeviceHeight;DeviceWidth;DrawCircle;DrawEllipse;DrawImage;DrawImageRect;DrawLine;DrawOval;DrawPoint;DrawPoly;DrawRect;DrawText;GetAlpha;GetBlend;GetColor;GetFont;GetMatrix;GetScissor;LoadImage;PopMatrix;PushMatrix;Rotate;Scale;SetAlpha;SetBlend;SetColor;SetFont;SetMatrix;SetScissor;Transform;Translate;"+..
+	"AccelX;AccelY;AccelZ;DisableKeyboard;EnableKeyboard;GetChar;JoyDown;JoyHit;KeyDown;KeyHit;MouseDown;MouseHit;MouseX;MouseY;TouchDown;TouchHit;TouchX;TouchY;"+..
+	"ChannelState;LoadSound;MusicState;PauseChannel;PauseMusic;PlayMusic;PlaySound;ResumeChannel;ResumeMusic;SetChannelPan;SetChannelRate;SetChannelVolume;SetMusicVolume;StopChannel;StopMusic;"+..
+	"HALFPI;Pi;TWOPI;"+..
+	"ACos;ACosr;ASin;ASinr;ATan;ATan2;ATan2r;ATanr;Abs;Ceil;Clamp;Cos;Cosr;Exp;Floor;Log;Max;Min;Pow;Sgn;Sin;Sinr;Sqrt;Tan;Tanr;"+..
+	"List;Map;Stack;FloatList;FloatMap;FloatStack;IntList;IntMap;IntStack;StringList;StringMap;StringStack;"+..
+	"AppArgs;AppPath;ChangeDir;CopyDir;CopyFile;CreateDir;CurrentDir;DeleteDir;DeleteFile;Execute;ExitApp;ExtractDir;FileSize;FileTime;FileType;GetEnv;LoadDir;LoadString;RealPath;SaveString;SetEnv;StripAll;StripDir;StripExt;"
 
 ?MacOS
 Global SVNCMD$="/usr/bin/svn"
@@ -138,6 +164,10 @@ Const MENUCLOSEOTHERS=60
 
 Const MENUTHREADEDENABLED=61
 
+Const MENUCANCEL=62
+Const MENUESCAPE=63
+Const MENUBACKSPACE=64
+
 Const MENURECENT=256
 
 Const TB_NEW=0
@@ -193,11 +223,13 @@ End Function
 Type TToken
 	Field token$
 	Field help$
-	Field ref$	
-	Method Create:TToken(t$,h$,r$)
+	Field anchor$	
+	Field key
+	Method Create:TToken(t$,h$,a$,keyword)
 		token=t
 		help=h
-		ref=r
+		anchor=a
+		key=keyword
 		Return Self
 	End Method
 End Type
@@ -205,13 +237,21 @@ End Type
 Type TQuickHelp
 	Field map:TMap=New TMap	'key=lower(token) value=token:TToken
 		
-	Method AddCommand:TQuickHelp(t$,l$,a$)
-		map.Insert t.ToLower(),New TToken.Create(t$,l$,a$)
+	Method AddCommand:TQuickHelp(t$,l$,a$,keyword=True)
+		map.Insert t.ToLower(),New TToken.Create(t$,l$,a$,keyword)
 	End Method
 	
 	Method Token$(cmd$)
 		Local t:TToken = TToken(map.ValueForKey(cmd.toLower()))
-		If t Return t.token
+		If t 
+			If t.key Return t.token	'keywords get capitalized
+			If cmd=t.token Return cmd
+		EndIf
+	End Method
+
+	Method Key(cmd$)
+		Local t:TToken = TToken(map.ValueForKey(cmd.toLower()))
+		If t Return t.key
 	End Method
 	
 	Method Help$(cmd$)
@@ -221,70 +261,41 @@ Type TQuickHelp
 	
 	Method Link$(cmd$)
 		Local t:TToken = TToken(map.ValueForKey(cmd.toLower()))
-		If t Return t.ref
+		If t Return t.anchor
 	End Method
-	
-	Const MonkeyWords$=";"+..
-		"void;strict;public;private;property;"+..
-		"bool;int;float;string;array;object;mod;continue;exit;"+..
-		"include;import;module;extern;"+..
-		"new;self;super;eachin;true;false;null;not;"+..
-		"extends;abstract;final;native;select;case;default;"+..
-		"const;local;global;field;method;function;class;interface;implements;"+..
-		"and;or;shl;shr;end;if;then;else;elseif;endif;while;wend;repeat;until;forever;for;to;step;next;return;inline;"+..
-		"#rem;"
 
-' discontinued...
-	Method ParseMonkeyHelp(monkeypath$,path$)
-		Local token$		
-		
-		For Local e$=EachIn LoadDir( monkeypath+path )
-			Local fpath$=path+"/"+e
-			Local ffpath$=monkeypath+fpath
-			If FileType(ffpath)=FILETYPE_FILE				
-				If e.EndsWith(".html")					
-					token=e[..e.length-5]					
-					fpath=fpath.Replace("/monk/..","")
-					AddCommand token,": token quick help :"+fpath,fpath		'token	'help,anchor
-'					DebugLog "file:/"+fpath
-				EndIf
-			EndIf
-
-			If FileType(ffpath)=FILETYPE_DIR
-				If Not e.StartsWith(".")
-					ParseMonkeyHelp monkeypath,fpath
-				EndIf
-			EndIf				
-		Next
-					
-	End Method
-	
-	Function LoadMonkeyCommands:TQuickHelp(monkeypath$)
-		Local	text$
+	Function LoadMonkeyCommands:TQuickHelp(monkeypath$,host:TCodePlay)
 		Local	qh:TQuickHelp
-		Local	i:Int,c,p,q
+		Local	i,c,p,q
 		Local	token$,help$,anchor$
 
-		text=MonkeyWords$
-
-		If Not text Return Null
 		qh=New TQuickHelp
-		For Local l$ = EachIn Text.Split(";")
-			token$=l
-			help$=""
-			anchor$=""
+
+		For Local l$ = EachIn MonkeyWords.Split(";")
+			token=l
+			help=""
+			anchor=""
+			
 			q=l.findlast("|")
 			If q>=0
 				help=l[..q]
 				anchor=l[q+1..]
 			EndIf			
-			qh.AddCommand token,help,anchor
-			
-			token=l[..1].ToUpper()+l[1..]
 
+			token=l[..1].ToUpper()+l[1..]
+			anchor="wiki:"+token
+
+			qh.AddCommand token,help,anchor			
 			qh.AddCommand token,help,anchor
 		Next
 		
+		For Local l$ = EachIn MonkeyFunctions.Split(";")
+			token=l
+			help="press F1 again to jump see docs on "+l	'TODO: quickhelp array please
+			anchor$="wiki:"+l
+			qh.AddCommand token,help,anchor,False
+		Next
+
 '		qh.ParseHelp monkeypath,"/docs/Modules"
 		
 		Return qh
@@ -361,6 +372,10 @@ Const TOOLERROR=32
 Const TOOLOUTPUT=32
 Const TOOLARCHIVE=33
 Const TOOLHISTORY=34
+Const TOOLINDEX=35
+Const TOOLESCAPE=36
+Const TOOLBACKSPACE=37
+Const TOOLCRAWL=38
 
 Type TTool
 	Method Invoke(command,argument:Object=Null)
@@ -849,7 +864,7 @@ Type TOptionsRequester Extends TPanelRequester
 	Field optionspanel:TGadget,editorpanel:TGadget,toolpanel:TGadget
 ' settings
 	Field showtoolbar,restoreopenfiles,autocapitalize,syntaxhighlight,autobackup,autoindent,hideoutput
-	Field bracketmatching, externalhelp,systemkeys,sortcode,archivecode,runserver,colorcontainers
+	Field bracketmatching, externalhelp,systemkeys,sortcode,archivecode,runserver,colorcontainers,offlinedocs
 	Field tabsize
 	Field editfontname$,editfontsize
 	Field editcolor1:TColor
@@ -865,7 +880,7 @@ Type TOptionsRequester Extends TPanelRequester
 	Field editpanel1:TGadget
 	Field editpanel2:TGadget
 	Field editbutton:TGadget
-	Field buttons:TGadget[14]
+	Field buttons:TGadget[16]
 	Field styles:TTextStyle[]
 	Field textarea:TGadget
 	Field outputstyle:TGadgetStyle
@@ -898,6 +913,7 @@ Type TOptionsRequester Extends TPanelRequester
 		bracketmatching=True
 		showtoolbar=True
 		colorcontainers=False
+		offlinedocs=False
 		
 		restoreopenfiles=True
 		autocapitalize=True 
@@ -977,6 +993,7 @@ Type TOptionsRequester Extends TPanelRequester
 		stream.WriteLine "archive_code="+archivecode
 		stream.WriteLine "run_server="+runserver
 		stream.WriteLine "color_containers="+colorcontainers
+		stream.WriteLine "offline_docs="+offlinedocs
 	End Method
 
 	Method Read(stream:TStream)
@@ -1018,6 +1035,7 @@ Type TOptionsRequester Extends TPanelRequester
 				Case "archive_code" archivecode=t
 				Case "run_server" runserver=t
 				Case "color_containers" colorcontainers=t
+				Case "offline_docs" offlinedocs=t
 			End Select
 		Wend		
 		RefreshGadgets
@@ -1041,6 +1059,7 @@ Type TOptionsRequester Extends TPanelRequester
 		SetButtonState buttons[11],archivecode
 		SetButtonState buttons[12],runserver
 		SetButtonState buttons[13],colorcontainers
+		SetButtonState buttons[14],offlinedocs
 		
 		SelectGadgetItem tabbutton,Min(Max(tabsize/2-1,0),7)
 		SetPanelColor editpanel1,editcolor1.red,editcolor1.green,editcolor1.blue
@@ -1091,6 +1110,7 @@ Type TOptionsRequester Extends TPanelRequester
 					Case buttons[11];archivecode=ButtonState(buttons[11]);dirty=3
 					Case buttons[12];runserver=ButtonState(buttons[12]);dirty=3
 					Case buttons[13];colorcontainers=ButtonState(buttons[13]);dirty=1
+					Case buttons[14];offlinedocs=ButtonState(buttons[14])
 					Case tabber;SetPanelIndex SelectedGadgetItem(tabber)
 					Case ok
 						Hide()
@@ -1181,6 +1201,7 @@ Type TOptionsRequester Extends TPanelRequester
 		buttons[11]=CreateButton("Archive Code",6,292,ClientWidth(w)-12,26,w,BUTTON_CHECKBOX)
 		buttons[12]=CreateButton("Internal HTTP Server on localhost:8080",6,316,ClientWidth(w)-12,26,w,BUTTON_CHECKBOX)
 		buttons[13]=CreateButton("Color Containers",6,340,ClientWidth(w)-12,26,w,BUTTON_CHECKBOX)
+		buttons[14]=CreateButton("Offline Docs",6,364,ClientWidth(w)-12,26,w,BUTTON_CHECKBOX)
 
 		w=editorpanel
 		CreateLabel("Background",6,6+4,90,24,w)
@@ -1616,7 +1637,7 @@ Type TNode Extends TTool
 	
 	Method Invoke(command,arg:Object=Null)
 		Select command
-		Case TOOLACTIVATE
+		Case TOOLACTIVATE,TOOLMENU
 			If target Return target.Invoke(action,argument)
 		End Select
 	End Method
@@ -1860,7 +1881,7 @@ Type TServerPanel Extends TToolPanel
 	Method OnEvent()
 		Local	url$,p,t$
 		If htmlview 
-			PollServer
+'			PollServer
 			If EventSource()=htmlview
 				Select EventID()
 					Case EVENT_GADGETACTION				'NAVIGATEREQUEST
@@ -1869,7 +1890,6 @@ Type TServerPanel Extends TToolPanel
 			EndIf
 		EndIf
 	End Method
-		
 		
 	Method Go(url$,internal=False)
 		Local	node:TNode
@@ -1897,7 +1917,7 @@ Type TServerPanel Extends TToolPanel
 			Return
 		EndIf		
 		portnumber=port
-		RunServer port
+'		RunServer port
 		codeplay.addpanel(Self)		
 		Local style=0 'HTMLVIEW_NONAVIGATE		'HTMLVIEW_NOCONTEXTMENU
 		htmlview=CreateHTMLView(0,0,ClientWidth(panel),ClientHeight(panel),panel,style)		
@@ -1918,7 +1938,7 @@ Type TServerPanel Extends TToolPanel
 			FreeGadget htmlview
 			htmlview=Null
 			DebugLog "closing server"
-			CloseServer
+'			CloseServer
 		EndIf
 	End Method	
 
@@ -1937,7 +1957,7 @@ Type THelpPanel Extends TToolPanel
 
 	Field host:TCodePlay
 	Field htmlview:TGadget
-		
+	Field oldpanel:TToolPanel
 
 	Method AddLink:TNode(parent:TNode,name$,href$)
 		Local	n:TNode
@@ -2032,6 +2052,10 @@ Type THelpPanel Extends TToolPanel
 		Local	href$
 		If Not htmlview Return
 		Select command
+			Case TOOLESCAPE
+				If oldpanel host.SelectPanel oldpanel
+			Case TOOLBACKSPACE
+				Back			
 			Case TOOLCUT
 				GadgetCut htmlview
 			Case TOOLCOPY
@@ -2056,6 +2080,9 @@ Type THelpPanel Extends TToolPanel
 		Local	url$,p,t$
 		If EventSource()=htmlview
 			Select EventID()
+				Case EVENT_GADGETMENU
+					DebugLog CurrentEvent.toString()
+					
 				Case EVENT_GADGETDONE
 '					DebugLog "GadgetDone!"
 				Case EVENT_GADGETACTION				'NAVIGATEREQUEST
@@ -2063,7 +2090,7 @@ Type THelpPanel Extends TToolPanel
 					url$=String( EventExtra() )
 					
 					
-					If url[..5]="http:"
+					If url[..5]="http:" And Not url.StartsWith(WIKI_URL) And Not url.StartsWith(CLOUD)
 						OpenURL url
 					'Else If url.EndsWith( "\modules\index.html" )
 					'	OpenURL url
@@ -2092,27 +2119,28 @@ Type THelpPanel Extends TToolPanel
 	End Method
 	
 	
-	Method Home()
-		Go HOMEPAGE$
-'		Go "http://127.0.0.1:8080/monkindex.html",True
-'		HtmlViewGo htmlview,"about:blank"	
-'		Local script$
-'		script="window.alert('help')"
-'		script="document.body.innerHTML='Hello world!'"
-'		"document.body.innerHTML='hello simon'"		
-'		HtmlViewRun htmlview,script
-'		DebugLog "RUN!"+script		
+	Method Home()		
+		Local url$		
+		url="wiki:Welcome"
+		Go url
 	End Method
-	
 	
 	Method Go(url$,internal=False)
 		Local	node:TNode
 		
 		DebugLog "url="+url
 		
-		
 		If url.startsWith("monkey:")
 			url="file://"+host.monkeypath+url[7..]
+		EndIf
+		
+		If url.startsWith("wiki:")
+			url=url[5..]
+			If host.options.offlinedocs
+				url=host.monkeypath+WIKI_LOCAL+url+WIKI_LOCAL_SUFFIX
+			Else
+				url=WIKI_URL+url+WIKI_ARGS
+			EndIf
 		EndIf
 
 		If host.options.externalhelp And Not internal
@@ -2126,6 +2154,9 @@ Type THelpPanel Extends TToolPanel
 		DebugLog "go:"+url
 
 		HtmlViewGo htmlview,url
+	
+		If host.currentpanel<>Self oldpanel=host.currentpanel
+
 		host.SelectPanel Self
 		
 		If host.helproot
@@ -3075,7 +3106,7 @@ Type TProjects Extends TNode
 			host.OpenSource String(argument)
 		End Select
 	End Method
-			
+				
 	Function CreateProjects:TProjects(host:TCodePlay)
 		Local p:TProjects = New TProjects
 		p.SetName("Projects")
@@ -3810,6 +3841,10 @@ Type TOutputPanel Extends TToolPanel	'used build and run
 				GadgetPaste output
 			Case TOOLSELECTALL
 				If output SelectTextAreaText output
+			Case TOOLESCAPE
+				Escape
+'			Case TOOLBACKSPACE
+'				out.writechar(KEY_BACKSPACE)
 		End Select
 	End Method
 	
@@ -3980,7 +4015,7 @@ Type TOutputPanel Extends TToolPanel	'used build and run
 		codeplay.addpanel(Self)		
 		output=CreateTextArea(0,0,ClientWidth(panel),ClientHeight(panel),panel,TEXTAREA_WORDWRAP)
 		SetGadgetLayout output,EDGE_ALIGNED,EDGE_ALIGNED,EDGE_ALIGNED,EDGE_ALIGNED
-		SetGadgetFilter output,outputfilter,Self
+		SetGadgetFilter output,outputfilter,Self		
 		SetGadgetText output," "	'simon was here		
 		host.options.outputstyle.apply output,1,host.options.colorcontainers
 	End Method
@@ -4705,7 +4740,7 @@ Type TOpenCode Extends TToolPanel
 	EndMethod
 	
 	Method SetCode(src$,diff:TDiff=Null)
-		Local	same,i,p,startp,p1,q,r,a,t$,h$,lsrc$,r0,r1,cpos,autocap
+		Local	same,i,p,startp,p1,q,r,a,n,t$,h$,lsrc$,r0,r1,cpos,autocap
 		Local	style:TTextStyle[5],s:TTextStyle
 ' update dirty flag	
 		CheckDirty src
@@ -4801,15 +4836,26 @@ Type TOpenCode Extends TToolPanel
 		startp = p
 		
 		While p<p1
-			host.UpdateProgress("formatting...",(p*100)/p1)
 			a=src[p]
 ' quoted strings
 			If a=34
 				q=p1
+
+' use a quotecount to block unformed string tokenizing				
+				n=src.Find(EOL,p+1)
+				If n>p1 n=p1
+				Local quotecount=0
+				For Local odd=p Until n
+					If src[odd]=34 quotecount:+1
+				Next
+				
 				r=src.Find(Chr(34),p+1)
-				If r>-1 And r<q q=r+1
+' closing quote to 
+				If r>-1 And r<q And (quotecount&1=0) q=r+1
+
 				r=src.Find(EOL,p+1)
 				If r>-1 And r<q q=r
+
 				s=style[QUOTED]
 				s.format(textarea,p,q-p)
 				p=q
@@ -5144,6 +5190,9 @@ Type TOpenCode Extends TToolPanel
 		If ismonkey And Not host.monkeyhelp Return
 		Local p = TextAreaCursor(textarea,TEXTAREA_CHARS)
 		Local a$ = WordAtPos(cleansrc,p)
+		
+		helpcmd=a	' quick help disabled in monk, straight to real help
+		
 		If a=helpcmd
 			
 			Local l$
@@ -5154,8 +5203,8 @@ Type TOpenCode Extends TToolPanel
 				EndIf
 			EndIf
 			If ismonkey 
-				l$ = "/docs/modules/index.html#?"+a
-				host.helppanel.go host.monkeypath+l$
+				l$ = host.monkeyhelp.link(a$)				
+				If l<>"" host.helppanel.go l$
 			EndIf
 		Else
 			helpcmd=a$
@@ -5166,7 +5215,10 @@ Type TOpenCode Extends TToolPanel
 	End Method
 
 	Method Find()
-		host.findreq.ShowFind WordAtPos(cleansrc,TextAreaCursor(textarea,TEXTAREA_CHARS))
+		Local p=TextAreaCursor(textarea,TEXTAREA_CHARS)
+		Local term$=""
+		If cleansrc[p]<>32 term=WordAtPos(cleansrc,p)
+		host.findreq.ShowFind term
 	End Method
 		
 	Method FindNext(s$)
@@ -5876,6 +5928,7 @@ Type TCodePlay
 	
 	Field root:TNode
 	Field helproot:TNode
+	Field wiki:TWiki
 	Field projects:TProjects
 	Field coderoot:TNode
 	Field navbar:TNavBar	
@@ -6558,7 +6611,7 @@ Type TCodePlay
 				monkeypath=AppDir+"/../monkey"
 			EndIf
 			If FileType(monkeypath+"/targets")<>2
-				monkeypath=AppDir+"/../bmx2dev/"
+				monkeypath=AppDir+"/../.."
 			EndIf
 		EndIf
 
@@ -6646,17 +6699,19 @@ Type TCodePlay
 		debugtree=TDebugTree.CreateDebugTree(Self)
 
 		root=TNode.CreateNode("Nav")
-		
-		If bmxpath
-			helproot=root.AddNode("BlitzMax Docs")
-		EndIf
-		
+										
 		projects=TProjects.CreateProjects(Self)		
 		root.Append projects
+
+'		wikiroot=root.AddNode("Wiki")
 	
 '		opencoderoot=root.AddNode("Open")
 		coderoot=TNode.CreateNode("Code")
 		coderoot.Open()
+
+		If bmxpath
+			helproot=root.AddNode("BlitzMax Docs")
+		EndIf
 
 		history=New THistoryPlugin
 		navbar=TNavBar.Create(Self,SplitterPanel(split,SPLITPANEL_SIDEPANE))
@@ -6674,13 +6729,17 @@ Type TCodePlay
 		SetMode EDITMODE
 					
 		If bmxpath quickhelp=TQuickHelp.LoadCommandsTxt(bmxpath)
-		monkeyhelp=TQuickHelp.LoadMonkeyCommands(monkeypath)
+
+		monkeyhelp=TQuickHelp.LoadMonkeyCommands(monkeypath,Self)
 
 		helppanel=THelpPanel.Create(Self)
 		output=TOutputPanel.Create(Self)
 		serverpanel=TServerPanel.Create(Self)
 				
 		activepanel=helppanel
+
+'		wiki=TWiki.CreateWiki(Self)
+'		root.Append wiki
 
 		Rethink
 		RefreshAll
@@ -6975,6 +7034,8 @@ EndRem
 	Method InitHotkeys()
 		AddEventHotKey KEY_F5,MODIFIER_NONE,EVENT_MENUACTION,MENURUN
 		AddEventHotKey KEY_F7,MODIFIER_NONE,EVENT_MENUACTION,MENUBUILD
+		AddEventHotKey KEY_ESCAPE,MODIFIER_NONE,EVENT_MENUACTION,MENUESCAPE
+'		AddEventHotKey KEY_BACKSPACE,MODIFIER_NONE,EVENT_MENUACTION,MENUBACKSPACE
 	End Method
 		
 	Method SaveAll()
@@ -7040,6 +7101,10 @@ EndRem
 		EndIf
 	
 		Select menu
+			Case MENUESCAPE
+				currentpanel.invoke TOOLESCAPE
+'			Case MENUBACKSPACE
+'				currentpanel.invoke TOOLBACKSPACE
 			Case MENUNEW
 				OpenSource ""
 			Case MENUOPEN
@@ -7235,6 +7300,11 @@ EndRem
 				If activerequester.Poll() Then Return
 			Next
 		EndIf
+		
+'		removed for release
+'		If event=EVENT_TIMERTICK
+'			wiki.Poll
+'		EndIf
 
 		For Local handler:TEventHandler = EachIn eventhandlers
 			handler.OnEvent()
@@ -7305,393 +7375,522 @@ Function CacheAndLoadText$(url:Object)
 	Return tmpResult
 EndFunction
 
-' nitroserver 
 
-Global socket:TSocket
+Type TWiki Extends TNode
 
-Function CloseServer()
-	TConnection.CloseAll
-	CloseSocket socket
-	socket=Null
-End Function
-
-Function RunServer(port)
-	socket=CreateTCPSocket()
-	BindSocket socket,port
-	SocketListen socket,5
-	DebugLog "hostip = "+ DottedIP (HostIp( "localhost" ))
-	DebugLog "nitrohost listening on port "+port
-	Delay 10
-End Function
-
-Function PollServer()
-	Local client:TSocket=SocketAccept(socket,20)
-	If client 
-		New TConnection.Create("www/",client)
-	EndIf
-	TConnection.PollAll
-End Function
-
-
-Type TByteBuffa Extends TStream
-	Field	bytes:Byte[]
-	Field	readpointer
-
-	Method Read( buf:Byte Ptr,count )
-		If count>readpointer count=readpointer
-		If count=0 Return
-		MemCopy buf,bytes,count
-		readpointer:-count
-		If readpointer MemMove bytes,Varptr bytes[count],readpointer
-		Return count 
-	End Method
-
-	Method Write( buf:Byte Ptr,count )
-		Local	n,m
-		n=readpointer+count
-		If n>bytes.length
-			m=Max(bytes.length*1.5,n)
-			bytes=bytes[..m]
-		EndIf
-		MemCopy Varptr bytes[readpointer],buf,count
-		readpointer=n
-		Return count
-	End Method	
+	Field host:TCodePlay
 	
-	Method LineAvail()
-		Local	i
-		For i=0 Until readpointer
-			If bytes[i]=10 Return True
-		Next
-	End Method
-
-	Method FlushBytes:Byte[]()
-		Local res:Byte[]=bytes[..readpointer]
-		readpointer=0
-		Return res
-	End Method
-End Type
-
-
-Type TConnection
-
-	Global connections:TList=New TList
+	Field indexnode:TNode
+	Field wikinode:TNode
+	Field filesnode:TNode
 	
-	Field _serverpath$
-
-	Field id
-	Field _socket:TSocket
-	Field _stream:TStream
-	Field _data$
-
-	Field _getname$
-	Field _postname$
-
-	Field _header:TMap	
-	Field _content:Byte[]
-	Field _contentsize
-	Field _contentpos
-	Field _contentboundary$
+	Field menunode:TNode
 	
-	Function CloseAll()
-		Local connect:TConnection
-		For connect=EachIn connections
-			connect.Close
-		Next
-	End Function
+	Field wikimenu:TGadget
+
+	Field spider:TCrawler
 	
-	Method Close()
-		CloseSocket _socket
-		_socket=Null
-	End Method
+	Field wikidir$
+
+	Const ALOOF=0
+	Const INDEXING=1
+	Const CRAWLING=2
+
+	Field state
+
+	Field crawlcount
+
+	Field totalloads
+	Field totalbytes
+	
+	Field dirtytree
 			
-	Function PollAll()
-		Local connect:TConnection
-		For connect=EachIn connections
-			connect.Poll
-		Next
-	End Function		
-
-	Method Create:TConnection(path$,client:TSocket)
-		DebugLog "creating connection!"
-		­_serverpath=path
-		_socket=client
-		_stream=CreateSocketStream(client)
-		connections.AddLast Self
-		id=connections.count()
-		Return Self
-	End Method
-
-' process control
-Rem
-	Field _process:TProcess
-	Field _replybuffer:TByteBuffa
-	Field _reply$
-
-	Method RunProcess(proc$)
-		Local cmd$		
-'		If _contentboundary
-'			Local l=Len _contentboundary+4
-'			_content=_content[l..(Len _content)-l-3]
-'		EndIf
-		Local f:TStream=WriteFile("content.txt")
-		f.write _content,_content.length
-		CloseFile f
-	
-		putenv_ "CONTENT_LENGTH="+_content.length
-		
-		cmd="cgi-bin"+proc.Trim()+".exe"	' +_content.length
-		_process=CreateProcess(cmd$,HIDECONSOLE)
-		If Not _process DebugLog "Process Failure with "+cmd;Return
-		If Not _process.status() DebugLog "Process Failed to start "+cmd;Return		
-'		WritePipe content$
-		_replybuffer=New TByteBuffa
-		_reply$=""
-		
-		PollProcess
-	End Method
-	
-	Method PollProcess()
-		Local pipe:TPipeStream
-		Local status
-		Local count
-		Local bytes:Byte[],line$
-
-		If Not _process Return		
-		pipe=_process.pipe
-' write to process
-		count=_contentsize-_contentpos
-		If count
-			DebugLog "pipe.write count="+count
-			count=pipe.write(Byte Ptr(_content)+_contentpos,count)
-			DebugLog "pipe.write count="+count
-			_contentpos:+count
-			If _contentpos=_contentsize 
-				_content=Null
-				pipe.write("~r~n",2)
-				pipe.flush()
-				DebugLog "flushed pipe _content=null!"
+	Method FetchDir(dir$,node:TNode)
+		For Local file$=EachIn LoadDir(wikidir+"/"+dir)
+			Local f:TNode
+			f=node.FindNode(file)					
+			If f=Null
+				f=node.AddNode(file)				
+				dirtytree=True
 			EndIf
-		EndIf
-' read status BEFORE pipe
-		status=_process.status()
-' read from process
-		bytes=pipe.ReadPipe()
-		If Len bytes
-			_reply:+String.FromBytes(bytes,Len bytes)
-		EndIf
-'Rem		
-		
-		If bytes _replybuffer.WriteBytes bytes,Len bytes		
-		DebugLog "reply bytes="+Len bytes
-		While _replybuffer.LineAvail()
-			line$=_replybuffer.ReadLine()
-			DebugLog "reply line:"+line
-			_reply:+line
-		Wend
-'EndRem
-' refresh status
-		If status=0
-			DebugLog "process complete"
-			_process.terminate
-			_process.close
-			_process=Null
-			_content=Null
-			If _reply
-				WritePage _reply,Len _reply
-			EndIf
-		EndIf
-
-	End Method
-EndRem
-	
-' virtual server activation from polled http connection
-
-	Method ConfirmPost(postname$,_header:TMap)
-		Local v$,t$,b$,p
-		v$=String(_header.ValueForKey("Content-Length"))
-		DebugLog "contentsize:"+v
-		t$=String(_header.ValueForKey("Content-Type"))
-		p=t.find("boundary=")
-		If p<>-1 _contentboundary=t[p+9..]
-		DebugLog "contenttype:"+t+" _contentboundary="+_contentboundary
-'contenttype: multipart/form-data; boundary=---------------------------7d61b5111055c
-		_contentsize=Int(v.Trim())
-		Return True
-	End Method
-
-	Method PostContent(uri$)
-		Local a$
-		DebugLog "Post:"+uri
-		For a$=EachIn _header.keys()
-'			DebugLog "+"+a+"="+String(_header.ValueForKey(a))
-		Next
-'		DebugLog "Content:"+content
-' simon come here		RunProcess uri
-		_contentpos=0
-	End Method
-
-	Method WritePage(html$,size)
-		WriteLine _stream,"HTTP/1.1 200 OK"
-		WriteLine _stream,"Content-Type: text/html; charset=UTF-8"
-		WriteLine _stream,"Content-Length: "+size
-		WriteLine _stream,"Pragma: no-cache"
-		WriteLine _stream,"Expires: Fri, 01 Jan 1990 00:00:00 GMT"
-		WriteLine _stream,"Cache-control: no-cache, no-store, must-revalidate"
-		WriteLine _stream,"Connection: keep-alive"
-		WriteLine _stream,"Keep-Alive: 30000"
-		WriteLine _stream,""
-		WriteLine _stream,html
-	End Method	
-	
-	Method WriteStyle(css$,size)
-		WriteLine _stream,"HTTP/1.1 200 OK"
-		WriteLine _stream,"Content-Type: text/css; charset=UTF-8"
-		WriteLine _stream,"Content-Length: "+size
-		WriteLine _stream,"Pragma: no-cache"
-		WriteLine _stream,"Expires: Fri, 01 Jan 1990 00:00:00 GMT"
-		WriteLine _stream,"Cache-control: no-cache, no-store, must-revalidate"
-		WriteLine _stream,"Connection: keep-alive"
-		WriteLine _stream,"Keep-Alive: 30000"
-		WriteLine _stream,""
-		WriteLine _stream,css
-	End Method	
-
-	Method ServePage(uri$)
-		Local file$,size,p
-		
-		If uri$="/" 
-			file="index.html"
-		Else
-			file=uri
-			If file[..1]="/" file=file[1..]
-			p=file.find("?")
-			If p>0 file=file[..p]
-'			file=uri[..p]
-'			uri=args[p..]
-		EndIf
-		
-'		file="www/"+file
-'		file="netgui/"+file
-		file=_serverpath+file
-
-
-		If file And FileType(file)=FILETYPE_FILE
-			size=FileSize(file)
-			If size=0
-				DebugLog "ServePage "+uri+" is empty"
-				Return
-			EndIf	
-			
-			Select ExtractExt(file).tolower()
-			Case "css"
-				DebugLog "serving "+uri+" css from connection#"+id
-				WriteStyle LoadText(file),size
-			Default
-				DebugLog "serving "+uri+" txt from connection#"+id
-				WritePage LoadText(file),size
+			Local path$=file
+			If dir.Length>0 path=dir+"/"+file
+			Select FileType(wikidir+"/"+path)
+				Case FILETYPE_DIR
+					FetchDir(path,f)
+				Case FILETYPE_FILE
+					spider.LinkFile(path)
 			End Select
-			
-			
-			DebugLog file+" served?"
-		Else
-			DebugLog "Failed To find file "+file
-		EndIf		
-'		debuglog "Served!"
+		Next
+	End Method
+	
+	Method OnLoad(dir$,url$,content$)
+
+		SaveText content,wikidir+"/"+url				
+
+		totalloads:+1
+		totalbytes:+content.Length
+		
+		Local parts$[]
+		parts=(dir+"/"+url).Split("/")
+		
+		Local n:TNode
+		n=wikinode
+		For Local part$=EachIn parts	'url.Split("/")
+			Local f:TNode
+			f=n.FindNode(part)
+			If f=Null
+				f=n.AddNode(part)				
+				dirtytree=True
+			EndIf
+			n=f			
+		Next
+
+	End Method
+	
+	Function CreateWiki:TWiki(host:TCodePlay)
+		Local p:TWiki = New TWiki
+
+		p.wikimenu=CreateMenu("Wiki",0,Null)
+		CreateMenu "Refresh",MENUREFRESH,p.wikimenu
+
+		p.wikidir=AppDir+"/wiki"
+		
+		p.SetName("Wiki")
+		p.host=host		
+
+		p.indexnode=p.AddNode("Index")
+
+		p.wikinode=p.AddNode("Offline")
+
+'		p.wikinode=TFolderNode.CreateFolderNode(p.wikidir,TFolderNode.DIRECTORYFOLDER)
+'		p.wikinode.owner=p
+'		p.Append(p.wikinode)
+
+		p.filesnode=p.AddNode("Files")
+		
+		p.setAction(p,TOOLMENU,p)
+
+		p.indexnode.SetAction(p,TOOLMENU,p.indexnode)
+		p.wikinode.SetAction(p,TOOLMENU,p.wikinode)
+		p.filesnode.SetAction(p,TOOLMENU,p.filesnode)
+		
+		p.wikimenu=CreateMenu("Wiki",0,Null)
+		CreateMenu "Refresh",MENUREFRESH,p.wikimenu
+		CreateMenu "Cancel",MENUCANCEL,p.wikimenu
+		
+		p.spider=New TCrawler
+		p.spider.setOwner p
+
+		p.FetchDir "",p.wikinode
+		p.BuildIndex
+		
+		Return p
+	End Function
+
+	Method Invoke(command,argument:Object)
+	
+		DebugLog "Invoke:"+command+","+String(Argument)
+
+		Select command
+		
+			Case TOOLMENU			
+				Local cmd=Int(String(argument))
+				
+				Select cmd				
+					Case 0
+						menunode=TNode(argument)		
+						Select menunode
+							Case Self
+								Return
+								Highlight			
+							Case indexnode
+								indexnode.Highlight
+							Case wikinode
+								wikinode.Highlight
+							Case filesnode
+								filesnode.Highlight
+						End Select		
+						PopupWindowMenu host.window,wikimenu,Self
+					Case MENUREFRESH					
+						Select menunode				
+							Case indexnode
+								Select state
+									Case ALOOF
+										PullIndex
+									Case INDEXING
+										StopIndex
+									Case CRAWLING
+										StopCrawl
+								End Select							
+							Case wikinode
+								Select state
+									Case ALOOF
+										CrawlWiki
+									Case INDEXING
+										StopIndex
+									Case CRAWLING
+										StopCrawl
+								End Select							
+						End Select
+					Case MENUCANCEL			
+							Select menunode								
+								Case indexnode
+									If state=INDEXING StopIndex
+								Case wikinode
+									If state=CRAWLING StopCrawl
+							End Select
+				End Select
+		End Select
 	End Method
 
-' local state machine http state machine
-
-	Method getline$()
-		Local p,l$
-		p=_data.find("~n")
-		If p=-1 p=_data.length
-		l=_data[..p]
-		_data=_data[p+1..]		
-		Return l
+	Method BuildFiles()
 	End Method
-
-	Method addheader(mess$)
-		Local p=mess.find(":")
-		If p<>-1
-			_header.insert mess[..p],mess[p+1..]
-		Else
-			DebugLog "Unknown header line :"+mess
-		EndIf
+	
+	Method BuildIndex()
+		Local index$
+		Local dir$
+		dir=wikidir+"/"+WIKI_SITE_INDEX	
+		If FileType(dir)<>FILETYPE_FILE
+			DebugLog "Problem building wiki index"
+			Return
+		EndIf				
+		indexnode.FreeKids		
+		index=LoadString(dir)					
+		Local words$[]
+		Local i		
+		words=index.Split("<loc>")		
+		For i=1 Until words.Length
+			Local word$=words[i]
+			Local p=word.find("</loc>")
+			If p=-1 Continue			
+			Local title$=word[..p]			
+			If title.startsWith(WIKI_URL)
+				title=title[WIKI_URL.Length..]				
+				Local n:TNode
+				Local href$=WIKI_URL+title+WIKI_ARGS
+				n=indexnode.AddNode(title)				
+				n.SetAction(host.helppanel,TOOLNAVIGATE,href)								
+			EndIf			
+		Next		
+		indexnode.Refresh
 	End Method
 		
 	Method Poll()
-		Local bytes,mess$
+	
+		Select state
+			Case INDEXING
+				If spider.Busy()
+					spider.Poll()
+				Else
+					DebugLog "Finished Index"
+					BuildIndex
+					StopIndex
+				EndIf				
+			Case CRAWLING
+				If spider.Busy()
+					spider.Poll()					
+					crawlcount:+1
+					If crawlcount&31=1						
+						Local count=spider.filelist.Count()						
+						wikinode.SetName "Crawling... "+totalloads+"/"+(count+totalloads)
+						wikinode.Refresh						
+					EndIf
+				Else
+					DebugLog "Finished Crawl"
+					StopCrawl					
+				EndIf
+		End Select
+	End Method
+	
+	Method PullIndex()
+		Local dir$=wikidir
+		
+		If FileType(dir)=FILETYPE_NONE
+			CreateDir dir
+		EndIf			
 
-'		If _process
-'			PollProcess
-'			Return
-'		EndIf
-
-		If _content
-			bytes=SocketReadAvail(_socket)
-			If bytes And _contentpos<_contentsize
-				bytes=_stream.Read(Byte Ptr(_content)+_contentpos,bytes)
-				_contentpos:+bytes
-				DebugLog "_contentpos="+_contentpos
-			EndIf
-			If _contentpos=_contentsize
-				PostContent _postname
-				_postname=""
-			EndIf
+		If FileType(dir)=FILETYPE_NONE
+			Notify "Wiki unable to use dir "+dir
 			Return
 		EndIf
+		
+		spider.Crawl(WIKI_HOST,WIKI_SITE_INDEX,dir,False)
 
-		bytes=SocketReadAvail(_socket)
-		If bytes
-			_data:+ReadString(_stream,bytes)
-'			DebugLog "_data:"+_data
-		EndIf
+		state=INDEXING
 			
-		While _data
-			mess=Trim(getline())
-			If _getname
-				If mess=""
-					ServePage _getname
-					_getname=""
-				Else
-					addheader mess
-					Continue
-				EndIf
-			EndIf
-			If _postname
-				If mess=""
-					If ConfirmPost(_postname,_header)
-						If _contentsize _content=New Byte[_contentsize]
-						_contentpos=Min(_contentsize,Len _data)
-						If _contentpos
-							Local src:Byte Ptr=_data.toCString()
-							Local dest:Byte Ptr=Byte Ptr(_content)
-							MemCopy dest,src,_contentpos
-							MemFree src
-						EndIf
-					EndIf
-					_data=_data[_contentsize..]
-				Else
-					addheader mess
-				EndIf
-				Continue
-			EndIf
-			If mess[..4]="GET "
-				_getname=mess[4..]
-				_getname=_getname.Replace(" HTTP/1.1","")
-				_header=New TMap
-			EndIf			
-			If mess[..4]="POST"
-				_postname=mess[4..]
-				_postname=_postname.Replace(" HTTP/1.1","")
-				_header=New TMap
-				_contentsize=0
-				_content=Null
-				DebugLog "post="+_postname
-			EndIf			
-		Wend	
+		indexnode.SetName "Indexing..."
+		indexnode.Refresh
+
+	End Method
+	
+	Method CrawlWiki()
+		Local dir$=wikidir
+		
+		If FileType(dir)=FILETYPE_NONE
+			CreateDir dir
+		EndIf			
+
+		If FileType(dir)=FILETYPE_NONE
+			Notify "Wiki unable to use dir "+dir
+			Return
+		EndIf
+		
+		spider.Crawl(WIKI_HOST,WIKI_INDEX+WIKI_ARGS,dir,True)
+		state=CRAWLING
+			
+		wikinode.SetName "Crawling..."
+		wikinode.Refresh
+	End Method
+	
+	Method StopCrawl()
+		spider.Stop
+		state=ALOOF
+		wikinode.SetName "Wiki"
+		wikinode.Refresh
+		
+		wikinode.RefreshView
+	End Method
+
+	Method StopIndex()
+		state=ALOOF
+		indexnode.SetName "Index"
+		indexnode.Refresh
 	End Method
 
 End Type
+
+
+Type TCrawler
+	Const CRAWLERLEGS=5
+
+	Field owner:TWiki
+	
+	Field host$
+	Field legs:TGet[CRAWLERLEGS]		
+	Field busycount
+	Field filelist:TList	
+	Field names:TMap	
+	Field cachepath$	
+	Field recurse
+
+	Method New()
+		For Local i=0 Until CRAWLERLEGS
+			legs[i]=New TGet
+		Next
+		filelist=New TList
+		names=New TMap
+	End Method
+	
+	Method SetOwner(wiki:TWiki)
+		owner=wiki
+	End Method
+	
+	Method Stop()
+		Local get:TGet
+		For get=EachIn legs
+			get.Stop
+		Next
+	End Method
+		
+	Method Busy()
+		If filelist.Count()>0 Or busycount>0 Return True
+		Return False
+	End Method
+
+	Method Crawl(host0$,path$,dir0$,recurse0=True)
+		host=host0
+		cachepath=dir0
+		filelist.AddLast(path)
+		recurse=recurse0
+	End Method
+	
+	Method LinkFile(url$)
+		names.Insert url,Null				
+	End Method 
+	
+	Method UpdateContent(url$,content$,headers$)	
+		names.Insert url,content		
+		url=url.Replace("?","%3F")			
+
+		Local cachedir$=cachepath		
+		Local dir$=""
+
+		Local d=url.FindLast("/")		
+		If d>-1
+			dir=url[..d]			
+			url=url[d+1..]
+
+			cachedir$:+cachepath+"/"+dir						
+			If FileType(cachedir)=FILETYPE_NONE
+				CreateDir cachedir
+			EndIf			
+		EndIf		
+		
+		owner.OnLoad dir,url,content
+
+'		DebugLog "wrote "+dir+"/"+url		
+'		DebugLog content
+
+		If Not recurse Return
+
+		Local srch$="href=~q"
+		Local p=0
+		Local q=0
+		While p<content.Length	
+			p=content.Find(srch,p)
+			If p=-1 Exit			
+			p:+srch.Length
+			q=content.Find("~q",p+1)
+			If q=-1 Exit			
+			Local ref$=content[p..q]						
+			If ref.StartsWith("http:") Continue
+			If ref.StartsWith("https:") Continue			
+
+			If ref.Find("?r=")>-1 Continue
+			If ref.Find("?page=")>-1 Continue
+			If ref.EndsWith(".rss") Continue
+
+			If ref.StartsWith("/")
+				ref=ref[1..]				
+				
+				If names.Contains(ref) Continue								
+				
+				DebugLog "crawling "+ref
+
+				names.Insert ref,Null
+				filelist.AddLast ref
+			EndIf						
+		Wend		
+	End Method
+				
+	Method Poll()	
+		Local get:TGet
+		For get=EachIn legs		
+			get.Poll
+			If get.finished And get.url<>Null
+				Local result$=get.result
+				Local url$=get.url				
+				get.url=Null
+				busycount:-1
+				Local header$				
+				Local p=result.Find("~r~n~r~n")				
+				If p<>-1		
+					header=result[..p]
+					result=result[p+4..]					
+					UpdateContent url,result,header										
+				EndIf				
+			EndIf
+		Next
+				
+		For get=EachIn legs
+			If get.url=Null And filelist.Count()>0		
+				Local path$=String(filelist.RemoveFirst())				
+				get.fromHost(host,path)
+				busycount:+1
+			EndIf
+		Next		
+		
+	End Method	
+
+End Type
+	
+
+Type TGet
+
+	Const GETBUFFERSIZE=1200000
+	Const MAXREADSIZE=65536
+	
+	Field socket:TSocket
+	Field ip
+	Field host$
+	Field url$	
+	Field disconnected
+	Field finished
+	Field result$
+
+	Field bytebuffer:Byte[GETBUFFERSIZE+1]
+	Field bytepos
+	
+	Method New()
+	End Method
+	
+	Method fromHost:TGet(host0$,path$,port=80)
+		socket=CreateTCPSocket() 
+		host=host0
+		ip=HostIp(host)
+		url=path
+		disconnected=True
+		bytepos=0
+		finished=False
+		result=""		
+		ConnectSocket socket,ip,port	
+
+'		socket.SetNonBlocking 1
+
+		Return Self
+	End Method
+	
+	Method Stop()
+		CloseSocket socket
+		finished=True
+		url=Null
+	End Method
+	
+	Method Poll()		
+		If finished Return		
+		If url=Null Return		
+
+		If disconnected
+			Local isconnected=SocketConnected(socket)		
+			If isconnected
+				disconnected=False
+				Local msg$				
+				msg = "GET /"+url+" HTTP/1.0~r~n"
+				msg :+ "Host: "+host+"~r~n"
+				msg :+ "User-Agent: MonkClient~r~n"
+				msg :+ "Accept: */*~r~n"
+				msg :+ "~r~n"				
+				Local cmsg:Byte Ptr
+				Local bytes				
+				cmsg=msg.ToCString()
+				bytes=msg.Length				
+				socket.Send(cmsg,bytes)				
+			Else			
+				Return
+			EndIf
+		EndIf
+				
+		Local n=SocketReadAvail(socket)		
+
+		If n>0			
+			If bytepos+n>GETBUFFERSIZE n=GETBUFFERSIZE-bytepos			
+
+			If n=0 'we have buffer overflow
+				DebugLog "Buffer Overflow url="+url+" bytepos="+bytepos
+				finished=True	
+				Return
+			EndIf			
+			
+			If n>MAXREADSIZE n=MAXREADSIZE
+			
+			n=socket.Recv(Varptr bytebuffer[bytepos],n)			
+
+			bytepos:+n		
+		Else
+			Local isconnected=SocketConnected(socket)		
+			If Not isconnected			
+				bytebuffer[bytepos]=0				
+				result=String.FromCString(bytebuffer)
+				finished=True				
+				Return			
+			EndIf
+		EndIf
+				
+	End Method
+	
+End Type
+
+
+
 

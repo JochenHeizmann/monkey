@@ -1,10 +1,11 @@
 
 Strict
 
-'rebuild options
-Const Rebuild_Trans=	True
-Const Rebuild_Monk=		False
-Const Rebuild_Mserver=	False
+RebuildTrans
+RebuildMonk
+'RebuildMServer
+
+End
 
 ?Win32
 
@@ -47,9 +48,7 @@ Function system( cmd$,fail=True )
 	EndIf
 End Function
 
-'Rebuild functions....
-If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
-
+Function RebuildTrans()
 	If QUICKTRANS
 ?Win32
 		system "g++ -o "+trans+" trans\trans.build\stdcpp\main.cpp"
@@ -59,10 +58,8 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 	Else
-	
-'		system trans2+" -clean -target=stdcpp -config=release trans/trans.monkey"
 		system trans2+" -clean -target=stdcpp -config=release +CPP_INCREMENTAL_GC=0 +CPP_DOUBLE_PRECISION_FLOATS=1 trans/trans.monkey"
-
+	
 		Delay 100
 		
 		DeleteFile trans
@@ -81,18 +78,18 @@ If Rebuild_Trans And FileType( "trans/trans.monkey" )=FILETYPE_FILE
 ?
 	EndIf
 	Print "trans built OK!"
-EndIf
+End Function
 
-If Rebuild_Monk And FileType( "monk/monk.bmx" )=FILETYPE_FILE
+Function RebuildMonk()
 	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -t gui -a -r -o ../monk monk/monk.bmx"
 ?MacOS
 	system "cp monk/info.plist ../monk.app/Contents"
 	system "cp monk/monk.icns ../monk.app/Contents/Resources"
 ?
 	Print "monk built OK!"
-EndIf
+End Function
 
-If Rebuild_MServer And FileType( "mserver/mserver.bmx" )=FILETYPE_FILE
+Function RebuildMServer()
 	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -h -t gui -a -r -o "+mserver+" mserver/mserver.bmx"
 	Print "mserver built OK!"
-EndIf
+End Function

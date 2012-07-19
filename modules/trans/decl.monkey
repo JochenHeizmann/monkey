@@ -1237,6 +1237,8 @@ Class ModuleDecl Extends ScopeDecl
 
 End
 
+Const APP_SEMANTALL=1
+
 Class AppDecl Extends ScopeDecl
 
 	Field imported:=New StringMap<ModuleDecl>			'maps modpath->mdecl
@@ -1268,7 +1270,23 @@ Class AppDecl Extends ScopeDecl
 		If Not IntType( mainFunc.retType ) Or mainFunc.argDecls.Length
 			Err "Main function must be of type Main:Int()"
 		Endif
-
+		
+		If attrs & APP_SEMANTALL
+			For Local mdecl:=Eachin imported.Values()
+				For Local decl:=Eachin mdecl.Decls()
+					Print decl.ident
+					decl.Semant
+					Local cdecl:=ClassDecl( decl )
+					If cdecl And Not cdecl.args
+						For Local decl:=Eachin cdecl.Decls()
+							Print " "+decl.ident
+							decl.Semant
+						Next
+					Endif
+				Next
+			Next
+		Endif
+	
 		Repeat
 			Local more
 			For Local cdecl:=Eachin semantedClasses

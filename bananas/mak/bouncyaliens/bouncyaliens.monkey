@@ -74,7 +74,7 @@ Class MyApp Extends App
 			sprites.Push New Sprite
 		Next
 		
-		utime=Millisecs
+		utime=Millisecs()
 		rtime=utime
 				
 		SetUpdateRate 60

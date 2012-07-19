@@ -4,7 +4,7 @@
 // This means pokes/peeks must be naturally aligned, but data has to be in WebGL anyway so that's OK for now.
 //
 function DataBuffer( size ){
-	this.arrayBuffer=new ArrayBuffer( size );
+	this.arrayBuffer=new ArrayBuffer( (size+3)&~3 );
 	this.byteArray=new Int8Array( this.arrayBuffer );
 	this.shortArray=new Int16Array( this.arrayBuffer );
 	this.intArray=new Int32Array( this.arrayBuffer );

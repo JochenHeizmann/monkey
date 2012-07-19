@@ -1884,11 +1884,6 @@ Function Eval$( source$,ty:Type )
 		env.InsertDecl New ConstDecl( kv.Key,0,Type.stringType,New ConstExpr( Type.stringType,kv.Value ) )
 	Next
 
-'	env.InsertDecl New ConstDecl( "HOST",0,Type.stringType,New ConstExpr( Type.stringType,ENV_HOST ) )
-'	env.InsertDecl New ConstDecl( "LANG",0,Type.stringType,New ConstExpr( Type.stringType,ENV_LANG ) )
-'	env.InsertDecl New ConstDecl( "TARGET",0,Type.stringType,New ConstExpr( Type.stringType,ENV_TARGET ) )
-'	env.InsertDecl New ConstDecl( "CONFIG",0,Type.stringType,New ConstExpr( Type.stringType,ENV_CONFIG ) )
-	
 	PushEnv env
 	
 	Local toker:=New Toker( "",source )

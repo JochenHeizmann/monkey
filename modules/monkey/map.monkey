@@ -25,7 +25,7 @@ Class Map<K,V>
 		Return FindNode( key )<>Null
 	End
 
-	Method Set( key:K,value:V )
+	Method Set:Bool( key:K,value:V )
 		Local node:Node<K,V>=root
 		Local parent:Node<K,V>,cmp
 
@@ -38,24 +38,63 @@ Class Map<K,V>
 				node=node.left
 			Else
 				node.value=value
-				Return
+				Return False
 			Endif
 		Wend
 		
 		node=New Node<K,V>( key,value,RED,parent )
 		
-		If Not parent
-			root=node
-			Return
-		Endif
-
-		If cmp>0
-			parent.right=node
+		If parent
+			If cmp>0
+				parent.right=node
+			Else
+				parent.left=node
+			Endif
+			InsertFixup node
 		Else
-			parent.left=node
+			root=node
 		Endif
+		Return True
+	End
+	
+	Method Add:Bool( key:K,value:V )
+		Local node:Node<K,V>=root
+		Local parent:Node<K,V>,cmp
+
+		While node
+			parent=node
+			cmp=Compare( key,node.key )
+			If cmp>0
+				node=node.right
+			Else If cmp<0
+				node=node.left
+			Else
+				Return False
+			Endif
+		Wend
 		
-		InsertFixup node
+		node=New Node<K,V>( key,value,RED,parent )
+		
+		If parent
+			If cmp>0
+				parent.right=node
+			Else
+				parent.left=node
+			Endif
+			InsertFixup node
+		Else
+			root=node
+		Endif
+		Return True
+	End
+	
+	Method Update:Bool( key:K,value:V )
+		Local node:=FindNode( key )
+		If node
+			node.value=value
+			Return True
+		Endif
+		Return False
 	End
 	
 	Method Get:V( key:K )
@@ -83,7 +122,7 @@ Class Map<K,V>
 	End
 
 	'Deprecated - use Set
-	Method Insert( key:K,value:V )
+	Method Insert:Bool( key:K,value:V )
 		Return Set( key,value )
 	End
 

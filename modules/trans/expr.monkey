@@ -446,7 +446,6 @@ Class NewArrayExpr Extends Expr
 		If exprType Return Self
 		
 		ty=ty.Semant()
-'		exprType=New ArrayType( ty )
 		exprType=ty.ArrayOf()
 		expr=expr.Semant( Type.intType )
 		Return Self
@@ -463,8 +462,8 @@ Class InvokeSuperExpr Extends Expr
 	Field ident$
 	Field args:Expr[]
 	Field funcDecl:FuncDecl
-	Field classScope:ClassDecl
-	Field superClass:ClassDecl
+'	Field classScope:ClassDecl
+'	Field superClass:ClassDecl
 
 	Method New( ident$,args:Expr[] )
 		Self.ident=ident
@@ -480,8 +479,10 @@ Class InvokeSuperExpr Extends Expr
 	
 		If _env.FuncScope().IsStatic() Err "Illegal use of Super."
 		
-		classScope=_env.ClassScope()
-		superClass=classScope.superClass
+		Local classScope:=_env.ClassScope()
+		Local superClass:=classScope.superClass
+'		classScope=_env.ClassScope()
+'		superClass=classScope.superClass
 
 		If Not superClass Err "Class has no super class."
 
@@ -1046,7 +1047,6 @@ Class ArrayExpr Extends Expr
 			exprs[i]=exprs[i].Cast( ty )
 		Next
 		
-'		exprType=New ArrayType( ty )
 		exprType=ty.ArrayOf()
 		Return Self	
 	End

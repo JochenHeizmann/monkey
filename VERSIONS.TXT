@@ -1,9 +1,32 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V53 *****
+
+Monk:
+
+Now uses new wiki-docs!
+
+
+Modules:
+
+map - Added 'Add' method - like 'Set' but wont modify map if key already exists.
+
+map - Modified 'Set' to return bool result.
+
+xna mojo - Fixed auto controller detection.
+
+opengl - Fixed non-multiple-of-4-length DataBuffers crashing on html5.
+
+
+Targets:
+
+mojo - loadString now uses java's String( byte[] ) ctor.
+
+
 ***** V52(f) *****
 
-Modules
+Modules:
 
 mojo - added NOP versions of AccelX/AccelY/AccelZ to glfw, flash and xna targets.
 
@@ -26,7 +49,7 @@ opengl - added fallbacks to extensions for VBOs and compressed textures to gles1
 opengl - fixed gles11 glNormalPointer wrapper.
 
 
-Trans (1.29)
+Trans (1.29):
 
 Fixed assign op /= with ints in JS returning fractions.
 
@@ -41,7 +64,7 @@ Converted html5 makemeta.cpp to James' version.
 
 ***** V52(b) *****
 
-Modules
+Modules:
 
 android mojo.input - added blind kludge for EnableKeyboard.
 
@@ -136,7 +159,7 @@ flash mojo - fixed alpha bug introduced by fix for dark rendering.
 monkey.lang, c++ mojos - added tweaks for incremental GC.
 
 
-Trans (1.26)
+Trans (1.26):
 
 Fixed generic class downcast parsing bug.
 

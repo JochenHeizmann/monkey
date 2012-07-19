@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    
+<!-- Mirrored from blitz-wiki.appspot.com/Image?format=mobile by HTTrack Website Copier/3.x [XR&CO'2010], Thu, 02 Feb 2012 22:34:46 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8"><!-- /Added by HTTrack -->
+<head>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	  
+      
+        <link rel="stylesheet" type="text/css" href="gae-wiki-static/style_mobile.css"/>
+      
+
+	  <!--[if gte IE 6]>
+      
+        <link rel="stylesheet" type="text/css" href="gae-wiki-static/ie.css"/>
+      
+        <![endif]-->
+		
+      <link rel="shortcut icon" href="gae-wiki-static/favicon.ico" type="image/png" /> 
+      <link rel="alternate" type="application/rss+xml" title="New Pages" href="w/index.rss" /> 
+      
+      <title>Image — Blitz Wiki</title>
+      
+      
+      
+      
+    </head>
+    <body>
+
+    <div id="page">
+
+<ul id="tabs">
+<li><img style="vertical-align:middle" src="../commondatastorage.googleapis.com/monkeycoder.co.nz/blitz-wiki/monkeylogos/monkey16.png"></li>
+<li><a class="int" href="Welcome4d8a.html?format=mobile">Home</a></li>
+<li><a class="int" href="Tutorials4d8a.html?format=mobile">Tutorials</a></li>
+<li><a class="int" href="Monk4d8a.html?format=mobile">Monk</a></li>
+<li><a class="int" href="Trans4d8a.html?format=mobile">Trans</a></li>
+<li><a class="int" href="Module%20reference4d8a.html?format=mobile">Modules</a></li>
+<li><a class="int" href="Language%20reference4d8a.html?format=mobile">Language</a></li>
+<li><a class="int" href="Installing_target_SDKs4d8a.html?format=mobile">Targets</a></li>
+<li><a class="int" href="w/index4d8a.html?format=mobile">Index</a></li>
+</ul>
+      
+
+<div class="wtabs extl" id="pb">
+  
+    
+      <h1>Class Image</h1>
+<p>Image class.</p>
+<p>Module: <a class="int" href="mojo4d8a.html?format=mobile" title="mojo.graphics">mojo.graphics</a></p>
+<h2>Syntax</h2>
+<p>Class Image Extends Object Final</p>
+<h2>Description</h2>
+<p>An image is a rectangular area of pixels, loaded from an image file with LoadImage or grabbed from another image with GrabImage.</p>
+<p>Images can be drawn with DrawImage or DrawImageRect.</p>
+<p>Images have a width, a height and a handle. A handle is a 'local origin' which allows you to control the centre point of an image when drawing it.</p>
+<p>Images can also contain multiple 'frames', and when drawing an image a specific frame may be drawn. Each frame in a multi-frame image is the same width and height.</p>
+<p>Images can also be used as 'image atlases'. An image atlas is a single image that contains multiple smaller images. You can use the GrabImage method of Image to 'grab' an image from an atlas.</p>
+<p>The idea behind image atlases is that they can be rendered much more efficiently by graphics hardware, so for best results you should try and make as much use of image atlases as possibly. As a nice side effect, image atlases can also be convenient for artists to deal with.</p>
+<p>Import note: When creating an image atlas or an image containing multiple animation frames, it is a good idea to add a single pixel border around each frame that extends the pixels at the edges of the frame. This will prevent rendering 'noise' caused by accidental fetches of pixels outside the frame, which can sometimes occur due to mathematical inaccuracies. To enable padding, you should use one of the image padding flags: Image.XPadding, Image.YPadding or Image.XYPadding when using LoadImage or GrabImage.</p>
+<h2>Globals</h2>
+<p><a class="int" href="Image4d8a-2.html?format=mobile" title="Image.DefaultFlags">DefaultFlags:Int</a><br />
+Image flags used when a new image is created.</p>
+<h2>Methods</h2>
+<p><a class="int" href="Image4d8a-3.html?format=mobile" title="Image.Discard">Discard:Void()</a><br />
+Discard image data.</p>
+<p><a class="int" href="Image4d8a-4.html?format=mobile" title="Image.Frames">Frames:Int()</a><br />
+Get number of frames.</p>
+<p><a class="int" href="Image4d8a-5.html?format=mobile" title="Image.GrabImage">GrabImage:Image( x:int, y:Int, width:Int, height:Int, count:Int=1, flags:Int=Image.DefaultFlags )</a><br />
+Grab an image.</p>
+<p><a class="int" href="Image4d8a-6.html?format=mobile" title="Image.HandleX">HandleX:Int()</a><br />
+Get X handle of image.</p>
+<p><a class="int" href="Image4d8a-7.html?format=mobile" title="Image.HandleY">HandleY:Int()</a><br />
+Get Y handle of image.</p>
+<p><a class="int" href="Image4d8a-8.html?format=mobile" title="Image.Height">Height:Int()</a><br />
+Get height of image.</p>
+<p><a class="int" href="Image4d8a-9.html?format=mobile" title="Image.SetHandle">SetHandle:Void( x:Int, y:Int )</a><br />
+Set image handle.</p>
+<p><a class="int" href="Image4d8a-10.html?format=mobile" title="Image.Width">Width:Int()</a><br />
+Get width of image.</p>
+<h2>See also</h2>
+<p><a class="int" href="DrawImage4d8a.html?format=mobile" title="DrawImage">DrawImage</a> <a class="int" href="DrawImageRect4d8a.html?format=mobile" title="DrawImageRect">DrawImageRect</a> <a class="int" href="Image4d8a-5.html?format=mobile" title="Image.GrabImage">GrabImage</a> <a class="int" href="LoadImage4d8a.html?format=mobile" title="LoadImage">LoadImage</a></p>
+      
+      
+    
+  
+</div>
+
+
+    </div>
+    </body>
+
+<!-- Mirrored from blitz-wiki.appspot.com/Image?format=mobile by HTTrack Website Copier/3.x [XR&CO'2010], Thu, 02 Feb 2012 22:34:46 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8"><!-- /Added by HTTrack -->
+</html>
