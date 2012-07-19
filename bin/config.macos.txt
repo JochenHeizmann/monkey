@@ -1,0 +1,23 @@
+
+'--------------------
+'Android SDK and tool paths.
+'
+'Must be set to a valid for for ANDROID target support
+'
+'Android SDK
+ANDROID_PATH="${HOME}/android-sdk-mac_x86"
+ANDROID_PATH="${HOME}/android-sdk-mac_86"
+'--------------------
+
+'--------------------
+'Flex SDK path.
+'
+'Must be set for FLASH target support.
+'
+FLEX_PATH="${HOME}/flex_sdk_4.1.0.16076"
+FLEX_PATH="${HOME}/flex_sdk_4.1"
+FLEX_PATH="${HOME}/flex_sdk_4.0.0.14159"
+FLEX_PATH="${HOME}/flex_sdk_4.0"
+FLEX_PATH="${HOME}/flex_sdk_4"
+FLEX_PATH="${HOME}/flex_sdk"
+'--------------------

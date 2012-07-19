@@ -1,0 +1,48 @@
+
+body{
+	font-family: sans-serif;
+	font-size: 16px;
+}
+
+div.trail{
+	padding: 2px;
+	font-size: 13px;
+	font-weight: bold;
+	background-color: #cccccc;
+}
+
+a{
+	color: #000088;
+	text-decoration: none;
+}
+
+hr{
+	height: 1px;
+	color: #000000;
+}
+
+h2{
+}
+
+h3{
+	font-style: italic;
+	font-weight: normal;
+}
+
+blockquote{
+}
+
+h3.nav{
+	font-size: 16px;
+	font-style: normal;
+	font-weight: bold;
+}
+
+a.nav{
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	text-decoration: none;
+	color: #000088;
+}
+

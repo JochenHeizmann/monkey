@@ -1,0 +1,273 @@
+// !$*UTF8*$!
+{
+	1D6058900D05DD3D006BFB54 /* MonkeyGame */ = {
+		activeExec = 0;
+		executables = (
+			7CACF88012B5CFF1002E52F2 /* MonkeyGame */,
+		);
+	};
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = 7CACF88012B5CFF1002E52F2 /* MonkeyGame */;
+		activeSDKPreference = iphonesimulator4.2;
+		activeTarget = 1D6058900D05DD3D006BFB54 /* MonkeyGame */;
+		codeSenseManager = 7CACF89912B5D005002E52F2 /* Code sense */;
+		executables = (
+			7CACF88012B5CFF1002E52F2 /* MonkeyGame */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					770,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					730,
+					60,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 319947282;
+			PBXWorkspaceStateSaveDate = 319947282;
+		};
+		perUserProjectItems = {
+			7C57EE2F130CC07B00A40D68 /* PBXTextBookmark */ = 7C57EE2F130CC07B00A40D68 /* PBXTextBookmark */;
+			7CF953A71311FCE8005295F9 /* PBXTextBookmark */ = 7CF953A71311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953A91311FCE8005295F9 /* PBXTextBookmark */ = 7CF953A91311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953AB1311FCE8005295F9 /* PBXTextBookmark */ = 7CF953AB1311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953AD1311FCE8005295F9 /* PBXTextBookmark */ = 7CF953AD1311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953AF1311FCE8005295F9 /* PBXTextBookmark */ = 7CF953AF1311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953B11311FCE8005295F9 /* PBXTextBookmark */ = 7CF953B11311FCE8005295F9 /* PBXTextBookmark */;
+			7CF953B31311FCE8005295F9 /* PBXTextBookmark */ = 7CF953B31311FCE8005295F9 /* PBXTextBookmark */;
+			7CF954A213120221005295F9 /* PBXTextBookmark */ = 7CF954A213120221005295F9 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 7CACF89812B5D005002E52F2 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	32CA4F630368D1EE00C91783 /* MonkeyGame_Prefix.pch */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {992, 413}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 189}";
+		};
+	};
+	7C57EE2F130CC07B00A40D68 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 32CA4F630368D1EE00C91783 /* MonkeyGame_Prefix.pch */;
+		name = "MonkeyGame_Prefix.pch: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 189;
+		vrLoc = 0;
+	};
+	7C8210851294A2EB002C4212 /* main.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {992, 1079}}";
+			sepNavSelRange = "{289, 0}";
+			sepNavVisRange = "{954, 688}";
+			sepNavWindowFrame = "{{398, 75}, {1282, 953}}";
+		};
+	};
+	7C8210861294A2EB002C4212 /* main.mm */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {992, 3289}}";
+			sepNavSelRange = "{18, 0}";
+			sepNavVisRange = "{6199, 464}";
+			sepNavWindowFrame = "{{398, 60}, {1282, 953}}";
+		};
+	};
+	7CACF88012B5CFF1002E52F2 /* MonkeyGame */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = MonkeyGame;
+		savedGlobals = {
+		};
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	7CACF89812B5D005002E52F2 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	7CACF89912B5D005002E52F2 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	7CF953A71311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7CF953A81311FCE8005295F9 /* alc.h */;
+		name = "alc.h: 6";
+		rLen = 0;
+		rLoc = 79;
+		rType = 0;
+		vrLen = 610;
+		vrLoc = 0;
+	};
+	7CF953A81311FCE8005295F9 /* alc.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = alc.h;
+		path = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks/OpenAL.framework/Headers/alc.h;
+		sourceTree = "<absolute>";
+	};
+	7CF953A91311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7CF953AA1311FCE8005295F9 /* oalMacOSX_OALExtensions.h */;
+		name = "oalMacOSX_OALExtensions.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 2114;
+		vrLoc = 452;
+	};
+	7CF953AA1311FCE8005295F9 /* oalMacOSX_OALExtensions.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = oalMacOSX_OALExtensions.h;
+		path = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks/OpenAL.framework/Headers/oalMacOSX_OALExtensions.h;
+		sourceTree = "<absolute>";
+	};
+	7CF953AB1311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7CF953AC1311FCE8005295F9 /* oalStaticBufferExtension.h */;
+		name = "oalStaticBufferExtension.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1995;
+		vrLoc = 0;
+	};
+	7CF953AC1311FCE8005295F9 /* oalStaticBufferExtension.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = oalStaticBufferExtension.h;
+		path = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks/OpenAL.framework/Headers/oalStaticBufferExtension.h;
+		sourceTree = "<absolute>";
+	};
+	7CF953AD1311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7CF953AE1311FCE8005295F9 /* CoreAudioTypes.h */;
+		name = "CoreAudioTypes.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 984;
+		vrLoc = 0;
+	};
+	7CF953AE1311FCE8005295F9 /* CoreAudioTypes.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = CoreAudioTypes.h;
+		path = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks/CoreAudio.framework/Headers/CoreAudioTypes.h;
+		sourceTree = "<absolute>";
+	};
+	7CF953AF1311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7CF953B01311FCE8005295F9 /* al.h */;
+		name = "al.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 602;
+		vrLoc = 0;
+	};
+	7CF953B01311FCE8005295F9 /* al.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = al.h;
+		path = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks/OpenAL.framework/Headers/al.h;
+		sourceTree = "<absolute>";
+	};
+	7CF953B11311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7C8210861294A2EB002C4212 /* main.mm */;
+		name = "main.mm: 2";
+		rLen = 0;
+		rLoc = 18;
+		rType = 0;
+		vrLen = 464;
+		vrLoc = 6199;
+	};
+	7CF953B31311FCE8005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7C8210851294A2EB002C4212 /* main.h */;
+		name = "main.h: 18";
+		rLen = 0;
+		rLoc = 289;
+		rType = 0;
+		vrLen = 688;
+		vrLoc = 954;
+	};
+	7CF954A213120221005295F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7C8210851294A2EB002C4212 /* main.h */;
+		name = "main.h: 18";
+		rLen = 0;
+		rLoc = 289;
+		rType = 0;
+		vrLen = 688;
+		vrLoc = 954;
+	};
+}

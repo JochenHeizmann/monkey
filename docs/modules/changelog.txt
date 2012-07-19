@@ -1,0 +1,49 @@
+//
+// json-docs: generate dynamic docs from json data
+// by Matt Sephton <http://www.gingerbeardman.com>
+//
+
+CHANGELOG:
+
+0.8
+updated to jsonSuggest search plugin to version 2.0.1/2011-02-22
+"see also" bold keywords are now converted into clickable search links 
+added json-demo.js showing how you can add your own docs to the system
+
+0.7
+sections headers now only inserted if there is section content to insert
+added indentation for modules lists
+added IE8 compatibility meta tag
+
+0.6
+merged in Warpy's search code: #?searchterm for monk context help
+fixed notice panel closing so content is not hidden
+
+0.5
+content is now in one .js file, not lots of .json files
+
+0.4
+nav will jump to top of new content
+ucfirst subheadings in js rather than css
+
+0.3
+more generic handling of contents.json files
+simplified html and json handling
+added indentation for nav lists
+alert on JSON parse error
+moved search suggestion trigger code into main js
+minor fixes and improvements
+
+0.2
+added search form with suggestions
+added handling of back button
+added buildFromHash function
+renamed some files to be more consistent
+cleaned up appearance of elements during loading
+fixed functions and classes nav not behaving as they should
+
+0.1
+Initial release
+
+TODO:
+source code syntax highlighting

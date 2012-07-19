@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010 Express for Windows Phone
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonkeyGame", "MonkeyGame\MonkeyGame\MonkeyGame.csproj", "{322E298C-08A8-44E6-ADFE-6708134FA54F}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "MonkeyGameContent", "MonkeyGame\MonkeyGameContent\MonkeyGameContent.contentproj", "{9C49C62B-FFC4-4A9D-984D-F9EFF25FF66C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{322E298C-08A8-44E6-ADFE-6708134FA54F}.Debug|x86.ActiveCfg = Debug|x86
+		{322E298C-08A8-44E6-ADFE-6708134FA54F}.Debug|x86.Build.0 = Debug|x86
+		{322E298C-08A8-44E6-ADFE-6708134FA54F}.Release|x86.ActiveCfg = Release|x86
+		{322E298C-08A8-44E6-ADFE-6708134FA54F}.Release|x86.Build.0 = Release|x86
+		{9C49C62B-FFC4-4A9D-984D-F9EFF25FF66C}.Debug|x86.ActiveCfg = Debug|x86
+		{9C49C62B-FFC4-4A9D-984D-F9EFF25FF66C}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
