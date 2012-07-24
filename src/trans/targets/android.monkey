@@ -95,12 +95,12 @@ Class AndroidTarget Extends Target
 			DeleteFile "libs/x86/libnativegl.so"
 		Endif
 		
-                If Env.Get( "IN_APP_BILLING" )="true"
-                        Print "Copy in app billing..."
-                        DeleteDir "src/com/android", True
-                        DeleteDir "src/com/payment", True
-                        CopyDir "inappbilling", "src/com/", True
-                End
+		If Env.Get( "IN_APP_BILLING" )="true"
+			Print "Copy in app billing..."
+			DeleteDir "src/com/android", True
+			DeleteDir "src/com/payment", True
+			CopyDir "inappbilling", "src/com/", True
+		End
 
 		If OPT_ACTION>=ACTION_BUILD
 		
