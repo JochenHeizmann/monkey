@@ -13,6 +13,8 @@
 		
 	<uses-feature android:glEsVersion="0x00010001" />
 		
+	<uses-permission android:name="com.android.vending.BILLING" />
+
 	<application android:label="${ANDROID_APP_LABEL}" android:icon="@drawable/icon">
 		<activity 
 			android:name="MonkeyGame" 
@@ -25,6 +27,16 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<service android:name="com.payment.BillingService" />
+		<service android:name="android.permission.INTERNET" />
+
+		<receiver android:name="com.payment.BillingReceiver">
+			<intent-filter>
+				<action android:name="com.android.vending.billing.IN_APP_NOTIFY" />
+				<action android:name="com.android.vending.billing.RESPONSE_CODE" />
+				<action android:name="com.android.vending.billing.PURCHASE_STATE_CHANGED" />
+			</intent-filter>
+		</receiver>
 	</application>
 </manifest> 
-          
