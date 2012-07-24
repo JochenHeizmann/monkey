@@ -112,6 +112,8 @@ Class AndroidTarget Extends Target
 			Else
 				If OPT_ACTION>=ACTION_RUN
 					Execute "adb shell am start -n "+app_package+"/"+app_package+".MonkeyGame",False
+					Execute "adb logcat -c", False
+					Execute "adb logcat \[Monkey\]:I AndroidRuntime:E *:S", False
 					Execute "adb kill-server",False
 				End				
 			Endif
