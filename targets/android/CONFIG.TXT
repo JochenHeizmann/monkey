@@ -8,6 +8,8 @@ ANDROID_SCREEN_ORIENTATION=portrait
 OPENGL_GLES20_ENABLED=false
 ANDROID_NATIVE_GL_ENABLED=false
 
+IN_APP_BILLING=false
+
 TEXT_FILES=*.txt|*.xml|*.json
 IMAGE_FILES=*.png|*.jpg|*.gif|*.bmp
 SOUND_FILES=*.wav|*.ogg|*.mp3|*.m4a
