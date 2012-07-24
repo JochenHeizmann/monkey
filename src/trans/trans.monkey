@@ -13,6 +13,8 @@ Function StripQuotes$( str$ )
 	Return str
 End
 
+Global MODULE_PATH$
+
 Function LoadConfig()
 
 	Local CONFIG_FILE$
@@ -89,6 +91,8 @@ Function LoadConfig()
 			HTML_PLAYER=rhs
 		Case "FLASH_PLAYER" 
 			FLASH_PLAYER=rhs
+		Case "MODULE_PATH"
+			MODULE_PATH=path
 		Default 
 			Die "Unrecognized config var: "+lhs
 		End
@@ -145,6 +149,7 @@ Function Main()
 	
 	ENV_HOST=HostOS
 	ENV_MODPATH=".;"+ExtractDir( srcpath )+";"+RealPath( ExtractDir( AppPath )+"/../modules" )
+	If MODULE_PATH <> "" Then ENV_MODPATH += ";" + MODULE_PATH
 
 	Local target:Target
 	
