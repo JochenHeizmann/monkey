@@ -65,7 +65,7 @@ Class CsTranslator Extends CTranslator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "bb_std_lang.pushErr();"
 	End
 	
@@ -165,10 +165,16 @@ Class CsTranslator Extends CTranslator
 		Else If FloatType( dst )
 			If IntType( src ) Return "(float)"+texpr
 			If FloatType( src ) Return texpr
-			If StringType( src ) Return "float.Parse"+Bra(uexpr+",CultureInfo.InvariantCulture")
+			If StringType( src ) 
+				If ENV_TARGET="xna" Return "float.Parse"+Bra(uexpr+",CultureInfo.InvariantCulture")
+				Return "float.Parse"+Bra(uexpr)
+			Endif
 		Else If StringType( dst )
 			If IntType( src ) Return texpr+".ToString()"
-			If FloatType( src ) Return texpr+".ToString(CultureInfo.InvariantCulture)"
+			If FloatType( src ) 
+				If ENV_TARGET="xna" Return texpr+".ToString(CultureInfo.InvariantCulture)"
+				Return texpr+".ToString()"
+			Endif
 			If StringType( src ) Return texpr
 		Else If ObjectType( dst ) And ObjectType( src )
 			If src.GetClass().ExtendsClass( dst.GetClass() )
@@ -178,7 +184,7 @@ Class CsTranslator Extends CTranslator
 				'downcast
 				Local tmp:=New LocalDecl( "",0,src,Null )
 				MungDecl tmp
-				Emit TransType( src )+" "+tmp.munged+"="+expr.expr.Trans()+";"
+				Emit TransType( src )+" "+tmp.munged+"="+uexpr+";"
 				Return "($t is $c ? ($c)$t : null)".Replace( "$t",tmp.munged ).Replace( "$c",TransType(dst) )
 			Endif
 		Endif
@@ -243,6 +249,8 @@ Class CsTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "bb_std_lang.Print"+Bra( arg0 )
 		Case "error" Return "bb_std_lang.Error"+Bra( arg0 )
+		Case "debuglog" Return "bb_std_lang.DebugLog"+Bra( arg0 )
+		Case "debugstop" Return "bb_std_lang.DebugStop()"
 
 		'string/array methods
 		Case "length"
@@ -300,6 +308,17 @@ Class CsTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+TransType( c.init.type )+" "+c.init.munged+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	'***** Declarations *****
 
@@ -343,8 +362,7 @@ Class CsTranslator Extends CTranslator
 	
 	Method EmitClassDecl( classDecl:ClassDecl )
 	
-		Local classid$=classDecl.munged
-		Local superid$=classDecl.superClass.munged
+		Local classid:=classDecl.munged
 		
 		If classDecl.IsInterface() 
 		
@@ -364,7 +382,10 @@ Class CsTranslator Extends CTranslator
 			Return
 		Endif
 	
+		Local superid:=classDecl.superClass.munged
+
 		Local bases$=" : "+superid
+		
 		For Local iface:=Eachin classDecl.implments
 			bases+=","+iface.munged
 		Next
@@ -398,7 +419,7 @@ Class CsTranslator Extends CTranslator
 	End
 	
 	Method TransApp$( app:AppDecl )
-		
+	
 		app.mainModule.munged="bb_"
 		app.mainFunc.munged="bbMain"
 		
@@ -470,33 +491,5 @@ Class CsTranslator Extends CTranslator
 
 		Return JoinLines()
 	End
-	
-#rem
-	Method PostProcess$( source$ )
-		'
-		'move using decls to top
-		'
-		Local lines$[]=source.Split( "~n" )
-		'
-		Local head$,usings$,code$,used:=New StringMap<StringObject>
-	
-		For Local line$=Eachin lines
-			If line.StartsWith( "using " )
-				Local i=line.Find( ";" )
-				If i=-1 InternalErr
-				line=line[..i+1]
-				If Not used.Contains( line )
-					usings+=line+"~n"
-					used.Insert line,line
-				Endif
-			Else If usings
-				code+=line+"~n"
-			Else 
-				head+=line+"~n"
- 			Endif
-		Next
-		Return head+usings+code
-	End
-#end
 	
 End

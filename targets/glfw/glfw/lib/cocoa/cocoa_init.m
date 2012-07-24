@@ -251,6 +251,10 @@ int _glfwPlatformInit( void )
     _glfwLibrary.DesktopMode =
 	(NSDictionary *)CGDisplayCurrentMode( CGMainDisplayID() );
 
+    //Mark was here!
+    //This allows us to run app from cmd line...
+	[NSApp activateIgnoringOtherApps:YES];
+
     return GL_TRUE;
 }
 

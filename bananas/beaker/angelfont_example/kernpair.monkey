@@ -11,10 +11,13 @@ Class KernPair
 		Self.amount = amount
 	End
 	
+#rem	
 	Method toString:String()
 		Return "first="+String.FromChar(first)+" second="+String.FromChar(second)+" amount="+amount
 '		Return "first="+first+" second="+second+" amount="+amount
 	End Method
+#end
+	
 End Class
 
 

@@ -8,6 +8,7 @@
 
 import flash.display.*;
 import flash.text.*;
+import flash.external.ExternalInterface;
 
 //Consts for radians<->degrees conversions
 var D2R:Number=0.017453292519943295;
@@ -15,7 +16,7 @@ var R2D:Number=57.29577951308232;
 
 //private
 var _console:TextField;
-var _errInfo:String="";
+var _errInfo:String="?<?>";
 var _errStack:Array=[];
 
 function _getConsole():TextField{
@@ -41,14 +42,11 @@ function popErr():void{
 }
 
 function stackTrace():String{
-	var str:String="";
-	pushErr();
-	_errStack.reverse();
-	for( var i:int=0;i<_errStack.length;++i ){
+	if( !_errInfo.length ) return "";
+	var str:String=_errInfo+"\n";
+	for( var i:int=_errStack.length-1;i>0;--i ){
 		str+=_errStack[i]+"\n";
 	}
-	_errStack.reverse();
-	popErr();
 	return str;
 }
 
@@ -59,12 +57,25 @@ function print( str:String ):int{
 	return 0;
 }
 
-function showError( err:String ):void{
-	if( err.length ) print( "Monkey runtime error: "+err+"\n"+stackTrace() );
+function printError( err:Object ):void{
+	var msg:String=err.toString();
+	if( !msg.length ) return;
+	print( "Monkey Runtime Error : "+msg );
+	print( "" );
+	print( stackTrace() );
 }
 
 function error( err:String ):int{
 	throw err;
+}
+
+function debugLog( str:String ):int{
+	print( str );
+	return 0;
+}
+
+function debugStop():int{
+	error( "STOP" );
 	return 0;
 }
 
@@ -198,3 +209,8 @@ function string_from_chars( chars:Array ):String{
 	return str;
 }
 
+class ThrowableObject{
+	internal function toString():String{
+		return "Uncaught Monkey Exception";
+	}
+}

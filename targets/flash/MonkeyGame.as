@@ -27,10 +27,9 @@ package{
 
 				if( runner!=null ) runner();
 
-			}catch( err:String ){
+			}catch( err:Object ){
 			
-				showError( err );
-
+				printError( err.toString() );
 			}
 		}
 		

@@ -15,6 +15,8 @@ Class DataBuffer
 
 	Method Size()
 
+	Method Discard:Void()
+	
 	Method PokeByte:Void( addr,value )
 	Method PokeShort:Void( addr,value )
 	Method PokeInt:Void( addr,value )

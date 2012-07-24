@@ -359,7 +359,9 @@ Class ForStmt Extends Stmt
 		expr=expr.Semant()
 		
 		_loopnest+=1
+		
 		block.Semant
+		
 		_loopnest-=1
 
 		incr.Semant
@@ -382,5 +384,92 @@ Class ForStmt Extends Stmt
 	
 	Method Trans$()
 		Return _trans.TransForStmt( Self )
+	End
+End
+
+Class TryStmt Extends Stmt
+
+	Field block:BlockDecl
+	Field catches:CatchStmt[]
+	
+	Method New( block:BlockDecl,catches:CatchStmt[] )
+		Self.block=block
+		Self.catches=catches
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Local tcatches:=Self.catches[..]
+		For Local i=0 Until tcatches.Length
+			tcatches[i]=CatchStmt( tcatches[i].Copy( scope ) )
+		Next
+		Return New TryStmt( block.CopyBlock( scope ),tcatches )
+	End
+	
+	Method OnSemant()
+		block.Semant
+		For Local i=0 Until catches.Length
+			catches[i].Semant
+			For Local j=0 Until i
+				If catches[i].init.type.ExtendsType( catches[j].init.type )
+					PushErr catches[i].errInfo
+					Err "Catch variable class extends earlier catch variable class"
+				Endif
+			Next
+		Next
+	End
+	
+	Method Trans$()
+		Return _trans.TransTryStmt( Self )
+	End
+	
+End
+
+Class CatchStmt Extends Stmt
+
+	Field init:LocalDecl
+	Field block:BlockDecl
+	
+	Method New( init:LocalDecl,block:BlockDecl )
+		Self.init=init
+		Self.block=block
+	End
+
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New CatchStmt( LocalDecl( init.Copy() ),block.CopyBlock( scope ) )
+	End
+	
+	Method OnSemant()
+		init.Semant
+		If Not ObjectType( init.type ) Err "Variable type must extend Throwable"
+		If Not init.type.GetClass().IsThrowable() Err "Variable type must extend Throwable"
+		block.InsertDecl init
+		block.Semant
+	End
+	
+	Method Trans$()
+	End
+
+End
+
+Class ThrowStmt Extends Stmt
+
+	Field expr:Expr
+	
+	Method New( expr:Expr )
+		Self.expr=expr
+	End
+	
+	Method OnCopy:Stmt( scope:ScopeDecl )
+		Return New ThrowStmt( expr.Copy() )
+	End
+	
+	Method OnSemant()
+		expr=expr.Semant()
+		If Not ObjectType( expr.exprType ) Err "Expression type must extend Throwable"
+		If Not expr.exprType.GetClass().IsThrowable() Err "Expression type must extend Throwable"
+	End
+	
+	Method Trans$()
+		Return _trans.TransThrowStmt( Self )
 	End
 End

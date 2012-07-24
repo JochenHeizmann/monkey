@@ -350,7 +350,7 @@ Function glBufferSubData:Void( target, offset, size, data:DataBuffer )="_glBuffe
 Function glCheckFramebufferStatus:Int( target )
 Function glClear:Void( mask )
 Function glClearColor:Void( red#, green#, blue#, alpha# )
-Function glClearDepthf:Void( depth# )
+Function glClearDepthf:Void( depth# )="_glClearDepthf"
 Function glClearStencil:Void( s )
 Function glColorMask:Void( red?, green?, blue?, alpha? )
 Function glCompileShader:Void( shader )
@@ -371,7 +371,7 @@ Function glDeleteShader:Void( shader )
 Function glCullFace:Void( mode )
 Function glDepthFunc:Void( func )
 Function glDepthMask:Void( flag? )
-Function glDepthRangef:Void( zNear#, zFar# )
+Function glDepthRangef:Void( zNear#, zFar# )="_glDepthRangef"
 Function glDetachShader:Void( program, shader )
 Function glDisable:Void( cap )
 Function glDisableVertexAttribArray:Void( index )
@@ -522,7 +522,7 @@ Function glDetachShader:Void( program, shader )="GLES20.glDetachShader"
 Function glDisable:Void( cap )="GLES20.glDisable"
 Function glDisableVertexAttribArray:Void( index )="GLES20.glDisableVertexAttribArray"
 Function glDrawArrays:Void( mode, first, count )="GLES20.glDrawArrays"
-Function glDrawElements:Void( mode, count, type, ptr:DataBuffer )="GLES20.glDrawElements"
+Function glDrawElements:Void( mode, count, type, ptr:DataBuffer )="bb_opengl_gles20._glDrawElements"
 Function glDrawElements:Void( mode, count, type, offset )="bb_opengl_gles20._glDrawElements"
 Function glEnable:Void( cap )="GLES20.glEnable"
 Function glEnableVertexAttribArray:Void( index )="GLES20.glEnableVertexAttribArray"
@@ -615,7 +615,7 @@ Function glVertexAttrib1fv:Void( indx, values#[] )="bb_opengl_gles20._glVertexAt
 Function glVertexAttrib2fv:Void( indx, values#[] )="bb_opengl_gles20._glVertexAttrib2fv"
 Function glVertexAttrib3fv:Void( indx, values#[] )="bb_opengl_gles20._glVertexAttrib3fv"
 Function glVertexAttrib4fv:Void( indx, values#[] )="bb_opengl_gles20._glVertexAttrib4fv"
-Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, data:DataBuffer )="GLES20.glVertexAttribPointer"
+Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, data:DataBuffer )="bb_opengl_gles20._glVertexAttribPointer"
 Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, offset )="bb_opengl_gles20._glVertexAttribPointer"
 Function glViewport:Void( x, y, width, height )="GLES20.glViewport"
 '${END}
@@ -772,9 +772,9 @@ Function glViewport:Void( x, y, width, height )
 Function glActiveTexture:Void( texture )="gl.activeTexture"
 Function glAttachShader:Void( program, shader )="gl.attachShader"
 Function glBindAttribLocation:Void( program, index, name$ )="gl.bindAttribLocation"
-Function glBindBuffer:Void( target, buffer )="gl.bindBuffer"
-Function glBindFramebuffer:Void( target, framebuffer )="gl.bindFramebuffer"
-Function glBindRenderbuffer:Void( target, renderbuffer )="gl.bindRenderbuffer"
+Function glBindBuffer:Void( target, buffer )="_glBindBuffer"
+Function glBindFramebuffer:Void( target, framebuffer )="_glBindFramebuffer"
+Function glBindRenderbuffer:Void( target, renderbuffer )="_glBindRenderbuffer"
 Function glBindTexture:Void( target, texture )="_glBindTexture"
 Function glBlendColor:Void( red#, green#, blue#, alpha# )="gl.blendColor"
 Function glBlendEquation:Void(  mode  )="gl.blendEquation"
@@ -786,7 +786,7 @@ Function glBufferSubData:Void( target, offset, size, data:DataBuffer )="_glBuffe
 Function glCheckFramebufferStatus:Int( target )="gl.checkFramebufferStatus"
 Function glClear:Void( mask )="gl.clear"
 Function glClearColor:Void( red#, green#, blue#, alpha# )="gl.clearColor"
-Function glClearDepthf:Void( depth# )="gl.clearDepthf"
+Function glClearDepthf:Void( depth# )="_glClearDepthf"
 Function glClearStencil:Void( s )="gl.clearStencil"
 Function glColorMask:Void( red?, green?, blue?, alpha? )="gl.colorMask"
 Function glCompileShader:Void( shader )="gl.compileShader"
@@ -807,7 +807,7 @@ Function glDeleteShader:Void( shader )="gl.deleteShader"
 Function glCullFace:Void( mode )="gl.cullFace"
 Function glDepthFunc:Void( func )="gl.depthFunc"
 Function glDepthMask:Void( flag? )="gl.depthMask"
-Function glDepthRangef:Void( zNear#, zFar# )="gl.depthRangef"
+Function glDepthRangef:Void( zNear#, zFar# )="_glDepthRangef"
 Function glDetachShader:Void( program, shader )="gl.detachShader"
 Function glDisable:Void( cap )="gl.disable"
 Function glDisableVertexAttribArray:Void( index )="gl.disableVertexAttribArray"

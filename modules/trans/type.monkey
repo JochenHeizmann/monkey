@@ -40,6 +40,7 @@ Class Type
 	Global stringType:=New StringType
 	Global emptyArrayType:ArrayType=New ArrayType( voidType )
 	Global objectType:IdentType=New IdentType( "monkey.object",[] )
+	Global throwableType:IdentType=New IdentType( "monkey.throwable",[] )
 	Global nullObjectType:=New IdentType( "",[] )
 	
 	Private

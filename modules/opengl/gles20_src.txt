@@ -431,12 +431,10 @@ Function glAttachShader:Void( program, shader )
 Kludge glfw,ios
 Function glBindAttribLocation:Void( program, index, name$ )
 
-Kludge none
+Kludge html5
 Function glBindBuffer:Void( target, buffer )
 Function glBindFramebuffer:Void( target, framebuffer )
 Function glBindRenderbuffer:Void( target, renderbuffer )
-
-Kludge html5
 Function glBindTexture:Void( target, texture )
 
 Kludge none
@@ -454,7 +452,11 @@ Kludge none
 Function glCheckFramebufferStatus:Int( target )
 Function glClear:Void( mask )
 Function glClearColor:Void( red#, green#, blue#, alpha# )
+
+Kludge html5,glfw
 Function glClearDepthf:Void( depth# )
+
+Kludge none
 Function glClearStencil:Void( s )
 Function glColorMask:Void( red?, green?, blue?, alpha? )
 Function glCompileShader:Void( shader )
@@ -497,19 +499,22 @@ Kludge none
 Function glCullFace:Void( mode )
 Function glDepthFunc:Void( func )
 Function glDepthMask:Void( flag? )
+
+Kludge html5,glfw
 Function glDepthRangef:Void( zNear#, zFar# )
+
+Kludge none
 Function glDetachShader:Void( program, shader )
 Function glDisable:Void( cap )
 Function glDisableVertexAttribArray:Void( index )
 Function glDrawArrays:Void( mode, first, count )
 
-Kludge glfw,ios
+Kludge android,glfw,ios
 
 'Not availble in WebGL!
 Function glDrawElements:Void( mode, count, type, ptr:DataBuffer )
 
 'Not available in Android API 8!
-Kludge android,glfw,ios
 Function glDrawElements:Void( mode, count, type, offset )
 
 Kludge none
@@ -584,6 +589,7 @@ Function glGetUniformLocation:Int( program, name$ )
 Kludge all
 Function glGetVertexAttribfv:Void( index, pname, params#[] )
 Function glGetVertexAttribiv:Void( index, pname, params[] )
+
 'Not in Android/WebGL - Function glGetVertexAttribPointerv:Void( index, pname, GLvoid** pointer )
 
 Kludge none
@@ -670,13 +676,12 @@ Function glVertexAttrib2fv:Void( indx, values#[] )
 Function glVertexAttrib3fv:Void( indx, values#[] )
 Function glVertexAttrib4fv:Void( indx, values#[] )
 
-Kludge glfw,ios
+Kludge android,glfw,ios
 
 'Not available in WebGL!
 Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, data:DataBuffer )
 
 'Not available in Android API 8!
-Kludge android,glfw,ios
 Function glVertexAttribPointer:Void( indx, size, type, normalized?, stride, offset )
 
 Kludge none

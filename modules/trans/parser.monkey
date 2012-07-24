@@ -225,7 +225,6 @@ Class IdentExpr Extends Expr
 			Else If FieldDecl( vdecl )
 				If static Err "Field '"+ident+"' cannot be accessed from here."
 				If expr Return New MemberVarExpr( expr,VarDecl( vdecl ) ).Semant()
-'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Field '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New VarExpr( VarDecl( vdecl ) ).Semant()
 		Endif
@@ -270,7 +269,6 @@ Class IdentExpr Extends Expr
 			If Not fdecl.IsStatic()
 				If static Err "Method '"+ident+"' cannot be accessed from here."
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-	'			If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
@@ -287,7 +285,6 @@ Class IdentExpr Extends Expr
 			If Not fdecl.IsStatic()
 				If static Err "Method '"+ident+"' cannot be accessed from here."
 				If expr Return New InvokeMemberExpr( expr,fdecl,args ).Semant()
-'				If scope<>_env Or Not _env.FuncScope() Or _env.FuncScope().IsStatic() Err "Method '"+ident+"' cannot be accessed from here."
 			Endif
 			Return New InvokeExpr( fdecl,args ).Semant()
 		Endif
@@ -434,8 +431,10 @@ Class Parser
 	
 	Method ParseIdent$()
 		Select _toke
-		Case "@" NextToke
-		Case "string","object","array"
+		Case "@" 
+			NextToke
+		Case "object","throwable"
+			'			
 		Default	
 			If _tokeType<>TOKE_IDENT Err "Syntax error - expecting identifier."
 		End
@@ -451,6 +450,7 @@ Class Parser
 		If CParse( "float" ) Return Type.floatType
 		If CParse( "string" ) Return Type.stringType
 		If CParse( "object" ) Return Type.objectType
+		If CParse( "throwable" ) Return Type.throwableType
 	End	
 	
 	Method ParseType:Type()
@@ -641,7 +641,7 @@ Class Parser
 		Case "false"
 			NextToke
 			expr=New ConstExpr( Type.boolType,"" )
-		Case "bool","int","float","string","object"
+		Case "bool","int","float","string","object","throwable"
 			Local id$=_toke
 			Local ty:Type=ParseType()
 			If CParse( "(" )
@@ -1090,6 +1090,41 @@ Class Parser
 		_block.AddStmt New ContinueStmt
 	End
 	
+	Method ParseTryStmt()
+		Parse "try"
+		
+		Local block:=New BlockDecl( _block )
+		Local catches:=New Stack<CatchStmt>
+		
+		PushBlock block
+		While _toke<>"end"
+			If CParse( "catch" )
+				Local id:=ParseIdent()
+				Parse ":"
+				Local ty:=ParseType()
+				Local init:=New LocalDecl( id,0,ty,Null )
+				Local block:=New BlockDecl( _block )
+				catches.Push New CatchStmt( init,block )
+				PopBlock
+				PushBlock block
+			Else
+				ParseStmt
+			Endif
+		Wend
+		If Not catches.Length Err "Try block must have at least one catch block"
+		PopBlock
+		NextToke
+		CParse "try"
+
+		_block.AddStmt New TryStmt( block,catches.ToArray() )
+	End
+	
+	Method ParseThrowStmt()
+		Parse "throw"
+		
+		_block.AddStmt New ThrowStmt( ParseExpr() )
+	End
+	
 	Method ParseSelectStmt()
 		Parse "select"
 		
@@ -1185,6 +1220,10 @@ Class Parser
 			ParseForStmt()
 		Case "select"
 			ParseSelectStmt()
+		Case "try"
+			ParseTryStmt()
+		Case "throw"
+			ParseThrowStmt()
 		Default
 			Local expr:Expr=ParsePrimaryExpr( True )
 			
@@ -1646,14 +1685,29 @@ Class Parser
 				Repeat
 					Local ident$=ParseIdent()
 					Parse "="
-					
 					Local decl:Object
+
+					Select _toke
+					Case "int"
+						decl=Type.intType
+					Case "float"
+						decl=Type.floatType
+					Case "string"
+						decl=Type.stringType
+					End
+					
+					If decl
+						_module.InsertDecl New AliasDecl( ident,attrs,decl )
+						NextToke
+						Continue
+					Endif
+
 					Local scope:ScopeDecl=_module
 					
 					_env=_module	'naughty! Shouldn't be doing GetDecl in parser...
 					
 					Repeat
-						Local id$=ParseIdent()
+						Local id:=ParseIdent()
 						decl=scope.FindDecl( id )
 						If Not decl Err "Identifier '"+id+"' not found."
 						If Not CParse( "." ) Exit
@@ -1662,7 +1716,7 @@ Class Parser
 					Forever
 					
 					_env=Null	'/naughty
-
+					
 					_module.InsertDecl New AliasDecl( ident,attrs,decl )
 					
 				Until Not CParse(",")
@@ -1706,6 +1760,8 @@ Class Parser
 			End Select
 			
 		Wend
+		
+		_errInfo=""
 		
 	End
 	
@@ -1856,21 +1912,23 @@ Function PreProcess$( path$ )
 			Endif
 
 		Default
-			If ty=TOKE_IDENT
-				If toker.Toke()="="
-					toker.NextToke
-					Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
-					If Env.Contains( toke )
+			If con=ifnest
+				If ty=TOKE_IDENT
+					If toker.Toke()="="
+						toker.NextToke
+						Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
+						If Env.Contains( toke )
+						Else
+							Env.Set toke,val
+						Endif
 					Else
-						Env.Set toke,val
+						Err "Syntax error - expecting assignement"
 					Endif
+				
 				Else
-					Err "Syntax error - expecting assignement"
+					Err "Unrecognized preprocessor directive '"+toke+"'"
 				Endif
-			
-			Else
-				Err "Unrecognized preprocessor directive '"+toke+"'"
-			Endif
+			Endif				
 		End
 
 	Forever

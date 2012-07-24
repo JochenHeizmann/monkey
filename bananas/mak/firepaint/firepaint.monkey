@@ -3,6 +3,8 @@
 '
 'Really a multitouch test...
 
+'#MOJO_AUTO_SUSPEND_ENABLED="true"
+
 Import mojo
 
 Class Spark

@@ -68,7 +68,7 @@ Class JavaTranslator Extends CTranslator
 		Return TransType( init.exprType )+" "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "bb_std_lang.pushErr();"
 	End
 	
@@ -253,6 +253,8 @@ Class JavaTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "bb_std_lang.print"+Bra( arg0 )
 		Case "error" Return "bb_std_lang.error"+Bra( arg0 )
+		Case "debuglog" Return "bb_std_lang.debugLog"+Bra( arg0 )
+		Case "debugstop" Return "bb_std_lang.debugStop()"
 				
 		'string/array methods
 		Case "length"
@@ -307,6 +309,17 @@ Class JavaTranslator Extends CTranslator
 	End
 
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+TransType( c.init.type )+" "+c.init.munged+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	'***** Declarations *****
 	

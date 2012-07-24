@@ -105,6 +105,7 @@ Class AngelFont
 		Return current
 	End
 	
+#rem	
 	Function Use:AngelFont(name:String)
 		For Local af := Eachin _list
 			If af.name = name
@@ -114,6 +115,7 @@ Class AngelFont
 		Next
 		Return Null
 	End
+#end
 	
 	Method DrawItalic:Void(txt$,x#,y#)
 		Local th#=TextHeight(txt)

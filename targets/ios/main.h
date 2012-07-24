@@ -19,6 +19,7 @@
 #include <typeinfo>
 #include <signal.h>
 
+#include <TargetConditionals.h>
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
 #include <dirent.h>

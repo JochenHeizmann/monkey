@@ -224,7 +224,7 @@ Array<String> LoadDir( String path ){
 
 #endif
 
-	return Array<String>( &files[0],files.size() );
+	return files.size() ? Array<String>( &files[0],files.size() ) : Array<String>();
 }
 	
 int CopyFile( String srcpath,String dstpath ){
@@ -316,7 +316,7 @@ int Execute( String cmd ){
 	PROCESS_INFORMATION pi={0};
 	STARTUPINFOW si={sizeof(si)};
 
-	if( !CreateProcessW( 0,(WCHAR*)OS_STR(cmd),0,0,1,0,0,0,&si,&pi ) ) return -1;
+	if( !CreateProcessW( 0,(WCHAR*)OS_STR(cmd),0,0,1,CREATE_DEFAULT_ERROR_MODE,0,0,&si,&pi ) ) return -1;
 
 	WaitForSingleObject( pi.hProcess,INFINITE );
 

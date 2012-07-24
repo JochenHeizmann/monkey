@@ -13,8 +13,6 @@ objects using 'Set' if you want to retain them.
 
 Each geom object constructor has a correspond Tmp() function - use these to create your own tmp objects.
 
-Geom objects are immutable, meaning they cannot be modified.
-
 Basically, if you follow these rules you should be OK:
 
 * Call ClearTmps at the start of every OnUpdate/OnRender.

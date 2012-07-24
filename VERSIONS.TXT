@@ -1,6 +1,107 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V60 ******
+
+Modules:
+
+lang.cpp - improved debug performance.
+
+monkey.lang - added support for exceptions. Exception objects must extend 'Throwable'; No 'Finally'; See lang ref for more.
+
+
+Targets:
+
+Added support for exceptions.
+
+
+Trans (V1.36):
+
+Improved debug performance.
+
+Added support for exceptions.
+
+
+***** V59 ******
+
+Modules:
+
+c++ lang - added debug handling.
+
+glfw mojo - LoadSound now uses glfw target loadSound.
+
+opengl - Fixed various issues.
+
+lang.cpp/os.cpp - Fixed several issues with empty std::vectors.
+
+
+Targets:
+
+glfw - added stb_vorbis loader (doesn't stream yet) and loadSound/unloadSound functions
+
+
+Trans (v1.35):
+
+Added debug info to c++ translator.
+
+
+***** V58 *****
+
+Modules:
+
+mojo - Added (highly) experimental pss support!
+
+opengl - Fixed leak in c++ LoadImageData.
+
+reflection - Fixed bug where class member const/function names were fully qualified.
+
+java lang - String.Join now uses StringBuilder instead of StringBuffer.
+
+
+Targets:
+
+Pss - Added! Added config var PSS_PATH="${PROGRAMFILES}\SCE\Pss" to bin\config.winnt.txt
+
+Android - MonkeyData.loadString now uses StringBuilder instead of StringBuffer.
+
+
+Trans (v1.34):
+
+Fixed scoping bug where code could access globals via class members.
+
+Fixed some error line bugs.
+
+
+***** V57 *****
+
+Modules:
+
+xna mojo - scissor rect now clipped to device rect.
+
+mojo graphics - implemented muddy_shoes' GrabImage bugfix.
+
+android mojo - fixed paused music restarting at OnResume.
+
+ios mojo - added kludge to detect 'dead' touch events.
+
+
+Trans (v1.33)
+
+Fixed Alias with primtive Int, Float, String types, eg: Alias MyInt=Int,MyString=String etc.
+
+
+***** V56b *****
+
+Added app config var MOJO_AUTO_SUSPEND_ENABLED (defaults to false) to auto suspend app if it loses input focus. Apps always auto-suspend if minimized. Doesn't apply to ios/android.
+
+
+Trans (v1.32)
+
+Fixed iOS target so it's xcode 4.3.1 aware - NOTE: you will also have to run this from the command line after installing xcode 4.3.1:
+
+sudo /usr/bin/xcode-select -switch /Applications/Xcode.app
+
+
 ***** V55 *****
 
 Modules:

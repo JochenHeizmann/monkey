@@ -36,7 +36,7 @@ window.onload=function( e ){
 		
 	}catch( err ){
 	
-		showError( err );
+		alertError( err );
 	}
 }
 

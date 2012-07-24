@@ -9,8 +9,9 @@ Import "native/lang.${LANG}"
 Extern
 
 Function Print( message$ )="$print"
-
 Function Error( message$ )="$error"
+Function DebugLog( message$ )="$debuglog"
+Function DebugStop()="$debugstop"
 
 Class @String Extends Null="String"
 
@@ -47,5 +48,9 @@ Class @Array Extends Null="Array"
 End
 
 Class @Object Extends Null="Object"
+
+End
+
+Class @Throwable="ThrowableObject"
 
 End

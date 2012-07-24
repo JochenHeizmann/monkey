@@ -1,4 +1,6 @@
 
+#MOJO_AUTO_SUSPEND_ENABLED="true"
+
 Import mojo
 
 Class MyApp Extends App

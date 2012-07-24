@@ -31,7 +31,7 @@ class MonkeyData{
 		int n=buf.length;
 		if( n<3 ) return toString( buf );
 		
-		StringBuffer out=new StringBuffer();
+		StringBuilder out=new StringBuilder();
 		
 		int i=0;
 		int cc=buf[i++] & 0xff;

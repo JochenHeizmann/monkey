@@ -38,7 +38,7 @@ Class JsTranslator Extends CTranslator
 		Return "var "+munged+"="+init.Trans()
 	End
 	
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "push_err();"
 	End
 	
@@ -196,6 +196,35 @@ Class JsTranslator Extends CTranslator
 	
 	'***** Statements *****
 	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+
+		Local unr:=EmitBlock( stmt.block )
+
+		Emit "}catch(_eek_){"
+
+		For Local i=0 Until stmt.catches.Length
+		
+			Local c:=stmt.catches[i]
+			
+			MungDecl c.init
+			
+			If i
+				Emit "}else if("+c.init.munged+"=object_downcast(_eek_,"+c.init.type.GetClass().munged+")){"
+			Else
+				Emit "if("+c.init.munged+"=object_downcast(_eek_,"+c.init.type.GetClass().munged+")){"
+			Endif
+			
+			Local unr:=EmitBlock( c.block )
+		Next
+		
+		Emit "}else{"
+		Emit "throw _eek_;"
+		Emit "}"
+		
+		Emit "}"
+	End
+	
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If ENV_CONFIG="debug"
 			Local ie:=IndexExpr( stmt.lhs )
@@ -226,6 +255,8 @@ Class JsTranslator Extends CTranslator
 		'global functions
 		Case "print" Return "print"+Bra( arg0 )
 		Case "error" Return "error"+Bra( arg0 )
+		Case "debuglog" Return "debugLog"+Bra( arg0 )
+		Case "debugstop" Return "debugStop()"
 
 		'string/array methods
 		Case "length" Return texpr+".length"
@@ -373,7 +404,7 @@ Class JsTranslator Extends CTranslator
 	End
 	
 	Method TransApp$( app:AppDecl )
-		
+
 		app.mainFunc.munged="bbMain"
 		
 		For Local decl:=Eachin app.imported.Values()

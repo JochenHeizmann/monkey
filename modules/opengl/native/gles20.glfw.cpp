@@ -20,6 +20,8 @@ DataBuffer *LoadImageData( String path,Array<int> info ){
 	if( info.Length()>0 ) info[0]=width;
 	if( info.Length()>1 ) info[1]=height;
 	
+	unloadImage( data );
+	
 	return buf;
 }
 
@@ -33,6 +35,10 @@ void _glBufferData( int target,int size,DataBuffer *data,int usage ){
 
 void _glBufferSubData( int target,int offset,int size,DataBuffer *data ){
 	glBufferSubData( target,offset,size,data->ReadPointer() );
+}
+
+void _glClearDepthf( float depth ){
+	glClearDepth( depth );
 }
 
 int _glCreateBuffer(){
@@ -73,6 +79,10 @@ void _glDeleteRenderbuffer( int buffer ){
 
 void _glDeleteTexture( int texture ){
 	glDeleteTextures( 1,(GLuint*)&texture );
+}
+
+void _glDepthRangef( float zNear,float zFar ){
+	glDepthRange( zNear,zFar );
 }
 
 void _glDrawElements( int mode, int count, int type, DataBuffer *indices ){

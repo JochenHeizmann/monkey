@@ -54,7 +54,7 @@ Class AsTranslator Extends CTranslator
 		Return "var "+munged+":"+TransType( init.exprType )+"="+init.Trans()
 	End
 
-	Method EmitEnter( func$ )
+	Method EmitEnter( func:FuncDecl )
 		Emit "pushErr();"
 	End
 	
@@ -233,8 +233,10 @@ Class AsTranslator Extends CTranslator
 		Select id
 
 		'global functions
-		Case "print" Return "print("+arg0+")"
-		Case "error" Return "error("+arg0+")"
+		Case "print" Return "print"+Bra( arg0 )
+		Case "error" Return "error"+Bra( arg0 )
+		Case "debuglog" Return "debugLog"+Bra( arg0 )
+		Case "debugstop" Return "debugStop()"
 		
 		'string/array methods
 		Case "length" Return texpr+".length"
@@ -288,6 +290,17 @@ Class AsTranslator Extends CTranslator
 	End
 	
 	'***** Statements *****
+	
+	Method TransTryStmt$( stmt:TryStmt )
+		Emit "try{"
+		Local unr:=EmitBlock( stmt.block )
+		For Local c:=Eachin stmt.catches
+			MungDecl c.init
+			Emit "}catch("+c.init.munged+":"+TransType( c.init.type )+"){"
+			Local unr:=EmitBlock( c.block )
+		Next
+		Emit "}"
+	End
 
 	Method TransAssignStmt$( stmt:AssignStmt )
 		If ENV_CONFIG="debug"

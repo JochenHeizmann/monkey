@@ -170,9 +170,11 @@ Class Reflector
 	
 	Method DeclExpr$( decl:Decl,path?=False )
 	
-		If FieldDecl( decl ) Return decl.ident
+		If path And ClassDecl( decl.scope ) Return decl.ident
+			
+'		If FieldDecl( decl ) Return decl.ident
 		
-		If FuncDecl( decl ) And FuncDecl( decl ).IsMethod() Return decl.ident
+'		If FuncDecl( decl ) And FuncDecl( decl ).IsMethod() Return decl.ident
 
 		Local mdecl:=ModuleDecl( decl )
 		If mdecl

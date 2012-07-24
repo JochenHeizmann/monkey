@@ -33,6 +33,8 @@ Class Test Extends App
 		LoadStuff
 #end
 #end
+
+#rem
 		If KeyDown( KEY_RIGHT )
 			tx+=.0125
 		Else If KeyDown( KEY_LEFT )
@@ -51,6 +53,8 @@ Class Test Extends App
 			g=(c&2) Shr 1 * 255
 			b=(c&4) Shr 2 * 255
 		Endif
+#end
+
 	End
 
 	Method OnRender()
@@ -76,7 +80,7 @@ Class Test Extends App
 		
 		SetColor 128,255,0
 		DrawRect 32,32,640-64,480-64
-
+#rem
 		SetColor 255,255,0
 		For Local y=0 Until 480
 			For Local x=16 Until 640 Step 32
@@ -84,7 +88,7 @@ Class Test Extends App
 				DrawPoint x,y
 			Next
 		Next
-		
+#end		
 		SetColor 0,128,255
 		DrawOval 64,64,640-128,480-128
 

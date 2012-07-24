@@ -27,6 +27,8 @@
 #include <dirent.h>
 #endif
 
+// Graphics/Audio stuff
+
 //OpenGL...
 #include <GL/glfw.h>
 
@@ -38,4 +40,7 @@
 #define STBI_HEADER_FILE_ONLY
 #include <stb_image.c>
 
+//stb_vorbis lib
+#define STB_VORBIS_HEADER_ONLY
+#include <stb_vorbis.c>
 

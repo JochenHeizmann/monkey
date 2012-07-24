@@ -3,6 +3,11 @@
 
 #HTML5_SUSPEND_ON_BLUR_ENABLED="true"
 
+#If TARGET="glfw"
+#SOUND_FILES="*.wav|*.ogg"
+#MUSIC_FILES="*.wav|*.ogg"
+#Endif
+
 Import mojo
 
 Class MyApp Extends App
@@ -16,10 +21,10 @@ Class MyApp Extends App
 	
 #If TARGET="glfw"
 		'
-		'GLFW supports WAV only
+		'GLFW supports WAV/OGG - OGG doesn't stream yet.
 		'
 		soundFmt="wav"
-		musicFmt="wav"
+		musicFmt="ogg"
 		'
 #Elseif TARGET="html5"
 		'
@@ -61,6 +66,12 @@ Class MyApp Extends App
 		soundFmt="wav"
 		musicFmt="m4a"
 		'
+#Elseif TARGET="pss"
+		'
+		'PSS supports WAV for sounds, MP3 for music.
+		'
+		soundFmt="wav"
+		musicFmt="mp3"
 #End
 		LoadStuff
 				
@@ -76,7 +87,7 @@ Class MyApp Extends App
 	Method OnUpdate()
 	
 		Local tx#=TouchX(0)*(320.0/DeviceWidth)
-		Local ty#=TouchY(0)*(480.0/DeviceHeight)
+		Local ty#=TouchY(0)*(480.0/DeviceHeight)
 	
 		Local key
 		If TouchHit(0)
