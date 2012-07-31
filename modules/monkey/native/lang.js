@@ -63,8 +63,18 @@ function dbg_object( obj ){
 }
 
 function dbg_array( arr,index ){
-	if( index>=0 && index<arr.length ) return arr;
-	error( "Array index out of range" );
+	if( index<0 || index>=arr.length ) error( "Array index out of range" );
+	return arr;
+}
+
+function dbg_array_get( arr,index ){
+	if( index<0 || index>=arr.length ) error( "Array index out of range" );
+	return arr[index];
+}
+
+function dbg_array_set( arr,index,value ){
+	if( index<0 || index>=arr.length ) error( "Array index out of range" );
+	arr[index]=value;
 }
 
 function new_bool_array( len ){

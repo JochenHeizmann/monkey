@@ -433,7 +433,7 @@ Class ClassInfo
 		Return Null
 	End
 	
-	Public
+	Private
 	
 	Field _name$
 	Field _attrs:Int
