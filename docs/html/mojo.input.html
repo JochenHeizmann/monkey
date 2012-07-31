@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:13px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+div.toc{
+	padding:8px;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' />
+	
+	Monkey V60 Documentation
+	
+</div>
+
+<div id='page'>
+
+	<div id='menu'>
+	
+		<b>API Reference</b>
+<p>
+<li><a href='Class list.html'>Class list</a></li>
+<li><a href='Function list.html'>Function list</a></li>
+<li><a href='Module list.html'>Module list</a></li>
+<li><a href='Key codes.html'>Mojo key codes</a></li>
+<p>
+<b>Programming Guide</b>
+<p>
+<li><a href='Language reference.html'>Language reference</a></li>
+<li><a href='keywords.html'>Keyword reference</a></li>
+<li><a href='App config settings.html'>App config settings</a></li>
+<li><a href='Target SDKs.html'>Target SDKs</a></li>
+<li><a href='Tutorials.html'>Tutorials</a></li>
+<p>
+<b>Tools</b>
+<p>
+<li>Ted</li>
+<li><a href='Monk.html'>Monk</a></li>
+<li><a href='Trans.html'>Trans</a></li>
+<li><a href='MServer.html'>MServer</a></li>
+<p>
+		
+	</div>
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+			<a href='index.html'>Home</a> > <a href='mojo.html'>mojo</a> > input
+		
+		</div>
+		
+		<div id='content'>
+		
+			<div class='box'>
+<h1>Module input</h1>
+The input module allows programs to check for user input from a wide variety of devices such keyboards, mice, joysticks and touchsceens. <a href='#maindesc'>More...</a>
+</div>
+<div class='box'>
+<h2>Constants</h2>
+<table class='small'>
+<tr><td><a href='#CHAR_BACKSPACE'>CHAR_BACKSPACE=8</a></td></tr>
+<tr><td><a href='#CHAR_DELETE'>CHAR_DELETE=127</a></td></tr>
+<tr><td><a href='#CHAR_DOWN'>CHAR_DOWN=65576</a></td></tr>
+<tr><td><a href='#CHAR_END'>CHAR_END=65571</a></td></tr>
+<tr><td><a href='#CHAR_ENTER'>CHAR_ENTER=13</a></td></tr>
+<tr><td><a href='#CHAR_ESCAPE'>CHAR_ESCAPE=27</a></td></tr>
+<tr><td><a href='#CHAR_HOME'>CHAR_HOME=65572</a></td></tr>
+<tr><td><a href='#CHAR_INSERT'>CHAR_INSERT=65581</a></td></tr>
+<tr><td><a href='#CHAR_LEFT'>CHAR_LEFT=65573</a></td></tr>
+<tr><td><a href='#CHAR_PAGEDOWN'>CHAR_PAGEDOWN=65570</a></td></tr>
+<tr><td><a href='#CHAR_PAGEUP'>CHAR_PAGEUP=65569</a></td></tr>
+<tr><td><a href='#CHAR_RIGHT'>CHAR_RIGHT=65575</a></td></tr>
+<tr><td><a href='#CHAR_TAB'>CHAR_TAB=9</a></td></tr>
+<tr><td><a href='#CHAR_UP'>CHAR_UP=65574</a></td></tr>
+<tr><td><a href='#JOY_A'>JOY_A=0</a></td></tr>
+<tr><td><a href='#JOY_B'>JOY_B=1</a></td></tr>
+<tr><td><a href='#JOY_BACK'>JOY_BACK=6</a></td></tr>
+<tr><td><a href='#JOY_DOWN'>JOY_DOWN=11</a></td></tr>
+<tr><td><a href='#JOY_LB'>JOY_LB=4</a></td></tr>
+<tr><td><a href='#JOY_LEFT'>JOY_LEFT=8</a></td></tr>
+<tr><td><a href='#JOY_RB'>JOY_RB=5</a></td></tr>
+<tr><td><a href='#JOY_RIGHT'>JOY_RIGHT=10</a></td></tr>
+<tr><td><a href='#JOY_START'>JOY_START=7</a></td></tr>
+<tr><td><a href='#JOY_UP'>JOY_UP=9</a></td></tr>
+<tr><td><a href='#JOY_X'>JOY_X=2</a></td></tr>
+<tr><td><a href='#JOY_Y'>JOY_Y=3</a></td></tr>
+<tr><td><a href='#KEY_0'>KEY_0=48</a></td></tr>
+<tr><td><a href='#KEY_1'>KEY_1=49</a></td></tr>
+<tr><td><a href='#KEY_2'>KEY_2=50</a></td></tr>
+<tr><td><a href='#KEY_3'>KEY_3=51</a></td></tr>
+<tr><td><a href='#KEY_4'>KEY_4=52</a></td></tr>
+<tr><td><a href='#KEY_5'>KEY_5=53</a></td></tr>
+<tr><td><a href='#KEY_6'>KEY_6=54</a></td></tr>
+<tr><td><a href='#KEY_7'>KEY_7=55</a></td></tr>
+<tr><td><a href='#KEY_8'>KEY_8=56</a></td></tr>
+<tr><td><a href='#KEY_9'>KEY_9=57</a></td></tr>
+<tr><td><a href='#KEY_A'>KEY_A=65</a></td></tr>
+<tr><td><a href='#KEY_B'>KEY_B=66</a></td></tr>
+<tr><td><a href='#KEY_BACKSLASH'>KEY_BACKSLASH=220</a></td></tr>
+<tr><td><a href='#KEY_BACKSPACE'>KEY_BACKSPACE=8</a></td></tr>
+<tr><td><a href='#KEY_C'>KEY_C=67</a></td></tr>
+<tr><td><a href='#KEY_CLOSEBRACKET'>KEY_CLOSEBRACKET=221</a></td></tr>
+<tr><td><a href='#KEY_COMMA'>KEY_COMMA=188</a></td></tr>
+<tr><td><a href='#KEY_CONTROL'>KEY_CONTROL=17</a></td></tr>
+<tr><td><a href='#KEY_D'>KEY_D=68</a></td></tr>
+<tr><td><a href='#KEY_DELETE'>KEY_DELETE=46</a></td></tr>
+<tr><td><a href='#KEY_DOWN'>KEY_DOWN=40</a></td></tr>
+<tr><td><a href='#KEY_E'>KEY_E=69</a></td></tr>
+<tr><td><a href='#KEY_END'>KEY_END=35</a></td></tr>
+<tr><td><a href='#KEY_ENTER'>KEY_ENTER=13</a></td></tr>
+<tr><td><a href='#KEY_EQUALS'>KEY_EQUALS=187</a></td></tr>
+<tr><td><a href='#KEY_ESCAPE'>KEY_ESCAPE=27</a></td></tr>
+<tr><td><a href='#KEY_F'>KEY_F=70</a></td></tr>
+<tr><td><a href='#KEY_F1'>KEY_F1=112</a></td></tr>
+<tr><td><a href='#KEY_F10'>KEY_F10=121</a></td></tr>
+<tr><td><a href='#KEY_F11'>KEY_F11=122</a></td></tr>
+<tr><td><a href='#KEY_F12'>KEY_F12=123</a></td></tr>
+<tr><td><a href='#KEY_F2'>KEY_F2=113</a></td></tr>
+<tr><td><a href='#KEY_F3'>KEY_F3=114</a></td></tr>
+<tr><td><a href='#KEY_F4'>KEY_F4=115</a></td></tr>
+<tr><td><a href='#KEY_F5'>KEY_F5=116</a></td></tr>
+<tr><td><a href='#KEY_F6'>KEY_F6=117</a></td></tr>
+<tr><td><a href='#KEY_F7'>KEY_F7=118</a></td></tr>
+<tr><td><a href='#KEY_F8'>KEY_F8=119</a></td></tr>
+<tr><td><a href='#KEY_F9'>KEY_F9=120</a></td></tr>
+<tr><td><a href='#KEY_G'>KEY_G=71</a></td></tr>
+<tr><td><a href='#KEY_H'>KEY_H=72</a></td></tr>
+<tr><td><a href='#KEY_HOME'>KEY_HOME=36</a></td></tr>
+<tr><td><a href='#KEY_I'>KEY_I=73</a></td></tr>
+<tr><td><a href='#KEY_INSERT'>KEY_INSERT=45</a></td></tr>
+<tr><td><a href='#KEY_J'>KEY_J=74</a></td></tr>
+<tr><td><a href='#KEY_JOY0'>KEY_JOY0=256</a></td></tr>
+<tr><td><a href='#KEY_JOY0_A'>KEY_JOY0_A=256</a></td></tr>
+<tr><td><a href='#KEY_JOY0_B'>KEY_JOY0_B=257</a></td></tr>
+<tr><td><a href='#KEY_JOY0_BACK'>KEY_JOY0_BACK=262</a></td></tr>
+<tr><td><a href='#KEY_JOY0_DOWN'>KEY_JOY0_DOWN=267</a></td></tr>
+<tr><td><a href='#KEY_JOY0_LB'>KEY_JOY0_LB=260</a></td></tr>
+<tr><td><a href='#KEY_JOY0_LEFT'>KEY_JOY0_LEFT=264</a></td></tr>
+<tr><td><a href='#KEY_JOY0_RB'>KEY_JOY0_RB=261</a></td></tr>
+<tr><td><a href='#KEY_JOY0_RIGHT'>KEY_JOY0_RIGHT=266</a></td></tr>
+<tr><td><a href='#KEY_JOY0_START'>KEY_JOY0_START=263</a></td></tr>
+<tr><td><a href='#KEY_JOY0_UP'>KEY_JOY0_UP=265</a></td></tr>
+<tr><td><a href='#KEY_JOY0_X'>KEY_JOY0_X=258</a></td></tr>
+<tr><td><a href='#KEY_JOY0_Y'>KEY_JOY0_Y=259</a></td></tr>
+<tr><td><a href='#KEY_JOY1_A'>KEY_JOY1_A=288</a></td></tr>
+<tr><td><a href='#KEY_JOY2_A'>KEY_JOY2_A=320</a></td></tr>
+<tr><td><a href='#KEY_JOY3_A'>KEY_JOY3_A=352</a></td></tr>
+<tr><td><a href='#KEY_K'>KEY_K=75</a></td></tr>
+<tr><td><a href='#KEY_L'>KEY_L=76</a></td></tr>
+<tr><td><a href='#KEY_LEFT'>KEY_LEFT=37</a></td></tr>
+<tr><td><a href='#KEY_LMB'>KEY_LMB=1</a></td></tr>
+<tr><td><a href='#KEY_M'>KEY_M=77</a></td></tr>
+<tr><td><a href='#KEY_MINUS'>KEY_MINUS=189</a></td></tr>
+<tr><td><a href='#KEY_MMB'>KEY_MMB=3</a></td></tr>
+<tr><td><a href='#KEY_N'>KEY_N=78</a></td></tr>
+<tr><td><a href='#KEY_O'>KEY_O=79</a></td></tr>
+<tr><td><a href='#KEY_OPENBRACKET'>KEY_OPENBRACKET=219</a></td></tr>
+<tr><td><a href='#KEY_P'>KEY_P=80</a></td></tr>
+<tr><td><a href='#KEY_PAGEDOWN'>KEY_PAGEDOWN=34</a></td></tr>
+<tr><td><a href='#KEY_PAGEUP'>KEY_PAGEUP=33</a></td></tr>
+<tr><td><a href='#KEY_PERIOD'>KEY_PERIOD=190</a></td></tr>
+<tr><td><a href='#KEY_Q'>KEY_Q=81</a></td></tr>
+<tr><td><a href='#KEY_QUOTES'>KEY_QUOTES=222</a></td></tr>
+<tr><td><a href='#KEY_R'>KEY_R=82</a></td></tr>
+<tr><td><a href='#KEY_RIGHT'>KEY_RIGHT=39</a></td></tr>
+<tr><td><a href='#KEY_RMB'>KEY_RMB=2</a></td></tr>
+<tr><td><a href='#KEY_S'>KEY_S=83</a></td></tr>
+<tr><td><a href='#KEY_SEMICOLON'>KEY_SEMICOLON=186</a></td></tr>
+<tr><td><a href='#KEY_SHIFT'>KEY_SHIFT=16</a></td></tr>
+<tr><td><a href='#KEY_SLASH'>KEY_SLASH=191</a></td></tr>
+<tr><td><a href='#KEY_SPACE'>KEY_SPACE=32</a></td></tr>
+<tr><td><a href='#KEY_T'>KEY_T=84</a></td></tr>
+<tr><td><a href='#KEY_TAB'>KEY_TAB=9</a></td></tr>
+<tr><td><a href='#KEY_TILDE'>KEY_TILDE=192</a></td></tr>
+<tr><td><a href='#KEY_TOUCH0'>KEY_TOUCH0=384</a></td></tr>
+<tr><td><a href='#KEY_U'>KEY_U=85</a></td></tr>
+<tr><td><a href='#KEY_UP'>KEY_UP=38</a></td></tr>
+<tr><td><a href='#KEY_V'>KEY_V=86</a></td></tr>
+<tr><td><a href='#KEY_W'>KEY_W=87</a></td></tr>
+<tr><td><a href='#KEY_X'>KEY_X=88</a></td></tr>
+<tr><td><a href='#KEY_Y'>KEY_Y=89</a></td></tr>
+<tr><td><a href='#KEY_Z'>KEY_Z=90</a></td></tr>
+<tr><td><a href='#MOUSE_LEFT'>MOUSE_LEFT=0</a></td></tr>
+<tr><td><a href='#MOUSE_MIDDLE'>MOUSE_MIDDLE=2</a></td></tr>
+<tr><td><a href='#MOUSE_RIGHT'>MOUSE_RIGHT=1</a></td></tr>
+</table>
+</div>
+<div class='box'>
+<h2>Functions</h2>
+<table class='small'>
+<tr><td><a href='#AccelX'>AccelX</a> : Float (  )</td></tr>
+<tr><td><a href='#AccelY'>AccelY</a> : Float (  )</td></tr>
+<tr><td><a href='#AccelZ'>AccelZ</a> : Float (  )</td></tr>
+<tr><td><a href='#DisableKeyboard'>DisableKeyboard</a> : Int (  )</td></tr>
+<tr><td><a href='#EnableKeyboard'>EnableKeyboard</a> : Int (  )</td></tr>
+<tr><td><a href='#GetChar'>GetChar</a> : Int (  )</td></tr>
+<tr><td><a href='#JoyDown'>JoyDown</a> : Int ( button:Int, unit:Int )</td></tr>
+<tr><td><a href='#JoyHit'>JoyHit</a> : Int ( button:Int, unit:Int )</td></tr>
+<tr><td><a href='#JoyX'>JoyX</a> : Float ( index:Int, unit:Int )</td></tr>
+<tr><td><a href='#JoyY'>JoyY</a> : Float ( index:Int, unit:Int )</td></tr>
+<tr><td><a href='#JoyZ'>JoyZ</a> : Float ( index:Int, unit:Int )</td></tr>
+<tr><td><a href='#KeyDown'>KeyDown</a> : Int ( key:Int )</td></tr>
+<tr><td><a href='#KeyHit'>KeyHit</a> : Int ( key:Int )</td></tr>
+<tr><td><a href='#MouseDown'>MouseDown</a> : Int ( button:Int )</td></tr>
+<tr><td><a href='#MouseHit'>MouseHit</a> : Int ( button:Int )</td></tr>
+<tr><td><a href='#MouseX'>MouseX</a> : Float (  )</td></tr>
+<tr><td><a href='#MouseY'>MouseY</a> : Float (  )</td></tr>
+<tr><td><a href='#TouchDown'>TouchDown</a> : Int ( index:Int )</td></tr>
+<tr><td><a href='#TouchHit'>TouchHit</a> : Int ( index:Int )</td></tr>
+<tr><td><a href='#TouchX'>TouchX</a> : Float ( index:Int )</td></tr>
+<tr><td><a href='#TouchY'>TouchY</a> : Float ( index:Int )</td></tr>
+</table>
+</div>
+<div class='box'>
+<a name='maindesc'></a>
+<h2>Detailed Discussion</h2>
+The input module allows programs to check for user input from a wide variety of devices such keyboards, mice, joysticks and touchsceens.
+<p>
+The input module uses a 'polling' input model, meaning that your program must continually check (or 'poll') the state of input devices. Polling should be performed during the OnUpdate phase of your program.
+
+</div>
+<div class='box'>
+<h2>Function Documentation</h2>
+<div class='box'>
+<a name='AccelX'></a><h3 class='rounded'>
+Function <span class='blk'>AccelX</span> : Float (  )
+</h3>
+Returns the x compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+<p>
+The value returned is in the range -1 to 1 inclusive.
+<p>
+If the device has no accelerometer, 0 is returned.
+<p>
+Accelerometer functionality is currently only available on the android, html5 and ios targets.
+
+</div>
+<div class='box'>
+<a name='AccelY'></a><h3 class='rounded'>
+Function <span class='blk'>AccelY</span> : Float (  )
+</h3>
+Returns the y compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+<p>
+The value returned is in the range -1 to 1 inclusive.
+<p>
+If the device has no accelerometer, 0 is returned.
+<p>
+Accelerometer functionality is currently only available on the andriod, html5 and ios targets.
+
+</div>
+<div class='box'>
+<a name='AccelZ'></a><h3 class='rounded'>
+Function <span class='blk'>AccelZ</span> : Float (  )
+</h3>
+Returns the z compononent of the acceleration applied to the device, as measured by the device's accelerometer if present.
+<p>
+The value returned is in the range -1 to 1 inclusive.
+<p>
+If the device has no accelerometer, 0 is returned.
+<p>
+Accelerometer functionality is currently only available on the android,html5 and ios targets.
+
+</div>
+<div class='box'>
+<a name='DisableKeyboard'></a><h3 class='rounded'>
+Function <span class='blk'>DisableKeyboard</span> : Int (  )
+</h3>
+On the android and ios targets, this function disables the native virtual keyboard. On all other targets, both EnableKeyboard and DisableKeyboard have no effect.
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#EnableKeyboard'>EnableKeyboard</a>
+
+</div>
+<div class='box'>
+<a name='EnableKeyboard'></a><h3 class='rounded'>
+Function <span class='blk'>EnableKeyboard</span> : Int (  )
+</h3>
+On the android and ios targets, this function enables the native virtual keyboard. On all other targets, both EnableKeyboard and DisableKeyboard have no effect.
+<p>
+A virtual keyboard is a graphical representation of a keyboard overlaid on the display that allows users to enter text by means of touching symbols representing keys.
+<p>
+After enabling the virtual keyboard, you program will be able to use GetChar to receive keystrokes, just as if there were a real keyboard present. It is up to the program to eventually call DisableKeyboard when appropriate, for example, when GetChar returns 13 (ie: the 'Enter' key) or 27 (ie: the 'Esc' key).
+<p>
+On the GLFW, HTML5, Flash and XNA (Windows) targets, keyboard support is always assumed to be available and your program can always use GetChar to receive keystrokes.
+<p>
+On the XNA XBOX and Windows Phone 7 targets, keyboard support is currently unavailable.
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#DisableKeyboard'>DisableKeyboard</a>
+
+</div>
+<div class='box'>
+<a name='GetChar'></a><h3 class='rounded'>
+Function <span class='blk'>GetChar</span> : Int (  )
+</h3>
+Returns the character code of the next character in the keyboard character queue, or 0 if no more characters are available.
+<p>
+The keyboard queue contains characters codes as opposed to the key codes used by KeyDown and KeyUp.
+<p>
+Character codes differ from key codes in that they are generally printable and may be modified by the shift, control and alt keys. Character codes also 'repeat' at a rate determined by the OS.
+<p>
+The mapping from key codes to character codes is controlled by the underlying OS, but in practice will generally map to ASCII codes.
+<p>
+The input module also provides special character code mappings for a number of unprintable keys: 
+<p>
+<pre>
+CHAR_TAB
+CHAR_BACKSPACE
+CHAR_ENTER
+CHAR_ESCAPE
+CHAR_PAGEUP
+CHAR_PAGEDOWN
+CHAR_END
+CHAR_HOME
+CHAR_LEFT
+CHAR_UP
+CHAR_RIGHT
+CHAR_DOWN
+CHAR_INSERT
+CHAR_DELETE
+</pre>
+<p>
+
+<p><b>Example</b> <pre>
+Import mojo
+<p>
+Class MyApp Extends App
+<p>
+	Field text$="Type something:"
+<p>
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		Local char=GetChar()
+		If char>=32
+			text+=String.FromChar( char )
+		Endif
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText text,0,0
+	End
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+
+</div>
+<div class='box'>
+<a name='JoyDown'></a><h3 class='rounded'>
+Function <span class='blk'>JoyDown</span> : Int ( button:Int, unit:Int )
+</h3>
+Return 1 if the specified joystick button is currently held down, else 0.
+<p>
+The button parameter should be one of the following constants:
+<p>
+<pre>
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+</pre>
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#JoyHit'>JoyHit</a>
+
+</div>
+<div class='box'>
+<a name='JoyHit'></a><h3 class='rounded'>
+Function <span class='blk'>JoyHit</span> : Int ( button:Int, unit:Int )
+</h3>
+Return the number of times the specified joystick button has been pressed since the last OnUpdate.
+<p>
+The button parameter should be one of the following constants:
+<p>
+<pre>
+JOY_A
+JOY_B
+JOY_X
+JOY_Y
+JOY_LB
+JOY_RB
+JOY_BACK
+JOY_START
+JOY_LEFT
+JOY_UP
+JOY_RIGHT
+JOY_DOWN
+</pre>
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#JoyDown'>JoyDown</a>
+
+</div>
+<div class='box'>
+<a name='JoyX'></a><h3 class='rounded'>
+Function <span class='blk'>JoyX</span> : Float ( index:Int, unit:Int )
+</h3>
+Returns the x, or horizontal, state of a joystick.
+<p>
+The return value will be in the range -1 to +1, with -1 representing 'left' and +1 representing 'right'.
+<p>
+In the case of controllers with 2 joysticks, the index parameter should be 0 for the left hand joystick, or 1 for the right hand joystick.
+<p>
+Note: On the XNA target, JoyX, JoyY and JoyZ will all return 0 until a joystick button is pressed. This is to comply with xbox live publishing guidelines that state that it must be possible to use any of the 4 controllers to play a game. Mojo will therefore wait until a button is pressed (usually in response to a 'press button to start' style message on the title page) before deciding which controller is in use.
+
+</div>
+<div class='box'>
+<a name='JoyY'></a><h3 class='rounded'>
+Function <span class='blk'>JoyY</span> : Float ( index:Int, unit:Int )
+</h3>
+Returns the y, or vertical, state of a joystick.
+<p>
+The return value will be in the range -1 to +1, with -1 representing 'down' and +1 representing 'up'.
+<p>
+In the case of controllers with 2 joysticks, the index parameter should be 0 for the left hand joystick, or 1 for the right hand joystick.
+<p>
+Note: On the XNA target, JoyX, JoyY and JoyZ will all return 0 until a joystick button is pressed. This is to comply with xbox live publishing guidelines that state that it must be possible to use any of the 4 controllers to play a game. Mojo will therefore wait until a button is pressed (usually in response to a 'press button to start' style message on the title page) before deciding which controller is in use.
+
+</div>
+<div class='box'>
+<a name='JoyZ'></a><h3 class='rounded'>
+Function <span class='blk'>JoyZ</span> : Float ( index:Int, unit:Int )
+</h3>
+On Playstation/Xbox style controllers, JoyZ returns the state of the analog shoulder controls.
+<p>
+The returned value will be in the range 0 to 1, with 0 indicating 'unpressed' and 1 indicating 'fully pressed'.
+<p>
+The index parameter should be 0 for the left handler shoulder control, or 1 for the right hand shoulder control.
+<p>
+Note: On the XNA target, JoyX, JoyY and JoyZ will all return 0 until a joystick button is pressed. This is to comply with xbox live publishing guidelines that state that it must be possible to use any of the 4 controllers to play a game. Mojo will therefore wait until a controller button is pressed (usually in response to a 'press button to start' style message on the title page) before deciding which controller is in use.
+
+</div>
+<div class='box'>
+<a name='KeyDown'></a><h3 class='rounded'>
+Function <span class='blk'>KeyDown</span> : Int ( key:Int )
+</h3>
+Returns 1 if the specified key is currently held down, otherwise 0.
+<p>
+
+<p><b>See also</b> <a href='Key codes.html'>Key codes</a> <a href='mojo.input.html#KeyHit'>KeyHit</a>
+
+</div>
+<div class='box'>
+<a name='KeyHit'></a><h3 class='rounded'>
+Function <span class='blk'>KeyHit</span> : Int ( key:Int )
+</h3>
+Returns the number of times the specified key has been hit since the last OnUpdate.
+<p>
+Note that any on/off style 'buttons' on any device can be read using the KeyDown and KeyHit commands. For example, to read the state of the left mouse button you can use KeyDown( KEY_LMB ) in addition to MouseDown( MOUSE_LEFT ).
+<p>
+
+<p><b>See also</b> <a href='Key codes.html'>Key codes</a> <a href='mojo.input.html#KeyDown'>KeyDown</a>
+
+<p><b>Example</b> <pre>
+Import mojo
+<p>
+Class MyApp Extends App
+<p>
+	Field lineY
+			
+	Method OnCreate()
+		lineY=DeviceHeight()/2
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+<p>
+		Local hit=KeyHit( KEY_LMB )	'Uses KeyHit to check the left mouse button.  You could also use MouseHit( MOUSE_LEFT )
+		
+		If hit And MouseY()<lineY
+			Print "You clicked above the line."
+		Else If hit And MouseY()>=lineY
+			Print "You clicked on or below the line."
+		End
+	End
+	
+	Method OnRender()
+		Cls
+		DrawLine 0,lineY,DeviceWidth(),lineY
+	End
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+<p>
+
+</div>
+<div class='box'>
+<a name='MouseDown'></a><h3 class='rounded'>
+Function <span class='blk'>MouseDown</span> : Int ( button:Int )
+</h3>
+Returns 1 if the specified mouse button is currently held down, otherwise 0.
+<p>
+The button parameter should be one of:
+<p>
+<pre>
+MOUSE_LEFT
+MOUSE_RIGHT
+MOUSE_MIDDLE
+</pre>
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#MouseHit'>MouseHit</a>
+
+</div>
+<div class='box'>
+<a name='MouseHit'></a><h3 class='rounded'>
+Function <span class='blk'>MouseHit</span> : Int ( button:Int )
+</h3>
+Returns the number of times the specified mouse button has been pressed since the last OnUpdate.
+<p>
+The button parameter should be one of:
+<p>
+<pre>
+MOUSE_LEFT
+MOUSE_RIGHT
+MOUSE_MIDDLE
+</pre>
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#MouseDown'>MouseDown</a>
+
+</div>
+<div class='box'>
+<a name='MouseX'></a><h3 class='rounded'>
+Function <span class='blk'>MouseX</span> : Float (  )
+</h3>
+Returns the x coordinate of the mouse pointer.
+<p>
+On devices with a touch screen but no mouse, MouseX will instead return TouchX( 0 ).
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#MouseY'>MouseY</a> <a href='mojo.input.html#TouchX'>TouchX</a>
+
+<p><b>Example</b> <pre>
+Import mojo
+<p>
+Class MyApp Extends App
+<p>
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText "MouseX="+MouseX+", MouseY="+MouseY,0,0
+		DrawCircle MouseX,MouseY,10
+	End
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+<p>
+
+</div>
+<div class='box'>
+<a name='MouseY'></a><h3 class='rounded'>
+Function <span class='blk'>MouseY</span> : Float (  )
+</h3>
+Returns the y coordinate of the mouse pointer.
+<p>
+On devices with a touch screen but no mouse, MouseY will instead return TouchY( 0 ).
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#MouseX'>MouseX</a> <a href='mojo.input.html#TouchY'>TouchY</a>
+
+</div>
+<div class='box'>
+<a name='TouchDown'></a><h3 class='rounded'>
+Function <span class='blk'>TouchDown</span> : Int ( index:Int )
+</h3>
+Returns 1 if the finger specified by index is currently touching the touchscreen, otherwise 0.
+<p>
+Note that index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+<p>
+If a finger is touching, you can get its x and y coordinates using the TouchX and TouchY commands.
+<p>
+On devices with a mouse but no touch screen, TouchDown( 0 ) will instead return MouseDown( MOUSE_LEFT ).
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#TouchX'>TouchX</a> <a href='mojo.input.html#TouchY'>TouchY</a> <a href='mojo.input.html#TouchHit'>TouchHit</a> <a href='mojo.input.html#MouseDown'>MouseDown</a>
+
+<p><b>Example</b> <pre>
+Import mojo
+<p>
+Class MyApp Extends App
+<p>
+	Field touching
+	
+	Method OnCreate()
+		SetUpdateRate 30
+	End
+	
+	Method OnUpdate()
+		touching=0
+		For Local i=0 Until 32
+			If TouchDown( i ) touching+=1
+		Next
+	End
+	
+	Method OnRender()
+		Cls
+		DrawText touching,0,0
+	End
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+<p>
+
+</div>
+<div class='box'>
+<a name='TouchHit'></a><h3 class='rounded'>
+Function <span class='blk'>TouchHit</span> : Int ( index:Int )
+</h3>
+Returns the number of times the specified finger has made contact with the touchscreen since the last OnUpdate.
+<p>
+Note that index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+<p>
+If a finger is touching, you can get its x and y coordinates using the TouchX and TouchY commands.
+<p>
+On devices with a mouse but no touch screen, TouchHit( 0 ) will instead return MouseHit( MOUSE_LEFT ).
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#TouchX'>TouchX</a> <a href='mojo.input.html#TouchY'>TouchY</a> <a href='mojo.input.html#TouchDown'>TouchDown</a> <a href='mojo.input.html#MouseHit'>MouseHit</a>
+
+</div>
+<div class='box'>
+<a name='TouchX'></a><h3 class='rounded'>
+Function <span class='blk'>TouchX</span> : Float ( index:Int )
+</h3>
+Returns the x coordinate of the finger on a touch screen device.
+<p>
+Note that index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+<p>
+On devices with a mouse but no touch screen, TouchX( 0 ) will instead return MouseX.
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#TouchY'>TouchY</a> <a href='mojo.input.html#TouchHit'>TouchHit</a> <a href='mojo.input.html#TouchDown'>TouchDown</a> <a href='mojo.input.html#MouseX'>MouseX</a>
+
+</div>
+<div class='box'>
+<a name='TouchY'></a><h3 class='rounded'>
+Function <span class='blk'>TouchY</span> : Float ( index:Int )
+</h3>
+Returns the y coordinate of the finger on a touch screen device.
+<p>
+Note that index refers to the order touches have been made. The first finger to touch the touchscreen will be assigned index 0. If another finger then also touches the touchscreen, it will be assigned index 1 and so on.
+<p>
+On devices with a mouse but no touch screen, TouchY( 0 ) will instead return MouseY.
+<p>
+
+<p><b>See also</b> <a href='mojo.input.html#TouchX'>TouchX</a> <a href='mojo.input.html#TouchDown'>TouchDown</a> <a href='mojo.input.html#TouchHit'>TouchHit</a> <a href='mojo.input.html#MouseY'>MouseY</a>
+
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+		
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>

@@ -76,15 +76,13 @@ Class Reflector
 	
 		Local p:=mdecl.filepath.Replace( "\","/" )
 		If Not p.EndsWith( ".monkey" ) InternalErr
-		p=p[..-7].ToLower()
+		p=p[..-7]		
 		
 		For Local dir:=Eachin ENV_MODPATH.Split( ";" )
 			If dir="." Continue
 			
 			dir=dir.Replace( "\","/" )
 			If Not dir.EndsWith("/") dir+="/"
-			dir=dir.ToLower()
-			
 			If Not p.StartsWith( dir ) Continue
 			
 			p=p[dir.Length-1..]
