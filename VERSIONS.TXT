@@ -1,6 +1,37 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V61 ******
+
+Modules:
+
+pss/psm mojo - added discard to surface.
+
+flash mojo - fixed stream of mousehits bug when app lost/regained focus.
+
+glfw mojo - added KEY_TILDE and KEY_QUOTES support.
+
+lang.cpp - tweaked GC, added CPP_GC_MARK_RATE and CPP_GC_TRIGGER config vars.
+
+
+Targets:
+
+Upgared Mac ios and glfw target projects to xcode4.4.
+
+Added psm target - will replace pss target in next release so upgrade NOW! Check your PSM_PATH in bin/config.winnt.txt is set correctly before use.
+
+glfw - Updated GLFW lib to 2.7.5
+
+
+Trans (V1.37):
+
+Fixed debug array index check bugs on js/as.
+
+Fixed bug with reflection filter and mixed cased module names.
+
+Fixed comment at end of preprocessor line parsing bug.
+
+
 ***** V60 ******
 
 Modules:

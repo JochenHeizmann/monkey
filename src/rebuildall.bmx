@@ -1,9 +1,10 @@
 
 Strict
 
-RebuildTrans
+RebuildTrans 
 'RebuildMonk
 'RebuildMServer
+'RebuildMonkey
 
 End
 
@@ -58,9 +59,9 @@ Function RebuildTrans()
 		system "g++ -o "+trans+" trans/trans.build/stdcpp/main.cpp"
 ?
 		Return
-	Endif
+	EndIf
 	
-	system trans2+" -clean -target=stdcpp -config=release +CPP_INCREMENTAL_GC=0 +CPP_DOUBLE_PRECISION_FLOATS=1 trans/trans.monkey"
+	system trans2+" -clean -target=stdcpp -config=release +CPP_DOUBLE_PRECISION_FLOATS=1 trans/trans.monkey"
 
 	Delay 100
 	
@@ -96,3 +97,15 @@ Function RebuildMServer()
 	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -h -t gui -a -r -o "+mserver+" mserver/mserver.bmx"
 	Print "mserver built OK!"
 End Function
+
+Function RebuildMonkey()
+	'windres resource.rc resource.o
+	system "~q"+BlitzMaxPath()+"/bin/bmk~q makeapp -t gui -a -r -o ../Monkey monkey/monkey.bmx"
+?MacOS
+	system "cp monkey/info.plist ../Monkey.app/Contents"
+	system "rm ../Monkey.app/Contents/Resources/monkey.icns"
+	system "cp monkey/monkey.icns ../Monkey.app/Contents/Resources"
+?	
+	Print "Monkey built OK!"
+End Function
+

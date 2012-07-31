@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.36"
+Const VERSION$="1.37"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
@@ -83,6 +83,10 @@ Function LoadConfig()
 			If Not PSS_PATH And FileType( path )=FILETYPE_DIR
 				PSS_PATH=path
 			Endif
+		Case "PSM_PATH"
+			If Not PSM_PATH And FileType( path )=FILETYPE_DIR
+				PSM_PATH=path
+			Endif
 		Case "MSBUILD_PATH"
 			If Not MSBUILD_PATH And FileType( path )=FILETYPE_FILE
 				MSBUILD_PATH=path
@@ -94,7 +98,8 @@ Function LoadConfig()
 		Case "MODULE_PATH"
 			MODULE_PATH=path
 		Default 
-			Die "Unrecognized config var: "+lhs
+			Print "Trans: ignoring unrecognized config var: "+lhs
+'			Die "Unrecognized config var: "+lhs
 		End
 
 	Next

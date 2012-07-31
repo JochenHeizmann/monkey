@@ -7,9 +7,9 @@ Import databuffer
 
 #If TARGET="glfw"
 Import "native/gles11.glfw.cpp"
-#ElseIf TARGET="android"
+#Elseif TARGET="android"
 Import "native/gles11.android.java"
-#ElseIf TARGET="ios"
+#Elseif TARGET="ios"
 Import "native/gles11.ios.cpp"
 #Endif
 

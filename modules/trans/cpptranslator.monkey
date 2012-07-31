@@ -331,7 +331,7 @@ Class CppTranslator Extends CTranslator
 	Method TransDeclStmt$( stmt:DeclStmt )
 		Local decl:=LocalDecl( stmt.decl )
 		If decl
-			dbgLocals.Push decl
+			If decl.ident dbgLocals.Push decl
 			MungDecl decl
 			Return TransLocalDecl( decl.munged,decl.init )
 		Endif
