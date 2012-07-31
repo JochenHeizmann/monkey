@@ -15,7 +15,6 @@ Class Clock Extends App
 
 	Method OnUpdate()
 
-
 		If KeyHit( KEY_UP )		'minus 1 minute
 				adjust = adjust + 1000 * 60
 		Else If KeyHit( KEY_DOWN )	'minus 1 minute

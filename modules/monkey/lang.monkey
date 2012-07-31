@@ -43,7 +43,7 @@ Class @Array Extends Null="Array"
 
 	Method Length:Int() Property="$length"
 	
-	Method Resize:Int[]( length )="$resize"
+	Method Resize:Int[]( newLength )="$resize"
 	
 End
 

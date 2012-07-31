@@ -516,8 +516,12 @@ Class SelfExpr Extends Expr
 	
 	Method Semant:Expr()
 		If exprType Return Self
-	
-		If _env.FuncScope().IsStatic() Err "Illegal use of Self within static scope."
+		
+		If _env.FuncScope()
+			If _env.FuncScope().IsStatic() Err "Illegal use of Self within static scope."
+		Else
+			Err "Self cannot be used here."
+		Endif
 
 		exprType=_env.ClassScope().objectType
 		Return Self
