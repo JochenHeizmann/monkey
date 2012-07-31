@@ -7,6 +7,8 @@
 
 Import mojo
 
+Global BigList:=New List<Spark>
+
 Class Spark
 
 	Field x#,y#,xv#,yv#,a#
@@ -30,6 +32,11 @@ Class Firepaint Extends App
 	Field prim
 	
 	Method OnCreate()
+	
+		For Local i=0 Until 65536*16			'1024*1024
+'			BigList.AddLast New Spark
+		Next
+		
 		sparkImage=LoadImage( "bluspark.png",1,Image.MidHandle )
 		
 		SetUpdateRate 60
@@ -53,7 +60,9 @@ Class Firepaint Extends App
 		
 		For Local i=0 Until 32
 			If TouchDown( i )
-				sparks.AddLast New Spark( TouchX(i),TouchY(i) )
+				For Local j=1 To 100
+					sparks.AddLast New Spark( TouchX(i),TouchY(i) )
+				next
 			Endif
 		Next
 		

@@ -7,7 +7,7 @@ Class PssTarget Extends Target
 		If FileType( "pss" )<>FILETYPE_DIR Return False
 		Select HostOS
 		Case "winnt"
-			If PSS_PATH Return True
+			Return PSS_PATH And FileType( PSS_PATH+"/tools/PssStudio/bin/mdtool.exe" )=FILETYPE_FILE
 		End
 	End
 

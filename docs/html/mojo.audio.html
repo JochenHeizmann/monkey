@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:13px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+div.toc{
+	padding:8px;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' />
+	
+	Monkey V60 Documentation
+	
+</div>
+
+<div id='page'>
+
+	<div id='menu'>
+	
+		<b>API Reference</b>
+<p>
+<li><a href='Class list.html'>Class list</a></li>
+<li><a href='Function list.html'>Function list</a></li>
+<li><a href='Module list.html'>Module list</a></li>
+<li><a href='Key codes.html'>Mojo key codes</a></li>
+<p>
+<b>Programming Guide</b>
+<p>
+<li><a href='Language reference.html'>Language reference</a></li>
+<li><a href='keywords.html'>Keyword reference</a></li>
+<li><a href='App config settings.html'>App config settings</a></li>
+<li><a href='Target SDKs.html'>Target SDKs</a></li>
+<li><a href='Tutorials.html'>Tutorials</a></li>
+<p>
+<b>Tools</b>
+<p>
+<li>Ted</li>
+<li><a href='Monk.html'>Monk</a></li>
+<li><a href='Trans.html'>Trans</a></li>
+<li><a href='MServer.html'>MServer</a></li>
+<p>
+		
+	</div>
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+			<a href='index.html'>Home</a> > <a href='mojo.html'>mojo</a> > audio
+		
+		</div>
+		
+		<div id='content'>
+		
+			<div class='box'>
+<h1>Module audio</h1>
+The audio module contains functions for playing sounds and music. <a href='#maindesc'>More...</a>
+</div>
+<div class='box'>
+<h2>Classes</h2>
+<table class='small'>
+<tr><td><a href='mojo.audio.Sound.html'>Sound</a></td></tr>
+</table>
+</div>
+<div class='box'>
+<h2>Functions</h2>
+<table class='small'>
+<tr><td><a href='#ChannelState'>ChannelState</a> : Int ( channel:Int )</td></tr>
+<tr><td><a href='#LoadSound'>LoadSound</a> : Sound ( path:String )</td></tr>
+<tr><td><a href='#MusicState'>MusicState</a> : Int (  )</td></tr>
+<tr><td><a href='#PauseChannel'>PauseChannel</a> : Int ( channel:Int )</td></tr>
+<tr><td><a href='#PauseMusic'>PauseMusic</a> : Int (  )</td></tr>
+<tr><td><a href='#PlayMusic'>PlayMusic</a> : Int ( path:String, flags:Int )</td></tr>
+<tr><td><a href='#PlaySound'>PlaySound</a> : Int ( sound:Sound, channel:Int, flags:Int )</td></tr>
+<tr><td><a href='#ResumeChannel'>ResumeChannel</a> : Int ( channel:Int )</td></tr>
+<tr><td><a href='#ResumeMusic'>ResumeMusic</a> : Int (  )</td></tr>
+<tr><td><a href='#SetChannelPan'>SetChannelPan</a> : Int ( channel:Int, pan:Float )</td></tr>
+<tr><td><a href='#SetChannelRate'>SetChannelRate</a> : Int ( channel:Int, rate:Float )</td></tr>
+<tr><td><a href='#SetChannelVolume'>SetChannelVolume</a> : Int ( channel:Int, volume:Float )</td></tr>
+<tr><td><a href='#SetMusicVolume'>SetMusicVolume</a> : Int ( volume:Float )</td></tr>
+<tr><td><a href='#StopChannel'>StopChannel</a> : Int ( channel:Int )</td></tr>
+<tr><td><a href='#StopMusic'>StopMusic</a> : Int (  )</td></tr>
+</table>
+</div>
+<div class='box'>
+<a name='maindesc'></a>
+<h2>Detailed Discussion</h2>
+The audio module contains functions for playing sounds and music.
+<p>
+It uses a simple 'fixed' 32 channel model which allows you to play sounds through any of 32 preset audio channels. Audio channels are identified by the use of integer ids in the range 0 to 31.
+<p>
+Commands that alter a channel's volume, pan and pitch can be used to either dynamically modify a playing sound, or used on a stopped changed to prepare playback properties.
+<p>
+In addition, a number of simple music commands are provided for streaming long samples from file.
+<p>
+The music commands use a single internal channel, so it is not currently possible to stream multiple sample files simultaneously.
+<p>
+Note that not all targets have equivalent audio capabilities. In particular:
+<p>
+HTML5 : ChannelPan and ChannelRate do nothing.
+<p>
+Flash : ChannelRate does nothing. ChannelState and MusicState always returns -1, ie: 'unknown'.
+<p>
+Android : ChannelState always returns -1, ie: 'unknown'. Sounds to be used with PlaySound must be less than 1MB in length. Longer sounds can be played using the music commands.
+<p>
+Also, not all audio formats are supported by all targets:
+<p>
+wav : glfw, android, ios, xna (sounds)
+<p>
+mp3 : flash, android, ios, xna (music)
+<p>
+m4a : flash, android (music), ios
+<p>
+wma : xna (music)
+<p>
+ogg : android
+<p>
+Finally, when designing for low performance hardware it's a good idea to try and minimize the number of channels used.
+
+</div>
+<div class='box'>
+<h2>Function Documentation</h2>
+<div class='box'>
+<a name='ChannelState'></a><h3 class='rounded'>
+Function <span class='blk'>ChannelState</span> : Int ( channel:Int )
+</h3>
+Returns the state of the specified audio channel: 0 if the channel is currently stopped, 1 if the channel is currently playing, 2 if the channel is currently paused or -1 if the channel state cannot be determined.
+<p>
+Note: This function currently returns -1 on the android and flash targets.
+
+</div>
+<div class='box'>
+<a name='LoadSound'></a><h3 class='rounded'>
+Function <span class='blk'>LoadSound</span> : <a href='mojo.audio.Sound.html'>Sound</a> ( path:String )
+</h3>
+Loads a sound from the specified path and returns it.
+<p>
+
+<p><b>See also</b> <a href='mojo.audio.Sound.html'>Sound</a>
+
+</div>
+<div class='box'>
+<a name='MusicState'></a><h3 class='rounded'>
+Function <span class='blk'>MusicState</span> : Int (  )
+</h3>
+Returns 1 if music is currently playing, 0 if music is currently not playing or -1 if music state cannot be determined.
+
+</div>
+<div class='box'>
+<a name='PauseChannel'></a><h3 class='rounded'>
+Function <span class='blk'>PauseChannel</span> : Int ( channel:Int )
+</h3>
+Pauses the specified audio channel. Has no effect if the audio channel is already paused or stopped.
+
+</div>
+<div class='box'>
+<a name='PauseMusic'></a><h3 class='rounded'>
+Function <span class='blk'>PauseMusic</span> : Int (  )
+</h3>
+Pauses music playback. Has no effect if music is not currently playing.
+
+</div>
+<div class='box'>
+<a name='PlayMusic'></a><h3 class='rounded'>
+Function <span class='blk'>PlayMusic</span> : Int ( path:String, flags:Int )
+</h3>
+Plays an audio file through the internal music channel, using audio streaming if possible.
+<p>
+Since there is only one music channel, any music currently play will first be stopped.
+<p>
+flags should be 1 to loop the music, 0 to play it just once.
+
+</div>
+<div class='box'>
+<a name='PlaySound'></a><h3 class='rounded'>
+Function <span class='blk'>PlaySound</span> : Int ( sound:<a href='mojo.audio.Sound.html'>Sound</a>, channel:Int, flags:Int )
+</h3>
+Plays a sound through the specified channel.
+<p>
+flags should be 1 to loop the sound, 0 to play it just once.
+
+</div>
+<div class='box'>
+<a name='ResumeChannel'></a><h3 class='rounded'>
+Function <span class='blk'>ResumeChannel</span> : Int ( channel:Int )
+</h3>
+Resumes the specified audio channel. Has no effect if the audio channel is not currently paused.
+
+</div>
+<div class='box'>
+<a name='ResumeMusic'></a><h3 class='rounded'>
+Function <span class='blk'>ResumeMusic</span> : Int (  )
+</h3>
+Resumes music playback. Has no effect if music is not currently paused.
+
+</div>
+<div class='box'>
+<a name='SetChannelPan'></a><h3 class='rounded'>
+Function <span class='blk'>SetChannelPan</span> : Int ( channel:Int, pan:Float )
+</h3>
+Sets the pan of the specified audio channel.
+
+</div>
+<div class='box'>
+<a name='SetChannelRate'></a><h3 class='rounded'>
+Function <span class='blk'>SetChannelRate</span> : Int ( channel:Int, rate:Float )
+</h3>
+Sets the playback rate of the specified audio channel. 
+<p>
+This will affect the pitch of the sound being played.
+
+</div>
+<div class='box'>
+<a name='SetChannelVolume'></a><h3 class='rounded'>
+Function <span class='blk'>SetChannelVolume</span> : Int ( channel:Int, volume:Float )
+</h3>
+Sets the volume of the specified audio channel.
+
+</div>
+<div class='box'>
+<a name='SetMusicVolume'></a><h3 class='rounded'>
+Function <span class='blk'>SetMusicVolume</span> : Int ( volume:Float )
+</h3>
+Sets the music volume.
+<p>
+If music is currently playing, this will set the music volume immediately.
+<p>
+Whether or not music is playing, this will set the volume to be used the next time PlayMusic is called.
+
+</div>
+<div class='box'>
+<a name='StopChannel'></a><h3 class='rounded'>
+Function <span class='blk'>StopChannel</span> : Int ( channel:Int )
+</h3>
+Stops the specified audio channel.
+
+</div>
+<div class='box'>
+<a name='StopMusic'></a><h3 class='rounded'>
+Function <span class='blk'>StopMusic</span> : Int (  )
+</h3>
+Stops any music currently playing.
+
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+		
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>

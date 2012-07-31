@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:13px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+div.toc{
+	padding:8px;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' />
+	
+	Monkey V60 Documentation
+	
+</div>
+
+<div id='page'>
+
+	<div id='menu'>
+	
+		<b>API Reference</b>
+<p>
+<li><a href='Class list.html'>Class list</a></li>
+<li><a href='Function list.html'>Function list</a></li>
+<li><a href='Module list.html'>Module list</a></li>
+<li><a href='Key codes.html'>Mojo key codes</a></li>
+<p>
+<b>Programming Guide</b>
+<p>
+<li><a href='Language reference.html'>Language reference</a></li>
+<li><a href='keywords.html'>Keyword reference</a></li>
+<li><a href='App config settings.html'>App config settings</a></li>
+<li><a href='Target SDKs.html'>Target SDKs</a></li>
+<li><a href='Tutorials.html'>Tutorials</a></li>
+<p>
+<b>Tools</b>
+<p>
+<li>Ted</li>
+<li><a href='Monk.html'>Monk</a></li>
+<li><a href='Trans.html'>Trans</a></li>
+<li><a href='MServer.html'>MServer</a></li>
+<p>
+		
+	</div>
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+			<a href='index.html'>Home</a> > os
+		
+		</div>
+		
+		<div id='content'>
+		
+			<div class='box'>
+<h1>Module os</h1>
+The os module provides miscellaneous operating system functionality, such as file, directory and environment variable access. <a href='#maindesc'>More...</a>
+</div>
+<div class='box'>
+<h2>Constants</h2>
+<table class='small'>
+<tr><td><a href='#FILETYPE_DIR'>FILETYPE_DIR=2</a></td></tr>
+<tr><td><a href='#FILETYPE_FILE'>FILETYPE_FILE=1</a></td></tr>
+<tr><td><a href='#FILETYPE_NONE'>FILETYPE_NONE=0</a></td></tr>
+</table>
+</div>
+<div class='box'>
+<h2>Functions</h2>
+<table class='small'>
+<tr><td><a href='#AppArgs'>AppArgs</a> : String[] (  )</td></tr>
+<tr><td><a href='#AppPath'>AppPath</a> : String (  )</td></tr>
+<tr><td><a href='#ChangeDir'>ChangeDir</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#CopyDir'>CopyDir</a> : Int ( srcpath:String, dstpath:String, recursive:Bool, hidden:Bool )</td></tr>
+<tr><td><a href='#CopyFile'>CopyFile</a> : Int ( src:String, dst:String )</td></tr>
+<tr><td><a href='#CreateDir'>CreateDir</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#CurrentDir'>CurrentDir</a> : String (  )</td></tr>
+<tr><td><a href='#DeleteDir'>DeleteDir</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#DeleteDir'>DeleteDir</a> : Int ( path:String, recursive:Bool )</td></tr>
+<tr><td><a href='#DeleteFile'>DeleteFile</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#Execute'>Execute</a> : Int ( cmd:String )</td></tr>
+<tr><td><a href='#ExitApp'>ExitApp</a> : Int ( retcode:Int )</td></tr>
+<tr><td><a href='#ExtractDir'>ExtractDir</a> : String ( path:String )</td></tr>
+<tr><td><a href='#FileSize'>FileSize</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#FileTime'>FileTime</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#FileType'>FileType</a> : Int ( path:String )</td></tr>
+<tr><td><a href='#GetEnv'>GetEnv</a> : String ( name:String )</td></tr>
+<tr><td><a href='#LoadDir'>LoadDir</a> : String[] ( path:String )</td></tr>
+<tr><td><a href='#LoadDir'>LoadDir</a> : String[] ( path:String, recursive:Bool, hidden:Bool )</td></tr>
+<tr><td><a href='#LoadString'>LoadString</a> : String ( path:String )</td></tr>
+<tr><td><a href='#RealPath'>RealPath</a> : String ( path:String )</td></tr>
+<tr><td><a href='#SaveString'>SaveString</a> : Int ( str:String, path:String )</td></tr>
+<tr><td><a href='#SetEnv'>SetEnv</a> : Int ( name:String, value:String )</td></tr>
+<tr><td><a href='#StripAll'>StripAll</a> : String ( path:String )</td></tr>
+<tr><td><a href='#StripDir'>StripDir</a> : String ( path:String )</td></tr>
+<tr><td><a href='#StripExt'>StripExt</a> : String ( path:String )</td></tr>
+</table>
+</div>
+<div class='box'>
+<a name='maindesc'></a>
+<h2>Detailed Discussion</h2>
+The os module provides miscellaneous operating system functionality, such as file, directory and environment variable access.
+<p>
+The os module also includes several string processing functions for extracting various components from file system paths such as directory and file extension.
+<p>
+IMPORTANT: The os module is currently only available for the glfw and stdcpp targets.
+
+</div>
+<div class='box'>
+<h2>Function Documentation</h2>
+<div class='box'>
+<a name='AppArgs'></a><h3 class='rounded'>
+Function <span class='blk'>AppArgs</span> : String[] (  )
+</h3>
+Returns the application startup parameters.
+
+</div>
+<div class='box'>
+<a name='AppPath'></a><h3 class='rounded'>
+Function <span class='blk'>AppPath</span> : String (  )
+</h3>
+Returns the file system path of the currently running application.
+
+</div>
+<div class='box'>
+<a name='ChangeDir'></a><h3 class='rounded'>
+Function <span class='blk'>ChangeDir</span> : Int ( path:String )
+</h3>
+Changes the current directory of the running application.
+
+</div>
+<div class='box'>
+<a name='CopyDir'></a><h3 class='rounded'>
+Function <span class='blk'>CopyDir</span> : Int ( srcpath:String, dstpath:String, recursive:Bool, hidden:Bool )
+</h3>
+Copies the directory at srcpath to dstpath, creating dstpath if necessary.
+<p>
+If recursive is True, then subdirectories are also copied.
+<p>
+If hidden is True, then hidden files - files starting with a dot - are also copied.
+
+</div>
+<div class='box'>
+<a name='CopyFile'></a><h3 class='rounded'>
+Function <span class='blk'>CopyFile</span> : Int ( src:String, dst:String )
+</h3>
+Copies a file from srcpath to dstpath.
+
+</div>
+<div class='box'>
+<a name='CreateDir'></a><h3 class='rounded'>
+Function <span class='blk'>CreateDir</span> : Int ( path:String )
+</h3>
+Create a new directory at path.
+
+</div>
+<div class='box'>
+<a name='CurrentDir'></a><h3 class='rounded'>
+Function <span class='blk'>CurrentDir</span> : String (  )
+</h3>
+Returns the current directory of the currently running application.
+
+</div>
+<div class='box'>
+<a name='DeleteDir'></a><h3 class='rounded'>
+Function <span class='blk'>DeleteDir</span> : Int ( path:String )
+<br><br>
+Function <span class='blk'>DeleteDir</span> : Int ( path:String, recursive:Bool )
+</h3>
+Deletes the directory at path.
+<p>
+If recursive is True, then subdirectories are also deleted - use with care!
+
+</div>
+<div class='box'>
+<a name='DeleteFile'></a><h3 class='rounded'>
+Function <span class='blk'>DeleteFile</span> : Int ( path:String )
+</h3>
+Deletes the specified file.
+
+</div>
+<div class='box'>
+<a name='Execute'></a><h3 class='rounded'>
+Function <span class='blk'>Execute</span> : Int ( cmd:String )
+</h3>
+Executes a shell command and returns the result. This is generally 0 for success, or non-0 for failure.
+
+</div>
+<div class='box'>
+<a name='ExitApp'></a><h3 class='rounded'>
+Function <span class='blk'>ExitApp</span> : Int ( retcode:Int )
+</h3>
+Exits the application with the given return code.
+<p>
+In general, ExitApp should return 0 if successful, or <0 upon failure.
+
+</div>
+<div class='box'>
+<a name='ExtractDir'></a><h3 class='rounded'>
+Function <span class='blk'>ExtractDir</span> : String ( path:String )
+</h3>
+Extracts and returns the directory of a file system path.
+
+</div>
+<div class='box'>
+<a name='FileSize'></a><h3 class='rounded'>
+Function <span class='blk'>FileSize</span> : Int ( path:String )
+</h3>
+Return the length of a file, in bytes.
+
+</div>
+<div class='box'>
+<a name='FileTime'></a><h3 class='rounded'>
+Function <span class='blk'>FileTime</span> : Int ( path:String )
+</h3>
+Returns the time the file at path was last modified.
+
+</div>
+<div class='box'>
+<a name='FileType'></a><h3 class='rounded'>
+Function <span class='blk'>FileType</span> : Int ( path:String )
+</h3>
+Returns an integer representing the type of a file, one of: 0 for no file, 1 for a normal file, 2 for a directory.
+
+</div>
+<div class='box'>
+<a name='GetEnv'></a><h3 class='rounded'>
+Function <span class='blk'>GetEnv</span> : String ( name:String )
+</h3>
+Gets an environment variable.
+
+</div>
+<div class='box'>
+<a name='LoadDir'></a><h3 class='rounded'>
+Function <span class='blk'>LoadDir</span> : String[] ( path:String )
+<br><br>
+Function <span class='blk'>LoadDir</span> : String[] ( path:String, recursive:Bool, hidden:Bool )
+</h3>
+Loads the file names in the directory specified by path into a string array.
+<p>
+If recursive is True, LoadDir will also load file names in subdirectories, but will not add subdirectories to the output string array.
+<p>
+If hidden is True, then hidden files - files starting with a dot - are also loaded.
+
+</div>
+<div class='box'>
+<a name='LoadString'></a><h3 class='rounded'>
+Function <span class='blk'>LoadString</span> : String ( path:String )
+</h3>
+Loads a string from the file at path.
+
+</div>
+<div class='box'>
+<a name='RealPath'></a><h3 class='rounded'>
+Function <span class='blk'>RealPath</span> : String ( path:String )
+</h3>
+Returns the real, or 'absolute', file system path corresponding to the given path.
+
+</div>
+<div class='box'>
+<a name='SaveString'></a><h3 class='rounded'>
+Function <span class='blk'>SaveString</span> : Int ( str:String, path:String )
+</h3>
+Saves str to a file specified by path.
+<p>
+If a file already exists at path, it will be overwritten.
+
+</div>
+<div class='box'>
+<a name='SetEnv'></a><h3 class='rounded'>
+Function <span class='blk'>SetEnv</span> : Int ( name:String, value:String )
+</h3>
+Sets an environment variable.
+
+</div>
+<div class='box'>
+<a name='StripAll'></a><h3 class='rounded'>
+Function <span class='blk'>StripAll</span> : String ( path:String )
+</h3>
+Removes both the directory and file extension from a file system path, returning just the file name.
+
+</div>
+<div class='box'>
+<a name='StripDir'></a><h3 class='rounded'>
+Function <span class='blk'>StripDir</span> : String ( path:String )
+</h3>
+Removes the directory from a file system path, and returns the file name and extension.
+
+</div>
+<div class='box'>
+<a name='StripExt'></a><h3 class='rounded'>
+Function <span class='blk'>StripExt</span> : String ( path:String )
+</h3>
+Extracts and returns the file extension of a file system path.
+
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+		
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>

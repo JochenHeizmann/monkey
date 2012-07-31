@@ -46,6 +46,8 @@ Class MyApp Extends App
 	Field sprites:=New Stack<Sprite>
 	
 	Field rot#
+	
+	Field ums
 
 	Method OnCreate()
 
@@ -63,6 +65,8 @@ Class MyApp Extends App
 	End
 	
 	Method OnUpdate()
+	
+		ums=Millisecs
 
 		uframes+=1
 		Local e=Millisecs-utime
@@ -92,6 +96,8 @@ Class MyApp Extends App
 		Next
 
 		rot+=1
+		
+		ums=Millisecs-ums;
 
  	End
 	
@@ -127,9 +133,17 @@ Class MyApp Extends App
 		PopMatrix
 		
 		DrawText "[<<]",0,8,0,.5
-		DrawText "imgs="+sprites.Length()+", ufps="+ufps+", rfps="+rfps,DeviceWidth/2,8,.5,.5
+		DrawText "imgs="+sprites.Length()+", ufps="+ufps+", rfps="+rfps+", last update="+ums,DeviceWidth/2,8,.5,.5
 		DrawText "[>>]",DeviceWidth,8,1,.5
 
+	End
+	
+	Method OnSuspend()
+		Print "OnSuspend!"
+	End
+
+	Method OnResume()
+		Print "OnResume!"
 	End
 
 End

@@ -356,6 +356,14 @@ Class Parser
 		If _toker.Path _errInfo=_toker.Path+"<"+_toker.Line+">"
 	End
 	
+	Method PushErr()
+		_errStack.AddLast _errInfo
+	End
+	
+	Method PopErr()
+		_errInfo=_errStack.RemoveLast()
+	End
+	
 	Method PushBlock( block:BlockDecl )
 		_blockStack.AddLast _block
 		_errStack.AddLast _errInfo
@@ -755,9 +763,7 @@ Class Parser
 	End
 	
 	Method ParseUnaryExpr:Expr()
-
 		SkipEols
-	
 		Local op$=_toke
 		Select op
 		Case "+","-","~~","not"
@@ -966,11 +972,11 @@ Class Parser
 		Wend
 		PopBlock
 		
-		SetErr
-		
 		Local expr:Expr
 		If CParse( "until" )
+			PushErr
 			expr=ParseExpr()
+			PopErr
 		Else
 			Parse "forever"
 			expr=New ConstExpr( Type.boolType,"" )
@@ -1132,10 +1138,12 @@ Class Parser
 		
 		Local block:BlockDecl=_block
 		
-		_selTmpId+=1
-		Local tmpId:=String( _selTmpId )	'1,2,3...
-
-		Local tmpVar:LocalDecl=New LocalDecl( tmpId,0,Null,expr )
+		'_selTmpId+=1
+		'Local tmpId:=String( _selTmpId )	'1,2,3...
+		'Local tmpVar:LocalDecl=New LocalDecl( tmpId,0,Null,expr )
+		
+		Local tmpVar:LocalDecl=New LocalDecl( "",0,Null,expr )
+		Local tmpExpr:=New VarExpr( tmpVar )
 
 		block.AddStmt New DeclStmt( tmpVar )
 		
@@ -1148,8 +1156,12 @@ Class Parser
 				NextToke
 				Local comp:Expr
 				Repeat
-					Local expr:Expr=New IdentExpr( tmpId )
-					expr=New BinaryCompareExpr( "=",expr,ParseExpr() )
+				
+'					Local expr:Expr=New IdentExpr( tmpId )
+'					expr=New BinaryCompareExpr( "=",expr,ParseExpr() )
+
+					expr=New BinaryCompareExpr( "=",tmpExpr,ParseExpr() )
+					
 					If comp
 						comp=New BinaryLogicExpr( "or",comp,expr )
 					Else
@@ -1803,9 +1815,10 @@ Function Eval$( source$,ty:Type )
 	
 	Return val
 End
+
 Function Eval$( toker:Toker,type:Type )
 	Local src$
-	While toker.Toke And toker.Toke<>"'" And toker.Toke<>"~n"
+	While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
 		src+=toker.Toke
 		toker.NextToke
 	Wend

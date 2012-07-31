@@ -10,6 +10,7 @@ Import ios
 Import stdcpp
 Import metro
 Import pss
+Import psm
 
 Function ValidTargets$()
 
@@ -27,6 +28,7 @@ Function ValidTargets$()
 	If StdcppTarget.IsValid() valid.Push "stdcpp"
 	If MetroTarget.IsValid() valid.Push "metro"
 	If PssTarget.IsValid() valid.Push "pss"
+	If PsmTarget.IsValid() valid.Push "psm"
 	
 	ChangeDir cd
 	
@@ -56,6 +58,8 @@ Function SelectTarget:Target( target$ )
 		Return New MetroTarget
 	Case "pss"
 		Return New PssTarget
+	Case "psm"
+		Return New PsmTarget
 	Default
 		Die "Unknown target '"+target+"'"
 	End

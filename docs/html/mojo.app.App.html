@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:2px 2px 2px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:13px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+div.toc{
+	padding:8px;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' />
+	
+	Monkey V60 Documentation
+	
+</div>
+
+<div id='page'>
+
+	<div id='menu'>
+	
+		<b>API Reference</b>
+<p>
+<li><a href='Class list.html'>Class list</a></li>
+<li><a href='Function list.html'>Function list</a></li>
+<li><a href='Module list.html'>Module list</a></li>
+<li><a href='Key codes.html'>Mojo key codes</a></li>
+<p>
+<b>Programming Guide</b>
+<p>
+<li><a href='Language reference.html'>Language reference</a></li>
+<li><a href='keywords.html'>Keyword reference</a></li>
+<li><a href='App config settings.html'>App config settings</a></li>
+<li><a href='Target SDKs.html'>Target SDKs</a></li>
+<li><a href='Tutorials.html'>Tutorials</a></li>
+<p>
+<b>Tools</b>
+<p>
+<li>Ted</li>
+<li><a href='Monk.html'>Monk</a></li>
+<li><a href='Trans.html'>Trans</a></li>
+<li><a href='MServer.html'>MServer</a></li>
+<p>
+		
+	</div>
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+			<a href='index.html'>Home</a> > <a href='mojo.html'>mojo</a> > <a href='mojo.app.html'>app</a> > App
+		
+		</div>
+		
+		<div id='content'>
+		
+			<div class='box'>
+<h1>Class App
+</h1>
+This is the main application class. <a href='#maindesc'>More...</a>
+</div>
+<div class='box'>
+<h2>Methods</h2>
+<table class='small'>
+<tr><td><a href='#OnCreate'>OnCreate</a> : Int (  )</td></tr>
+<tr><td><a href='#OnLoading'>OnLoading</a> : Int (  )</td></tr>
+<tr><td><a href='#OnRender'>OnRender</a> : Int (  )</td></tr>
+<tr><td><a href='#OnResume'>OnResume</a> : Int (  )</td></tr>
+<tr><td><a href='#OnSuspend'>OnSuspend</a> : Int (  )</td></tr>
+<tr><td><a href='#OnUpdate'>OnUpdate</a> : Int (  )</td></tr>
+</table>
+</div>
+<div class='box'>
+<a name='maindesc'></a>
+<h2>Detailed Discussion</h2>
+This is the main application class.
+<p>
+All mojo based applications must declare a class that extends App and that implements the OnCreate, OnUpdate, OnRender and OnLoading methods.
+<p>
+A new instance of this class must be then created inside your applications Main function. The OnCreate, OnUpdate, OnRender and OnLoading methods will be called as necessary while your application runs.
+<p>
+OnCreate is called when mojo has been initialized and your app can safely start using mojo functions. This is generally where code to load resources such and images and sounds goes. This is where the application's update rate is initially set too - see: SetUpdateRate.
+<p>
+OnUpdate is called when the update timer ticks, and is where your game logic code should go. The update timer is set using the SetUpdateRate function.
+<p>
+OnRender is called when your application should render itself. If the update timer is ticking, this is also called as soon as possible after OnUpdate, however OnRender may be called at any time in generally if your application requires refreshing.
+<p>
+OnLoading is called insetad of OnRender when your application should render itself, but there are still resources being loaded.
+<p>
+Import note: 
+<p>
+No mojo functions or methods should be used before OnCreate is called! Before this, mojo is not fully initialized and cannot be safely used. This means that global variables cannot be initialied using Millisecs, LoadImage or indeed ANY mojo functions.
+<p>
+
+</div>
+<div class='box'>
+<h2>Method Documentation</h2>
+<div class='box'>
+<a name='OnCreate'></a><h3 class='rounded'>
+Method <span class='blk'>OnCreate</span> : Int (  )
+</h3>
+The OnCreate method is called when mojo has been initialized and the application has been successfully created.
+<p>
+At this point, applications can start loading resources such as images and sounds, and set the update rate using SetUpdateRate.
+<p>
+The return value of this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>Example</b> <pre>
+Import mojo.app
+Import mojo.graphics
+Import mojo.input
+<p>
+Class MyGame Extends App
+	Field x:Int=0
+	Field y:Int=0
+	Field playerShipSprite:Image
+		
+	Method OnCreate()
+<p>
+		'Load any images and sounds here
+		'ship.png must be found in your project's .data folder
+		playerShipSprite=LoadImage("ship.png")
+<p>
+		SetUpdateRate 30
+<p>
+		End
+	
+	Method OnUpdate()
+		x=MouseX
+		y=MouseY
+	End
+	
+	Method OnRender()
+		Cls
+		DrawImage playerShipSprite,x,y
+	End
+End
+<p>
+Function Main()
+	New MyGame
+End
+</pre>
+
+</div>
+<div class='box'>
+<a name='OnLoading'></a><h3 class='rounded'>
+Method <span class='blk'>OnLoading</span> : Int (  )
+</h3>
+This method is called instead of OnRender when the application should render itself, but there are still resources such as images or sounds in the process of being loaded.
+<p>
+The return value of this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>See also</b> <a href='mojo.app.App.html#OnRender'>OnRender</a>
+
+</div>
+<div class='box'>
+<a name='OnRender'></a><h3 class='rounded'>
+Method <span class='blk'>OnRender</span> : Int (  )
+</h3>
+This method is automatically called when the application should render itself, such as when the application first starts, or following an OnUpdate call.
+<p>
+If your application is taking to long to update and/render itself, OnRender calls may be skipped to allow it to 'catch up'.
+<p>
+The return value of this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>See also</b> <a href='mojo.app.App.html#OnUpdate'>OnUpdate</a>, <a href='mojo.app.App.html#OnLoading'>OnLoading</a>
+
+</div>
+<div class='box'>
+<a name='OnResume'></a><h3 class='rounded'>
+Method <span class='blk'>OnResume</span> : Int (  )
+</h3>
+OnResume is called when your application is made active again after having been in a suspended state.
+<p>
+The return value of this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>See also</b> <a href='mojo.app.App.html#OnSuspend'>OnSuspend</a>
+
+</div>
+<div class='box'>
+<a name='OnSuspend'></a><h3 class='rounded'>
+Method <span class='blk'>OnSuspend</span> : Int (  )
+</h3>
+OnSuspend is called when your application is about to be suspended. 
+<p>
+While suspended, Mojo will make no further calls to any applications 'On' methods, except for OnResume.
+<p>
+Note that on some targets such as iOS and Android, OnSuspend represents a 'last chance' to save application data before your application is terminated.
+<p>
+The return value from this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>See also</b> <a href='mojo.app.App.html#OnResume'>OnResume</a>
+
+</div>
+<div class='box'>
+<a name='OnUpdate'></a><h3 class='rounded'>
+Method <span class='blk'>OnUpdate</span> : Int (  )
+</h3>
+This method is automatically called when the application's update timer ticks. Once OnUpdate has been called, mojo will then attempt to call OnRender as soon as possible.
+<p>
+Note that OnUpdate is only called if SetUpdateRate has been called to start the update timer. Otherwise, your application will receive OnRender calls only.
+<p>
+OnUpdate is commonly used in conjunction with OnRender to manage the main game loop. OnUpdate is typically used to update objects and game state, while OnRender is used to draw graphics. 
+<p>
+The return value from this method is currently ignored, but should be 0 for future compatibility.
+<p>
+
+<p><b>See also</b> <a href='mojo.app.html#SetUpdateRate'>SetUpdateRate</a>
+
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+		
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>
