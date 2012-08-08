@@ -1,5 +1,5 @@
 /*
-Ted, a simple text editor/IDE.
+Ted,imple text editor/IDE.
 
 Copyright 2012, Blitz Research Ltd.
 
@@ -109,6 +109,8 @@ bool CodeEditor::open( const QString &path ){
 
     QTextStream stream( &file );
 
+    stream.setCodec( "UTF-8" );
+
     setPlainText( stream.readAll() );
 
     file.close();
@@ -143,15 +145,13 @@ bool CodeEditor::save( const QString &path ){
 }
 
 void CodeEditor::rename( const QString &path ){
-    static QString txtFileTypes=";txt;";
-    static QString codeFileTypes=";monkey;bmx;cpp;java;js;as;cs;py;";
 
     _path=path;
 
     _fileType=extractExt( _path ).toLower();
     QString t=';'+_fileType+';';
 
-    _txt=txtFileTypes.contains( t );
+    _txt=textFileTypes.contains( t );
     _code=codeFileTypes.contains( t );
     _monkey=_fileType=="monkey";
 
