@@ -24,6 +24,25 @@ Class IosTarget Extends Target
 		Next
 		Return config.Join( "~n" )
 	End
+
+	Method ReplaceIosScreenOrientation()
+		Local plist$=LoadString ( "MonkeyGame-Info.plist" )
+		Local orientation$=Env.Get("IOS_SCREEN_ORIENTATION")
+
+		If orientation = "portrait"
+			plist=ReplaceBlock( plist,"IOS_SCREEN_ORIENTATION_LANDSCAPE","","~n<!--" )
+		ElseIf orientation = "landscape"
+			plist=ReplaceBlock(
+			plist,"IOS_SCREEN_ORIENTATION_PORTRAIT","","~n<!--" )
+		ElseIf orientation = ""
+			' Return early to skip the useless SaveString
+			Return
+		Else
+			Die "Invalid IOS_SCREEN_ORIENTATION specified. Use one of: portrait, landscape"
+		End
+
+		SaveString plist,"MonkeyGame-Info.plist"
+	End
 	
 	Method MakeTarget()
 	
@@ -35,6 +54,8 @@ Class IosTarget Extends Target
 		main=ReplaceBlock( main,"CONFIG",Config() )
 		
 		SaveString main,"main.mm"
+		
+		ReplaceIosScreenOrientation()
 		
 		If OPT_ACTION>=ACTION_BUILD
 

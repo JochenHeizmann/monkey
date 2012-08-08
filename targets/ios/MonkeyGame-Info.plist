@@ -28,10 +28,14 @@
 	<string>MainWindow</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
+<!--${IOS_SCREEN_ORIENTATION_PORTRAIT_BEGIN}-->
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+<!--${IOS_SCREEN_ORIENTATION_PORTRAIT_END}-->
+<!--${IOS_SCREEN_ORIENTATION_LANDSCAPE_BEGIN}-->
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+<!--${IOS_SCREEN_ORIENTATION_LANDSCAPE_END}-->
 	</array>
 	<key>UIStatusBarHidden</key>
 	<true/>
