@@ -122,6 +122,8 @@ public slots:
 
 private slots:
 
+    void onLinkClicked( const QUrl &url );
+
     void onCloseMainTab( int index );
     void onMainTabChanged( int index );
 
