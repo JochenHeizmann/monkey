@@ -11,6 +11,9 @@ See LICENSE.TXT for licensing terms.
 
 #include <QtGui/QtGui>
 
+static QString textFileTypes=";txt;";
+static QString codeFileTypes=";monkey;bmx;cpp;java;js;as;cs;py;";
+
 inline bool isDigit( QChar ch ){
     return (ch>='0' && ch<='9');
 }

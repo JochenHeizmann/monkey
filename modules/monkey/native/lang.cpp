@@ -193,6 +193,7 @@ gc_object *gc_malloc( int size ){
 void gc_free( gc_object *p ){
 
 	int size=p->flags & ~7;
+	gc_free_bytes-=size;
 	
 	if( size<64 ){
 		p->succ=gc_cache[size>>3];
@@ -200,8 +201,6 @@ void gc_free( gc_object *p ){
 	}else{
 		free( p );
 	}
-	
-	gc_free_bytes-=p->flags & ~7;
 }
 
 template<class T> void gc_mark( T *t ){
