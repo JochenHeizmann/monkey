@@ -12,6 +12,8 @@ var R2D=57.29577951308232;
 var err_info="";
 var err_stack=[];
 
+var dbg_index=0;
+
 function push_err(){
 	err_stack.push( err_info );
 }
@@ -64,17 +66,8 @@ function dbg_object( obj ){
 
 function dbg_array( arr,index ){
 	if( index<0 || index>=arr.length ) error( "Array index out of range" );
+	dbg_index=index;
 	return arr;
-}
-
-function dbg_array_get( arr,index ){
-	if( index<0 || index>=arr.length ) error( "Array index out of range" );
-	return arr[index];
-}
-
-function dbg_array_set( arr,index,value ){
-	if( index<0 || index>=arr.length ) error( "Array index out of range" );
-	arr[index]=value;
 }
 
 function new_bool_array( len ){

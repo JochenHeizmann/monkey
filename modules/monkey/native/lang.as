@@ -19,6 +19,8 @@ var _console:TextField;
 var _errInfo:String="?<?>";
 var _errStack:Array=[];
 
+var dbg_index:int=0;
+
 function _getConsole():TextField{
 	if( _console ) return _console;
 	_console=new TextField();
@@ -87,17 +89,8 @@ function dbg_object( obj:Object ):Object{
 
 function dbg_array( arr:Array,index:int ):Array{
 	if( index<0 || index>=arr.length ) error( "Array index out of range" );
+	dbg_index=index;
 	return arr;
-}
-
-function dbg_array_get( arr:Array,index:int ):*{
-	if( index<0 || index>=arr.length ) error( "Array index out of range" );
-	return arr[index];
-}
-
-function dbg_array_set( arr:Array,index:int,value:* ):void{
-	if( index<0 || index>=arr.length ) error( "Array index out of range" );
-	arr[index]=value;
 }
 
 function new_bool_array( len:int ):Array{

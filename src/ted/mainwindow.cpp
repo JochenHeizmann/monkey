@@ -18,7 +18,7 @@ See LICENSE.TXT for licensing terms.
 #include "process.h"
 #include "findinfilesdialog.h"
 
-#define TED_VERSION "1.4"
+#define TED_VERSION "1.5"
 
 #define SETTINGS_VERSION 2
 
@@ -36,13 +36,27 @@ See LICENSE.TXT for licensing terms.
 //
 MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::MainWindow ){
 
+#ifdef Q_OS_MAC
+    QCoreApplication::instance()->setAttribute( Qt::AA_DontShowIconsInMenus );
+#endif
+
     QCoreApplication::setOrganizationName( "Blitz Research Ltd" );
     QCoreApplication::setOrganizationDomain( "blitzresearchltd.com" );
     QCoreApplication::setApplicationName( "Ted" );
 
+    QString cfgPath=QCoreApplication::applicationDirPath();
 #ifdef Q_OS_MAC
-    QCoreApplication::instance()->setAttribute( Qt::AA_DontShowIconsInMenus );
+    cfgPath=extractDir(extractDir(extractDir(cfgPath)))+"/ted_macos.ini";
+#elif defined(Q_OS_WIN)
+    cfgPath+="/ted_winnt.ini";
+#elif defined(Q_OS_LINUX)
+    cfgPath+="/ted_linux.ini";
 #endif
+    QSettings::setDefaultFormat( QSettings::IniFormat );
+    QSettings::setPath( QSettings::IniFormat,QSettings::UserScope,cfgPath );
+
+    //Enables pdf viewing!
+    QWebSettings::globalSettings()->setAttribute( QWebSettings::PluginsEnabled,true );
 
     _ui->setupUi( this );
 
@@ -194,7 +208,11 @@ void MainWindow::loadHelpTopics(){
     if( !file.open( QIODevice::ReadOnly ) ) return;
 
     QTextStream stream( &file );
+
+    stream.setCodec( "UTF-8" );
+
     QString text=stream.readAll();
+
     file.close();
 
     QStringList lines=text.split('\n');
@@ -277,6 +295,8 @@ QWidget *MainWindow::openFile( const QString &cpath,bool addToRecent ){
         }
         if( !webView ){
             webView=new QWebView;
+            webView->page()->setLinkDelegationPolicy( QWebPage::DelegateAllLinks );
+            connect( webView,SIGNAL(linkClicked(QUrl)),SLOT(onLinkClicked(QUrl)) );
             _mainTabWidget->addTab( webView,"Help" );
         }
         webView->setUrl( cpath );
@@ -541,16 +561,6 @@ void MainWindow::readSettings(){
 
         return;
     }
-
-    /*
-    _monkeyPath=prefs->getString( "monkeyPath" );
-
-    if( !isValidMonkeyPath( _monkeyPath ) ){
-        _monkeyPath="";
-        prefs->setValue( "monkeyPath",_monkeyPath );
-        QMessageBox::warning( this,"Monkey Path Error","Invalid Monkey path!\n\nPlease select correct path from the File..Options dialog" );
-    }
-    */
 
     _monkeyPath=defaultMonkeyPath();
 
@@ -1477,13 +1487,15 @@ void MainWindow::onBuildAddProject(){
 
 void MainWindow::onHelpHome(){
 
-    QString htmlDocs=fixPath( _monkeyPath+"/docs/html/index.html" );
+    openFile( "file:///"+_monkeyPath+"/docs/blitz-wiki.appspot.com/index4d8a.html",false );
 
+/*
     if( QFile::exists( htmlDocs ) ){
         openFile( "file:///"+htmlDocs,false );
     }else{
         openFile( "http://blitz-wiki.appspot.com",false );
     }
+*/
 }
 
 void MainWindow::onHelpBack(){
@@ -1520,4 +1532,23 @@ void MainWindow::onHelpAbout(){
             "Please visit www.monkeycoder.co.nz for more information on Monkey.";
 
     QMessageBox::information( this,"About Ted",ABOUT );
+}
+
+void MainWindow::onLinkClicked( const QUrl &url ){
+
+    QWebView *webView=qobject_cast<QWebView*>( sender() );
+    if( !webView ) return;
+
+    QString str=url.toString();
+    QString lstr=str.toLower();
+
+    if( lstr.startsWith( "file:///" ) ){
+        QString ext=";"+extractExt(lstr)+";";
+        if( textFileTypes.contains( ext ) || codeFileTypes.contains( ext ) ){
+            openFile( str.mid( 8 ),false );
+            return;
+        }
+    }
+
+    webView->setUrl( url );
 }

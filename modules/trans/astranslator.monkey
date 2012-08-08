@@ -194,9 +194,7 @@ Class AsTranslator Extends CTranslator
 			Return t_expr+".charCodeAt("+t_index+")"
 		Else If ENV_CONFIG="debug"
 			Local t_index:=expr.index.Trans()
-			Return "dbg_array_get("+t_expr+","+t_index+")"
-'			Local t_index:=TransExprNS( expr.index )
-'			Return "dbg_array("+t_expr+","+t_index+")["+t_index+"]"
+			Return "dbg_array("+t_expr+","+t_index+")[dbg_index]"
 		Else
 			Local t_index:=expr.index.Trans()
 			Return t_expr+"["+t_index+"]"
@@ -311,9 +309,7 @@ Class AsTranslator Extends CTranslator
 				Local t_rhs:=stmt.rhs.Trans()
 				Local t_expr:=ie.expr.Trans()
 				Local t_index:=ie.index.Trans()
-				Emit "dbg_array_set("+t_expr+","+t_index+","+t_rhs+")"
-'				Local t_index:=TransExprNS( ie.index )
-'				Emit "dbg_array("+t_expr+","+t_index+")["+t_index+"]"+stmt.op+t_rhs
+				Emit "dbg_array("+t_expr+","+t_index+")[dbg_index]"+TransAssignOp(stmt.op)+t_rhs
 				Return
 			Endif
 		Endif
