@@ -43,7 +43,20 @@ Class IosTarget Extends Target
 
 		SaveString plist,"MonkeyGame-Info.plist"
 	End
-	
+
+	Method HandleInAppBillingConfig()
+		Local flag$=Env.Get("IN_APP_BILLING")
+
+		If flag="true" Then Return
+
+		Local plist$=LoadString ( "MonkeyGame.xcodeproj/project.pbxproj" )
+		plist=ReplaceBlock( plist,"IN_APP_BILLING_1","","~n/* " )
+		plist=ReplaceBlock( plist,"IN_APP_BILLING_2","","~n/* " )
+		plist=ReplaceBlock( plist,"IN_APP_BILLING_3","","~n/* " )
+		plist=ReplaceBlock( plist,"IN_APP_BILLING_4","","~n/* " )
+		SaveString plist, "MonkeyGame.xcodeproj/project.pbxproj"
+	End
+
 	Method MakeTarget()
 	
 		CreateDataDir "data"
@@ -54,6 +67,8 @@ Class IosTarget Extends Target
 		main=ReplaceBlock( main,"CONFIG",Config() )
 		
 		SaveString main,"main.mm"
+
+		HandleInAppBillingConfig()
 		
 		ReplaceIosScreenOrientation()
 		
