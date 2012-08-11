@@ -37,7 +37,7 @@ Class IosTarget Extends Target
 			' Return early to skip the useless SaveString
 			Return
 		Else
-			Die "Invalid IOS_SCREEN_ORIENTATION specified. Use one of: portrait, landscape"
+			Die "Invalid IOS_SCREEN_ORIENTATION specified. Use one of: portrait, landscape, all"
 		End
 
 		SaveString plist,"MonkeyGame-Info.plist"
