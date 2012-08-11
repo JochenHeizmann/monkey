@@ -32,9 +32,8 @@ Class IosTarget Extends Target
 		If orientation = "portrait"
 			plist=ReplaceBlock( plist,"IOS_SCREEN_ORIENTATION_LANDSCAPE","","~n<!--" )
 		ElseIf orientation = "landscape"
-			plist=ReplaceBlock(
-			plist,"IOS_SCREEN_ORIENTATION_PORTRAIT","","~n<!--" )
-		ElseIf orientation = ""
+			plist=ReplaceBlock( plist,"IOS_SCREEN_ORIENTATION_PORTRAIT","","~n<!--" )
+		ElseIf orientation = "all"
 			' Return early to skip the useless SaveString
 			Return
 		Else
