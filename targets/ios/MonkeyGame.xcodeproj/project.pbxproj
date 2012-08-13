@@ -34,7 +34,7 @@
 		7C8210781294A24C002C4212 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		7C8210851294A2EB002C4212 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		7C8210861294A2EB002C4212 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
-		7CBDF49E1295F5B6001F0D79 /* MonkeyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MonkeyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CBDF49E1295F5B6001F0D79 /* ${IOS_BUNDLE_ID_LAST_PART}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "${IOS_BUNDLE_ID_LAST_PART}.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7CD6ED0E1294B9D9005678BB /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = data; sourceTree = SOURCE_ROOT; };
 		7CF953991311FB37005295F9 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		7CFC10BC139C4FF8006BABB6 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -69,7 +69,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7CBDF49E1295F5B6001F0D79 /* MonkeyGame.app */,
+				7CBDF49E1295F5B6001F0D79 /* ${IOS_BUNDLE_ID_LAST_PART}.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,7 +140,7 @@
 			);
 			name = MonkeyGame;
 			productName = MonkeyGame;
-			productReference = 7CBDF49E1295F5B6001F0D79 /* MonkeyGame.app */;
+			productReference = 7CBDF49E1295F5B6001F0D79 /* ${IOS_BUNDLE_ID_LAST_PART}.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -201,7 +201,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MonkeyGame_Prefix.pch;
 				INFOPLIST_FILE = "MonkeyGame-Info.plist";
-				PRODUCT_NAME = MonkeyGame;
+				PRODUCT_NAME = "${IOS_BUNDLE_ID_LAST_PART}";
 			};
 			name = Debug;
 		};
@@ -213,7 +213,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MonkeyGame_Prefix.pch;
 				INFOPLIST_FILE = "MonkeyGame-Info.plist";
-				PRODUCT_NAME = MonkeyGame;
+				PRODUCT_NAME = "${IOS_BUNDLE_ID_LAST_PART}";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

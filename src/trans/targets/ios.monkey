@@ -2,6 +2,7 @@
 Import target
 
 Class IosTarget Extends Target
+	Field dotAppFile$
 
 	Function IsValid()
 		If FileType( "ios" )<>FILETYPE_DIR Return False
@@ -56,6 +57,28 @@ Class IosTarget Extends Target
 		SaveString plist, "MonkeyGame.xcodeproj/project.pbxproj"
 	End
 
+	Method UpdateBundleId()
+		Local bundle_label$=Env.Get( "IOS_BUNDLE_LABEL" )
+		If bundle_label = "" Then bundle_label = "${PRODUCT_NAME}"
+
+		Local bundle_id$=Env.Get( "IOS_BUNDLE_ID" ).ToLower()
+		If bundle_id = "" Then bundle_id = "com.yourcompany.MonkeyGame"
+
+		Local bundle_id_parts$[]=bundle_id.Split(".")
+		Local bundle_id_prefix$=".".Join(bundle_id_parts[..-1])
+		Local bundle_id_last_part$=bundle_id_parts[bundle_id_parts.Length() - 1]
+		dotAppFile=bundle_id_last_part+".app"
+
+		Local files$[]=["MonkeyGame.xcodeproj/project.pbxproj", "MonkeyGame-Info.plist"]
+		For Local file$ = EachIn files
+			Local str$=LoadString ( file )
+			str=str.Replace( "${IOS_BUNDLE_ID_PREFIX}",bundle_id_prefix )
+			str=str.Replace( "${IOS_BUNDLE_ID_LAST_PART}",bundle_id_last_part )
+			str=str.Replace( "${PRODUCT_NAME}",bundle_label )
+			SaveString str, file
+		End
+	End
+	
 	Method MakeTarget()
 	
 		CreateDataDir "data"
@@ -68,8 +91,8 @@ Class IosTarget Extends Target
 		SaveString main,"main.mm"
 
 		HandleInAppBillingConfig()
-		
 		ReplaceIosScreenOrientation()
+		UpdateBundleId()
 		
 		If OPT_ACTION>=ACTION_BUILD
 
@@ -82,7 +105,7 @@ Class IosTarget Extends Target
 				'Woah, freaky, got this from: http://www.somacon.com/p113.php
 				Local uuid$="00C69C9A-C9DE-11DF-B3BE-5540E0D72085"
 				
-				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/MonkeyGame.app"
+				Local src$="build/"+CASED_CONFIG+"-iphonesimulator/"+dotAppFile
 				
 				Const p1:="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"
 				Const p2:="/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"
@@ -100,7 +123,7 @@ Class IosTarget Extends Target
 					
 					'Need to use this 'coz it does the permissions thang
 					'
-					Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
+					Execute "cp -r ~q"+src+"~q ~q"+dst+"/"+dotAppFile+"~q"
 	
 					're-start emulator
 					'
@@ -127,7 +150,7 @@ Class IosTarget Extends Target
 					
 					'Need to use this 'coz it does the permissions thang
 					'
-					Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
+					Execute "cp -r ~q"+src+"~q ~q"+dst+"/"+dotAppFile+"~q"
 	
 					're-start emulator
 					'
