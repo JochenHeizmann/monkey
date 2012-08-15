@@ -24,11 +24,12 @@ static void flushExtraSels(){
 
 class BlockData : public QTextBlockUserData{
 public:
-    BlockData( Highlighter *highlighter,const QTextBlock &block,const QString &text,int indent );
+    BlockData( Highlighter *highlighter,const QTextBlock &block,const QString &decl,const QString &ident,int indent );
     ~BlockData();
 
     QTextBlock block(){ return _block; }
-    const QString &text(){ return _text; }
+    const QString &decl(){ return _decl; }
+    const QString &ident(){ return _ident; }
     int indent(){ return _indent; }
 
     void invalidate();
@@ -36,7 +37,8 @@ public:
 private:
     Highlighter *_highlighter;
     QTextBlock _block;
-    QString _text;
+    QString _decl;
+    QString _ident;
     int _indent;
 };
 
@@ -487,6 +489,8 @@ void Highlighter::validateCodeTreeModel(){
     QStack<int> rowStack;
     QStack<QStandardItem*> parentStack;
 
+    int indent=0x7fff;
+
     for( QTextBlock block=_editor->document()->firstBlock();block.isValid();block=block.next() ){
 
         BlockData *data=dynamic_cast<BlockData*>( block.userData() );
@@ -497,9 +501,14 @@ void Highlighter::validateCodeTreeModel(){
             continue;
         }
 
-        int popsz=data->indent() ? 1 : 0;
-
-        while( rowStack.size()>popsz ){
+        int level=0;
+        if( data->indent()<=indent ){
+            indent=data->indent();
+            level=0;
+        }else{
+            level=1;
+        }
+        while( rowStack.size()>level ){
             parent->setRowCount( row );
             parent=parentStack.pop();
             row=rowStack.pop();
@@ -511,7 +520,7 @@ void Highlighter::validateCodeTreeModel(){
             parent->appendRow( item );
         }
         item->setData( data );
-        item->setText( data->text() );
+        item->setText( data->ident() );
         rowStack.push( row );
         parentStack.push( parent );
         row=0;
@@ -717,14 +726,16 @@ void Highlighter::highlightBlock( const QString &ctext ){
         //Update user block data for code tree.
         //
         BlockData *data=0;
-        tokes.push_back("");
-        QString t=tokes[0].toLower();
-        if( (t=="class" || t=="interface" || t=="method" || t=="function") && !tokes[1].isEmpty() ){
+
+        QString decl=tokes.size()>0 ? tokes[0].toLower() : "";
+        QString ident=tokes.size()>1 ? tokes[1] : "";
+
+        if( (decl=="class" || decl=="interface" || decl=="method" || decl=="function") && !ident.isEmpty() ){
             QTextBlock block=currentBlock();
             data=dynamic_cast<BlockData*>( currentBlockUserData() );
-            if( data && data->block()==block && data->text()==text && data->indent()==indent ){
+            if( data && data->block()==block && data->decl()==decl && data->ident()==ident && data->indent()==indent ){
             }else{
-                data=new BlockData( this,block,tokes[1],indent );
+                data=new BlockData( this,block,decl,ident,indent );
                 setCurrentBlockUserData( data );
                 insert( data );
             }
@@ -736,7 +747,8 @@ void Highlighter::highlightBlock( const QString &ctext ){
 
 //***** BlockUserData *****
 
-BlockData::BlockData( Highlighter *highlighter,const QTextBlock &block,const QString &text,int indent ):_highlighter( highlighter ),_block( block ),_text( text ),_indent(indent){
+BlockData::BlockData( Highlighter *highlighter,const QTextBlock &block,const QString &decl,const QString &ident,int indent )
+:_highlighter( highlighter ),_block( block ),_decl( decl ),_ident( ident ),_indent(indent){
 }
 
 void BlockData::invalidate(){

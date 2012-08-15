@@ -1,0 +1,81 @@
+# App config settings
+
+App config settings are settings that affect how a project is built.
+
+These are used for features that are highly target specific, or that somehow affect the build process in some way and can't be implemented using plain Monkey code.
+
+There are 3 ways to specify app config settings:
+
+* With [[Trans]] using the command line, eg: `trans +OPENGL_GLES20_ENABLED=true -target=html5 myapp.monkey`
+
+* In Monkey source code using the preprocessor, eg: `#OPENGL_GLES20_ENABLED="true"`
+
+* By editing the CONFIG.TXT files in your apps .build/target folder.
+
+Once set, an app config setting can't be changed. Any attempt to change it will silently fail.
+
+The following app config settings are currently supported:
+
+<pre>
+'Data file filters
+'
+TEXT_FILES:String
+IMAGE_FILES:String
+SOUND_FILES:String
+MUSIC_FILES:String
+'
+'Mojo settings
+'
+MOJO_HICOLOR_TEXTURES:Bool=true
+MOJO_IMAGE_FILTERING_ENABLED:Bool=true
+'
+'GLFW settings
+'
+GLFW_WINDOW_TITLE:String="Monkey Game"
+GLFW_WINDOW_WIDTH:Int=640
+GLFW_WINDOW_HEIGHT:Int=480
+GLFW_WINDOW_RESIZABLE:Bool=false
+GLFW_WINDOW_FULLSCREEN:Bool=false
+'
+'XNA settings
+'
+XNA_WINDOW_WIDTH:Int=640
+XNA_WINDOW_HEIGHT:Int=480
+XNA_WINDOW_WIDTH_XBOX:Int=640
+XNA_WINDOW_HEIGHT_XBOX:Int=480
+XNA_WINDOW_WIDTH_PHONE:Int=320
+XNA_WINDOW_HEIGHT_PHONE:Int=480
+XNA_WINDOW_RESIZABLE:Bool=false
+XNA_WINDOW_FULLSCREEN:Bool=false
+'
+'IOS settings
+'
+IOS_RETINA_ENABLED:Bool=true
+IOS_ACCELEROMETER_ENABLED:Bool=true
+IOS_DISPLAY_LINK_ENABLED:Bool=false
+'
+'Android settings
+'
+ANDROID_APP_LABEL:String="Monkey Game"
+ANDROID_APP_PACKAGE:String=com.monkey
+ANDROID_SCREEN_ORIENTATION=portrait  'one of: user, portrait, landscape, behind, sensor, nosensor, unspecified
+ANDROID_NATIVE_GL_ENABLED=false
+'
+'HTML5 settings
+'
+HTML5_SUSPEND_ON_BLUR_ENABLED:Bool=false
+'
+'OpenGL settings - valid for html5, glfw, android, ios
+'
+OPENGL_GLES20_ENABLED:Bool=false
+OPENGL_DEPTH_BUFFER_ENABLED:Bool=false
+'
+'Reflection settings
+'
+REFLECTION_FILTER:String="*"
+'
+'C++ settings - valid for glfw, ios, stdcpp
+'
+CPP_INCREMENTAL_GC:Int=1
+CPP_DOUBLE_PRECISION_FLOATS:Int=0
+</pre>

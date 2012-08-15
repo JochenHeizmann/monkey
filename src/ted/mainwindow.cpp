@@ -18,7 +18,7 @@ See LICENSE.TXT for licensing terms.
 #include "process.h"
 #include "findinfilesdialog.h"
 
-#define TED_VERSION "1.5"
+#define TED_VERSION "1.6"
 
 #define SETTINGS_VERSION 2
 
@@ -58,6 +58,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::Mai
     //Enables pdf viewing!
     QWebSettings::globalSettings()->setAttribute( QWebSettings::PluginsEnabled,true );
 
+    //setIconSize( QSize(20,20) );
+
     _ui->setupUi( this );
 
     _codeEditor=0;
@@ -82,6 +84,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::Mai
     _configsWidget->addItem( "Debug" );
     _configsWidget->addItem( "Release" );
     _ui->buildToolBar->addWidget( _configsWidget );
+
+    _indexWidget=new QComboBox;
+    _indexWidget->setFixedWidth( 120 );
+    _indexWidget->setEditable( true );
+    _indexWidget->setInsertPolicy( QComboBox::NoInsert );
+    _ui->helpToolBar->addWidget( _indexWidget );
+    connect( _indexWidget,SIGNAL(currentIndexChanged(QString)),SLOT(onShowHelp(QString)) );
 
     //init central tab widget
     _mainTabWidget=new QTabWidget;
@@ -183,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::Mai
     _findInFilesDialog->readSettings();
     connect( _findInFilesDialog,SIGNAL(showCode(QString,int,int)),SLOT(onShowCode(QString,int,int)) );
 
-    loadHelpTopics();
+    loadHelpIndex();
 
     parseAppArgs();
 
@@ -201,7 +210,7 @@ MainWindow::~MainWindow(){
 
 //***** private methods *****
 
-void MainWindow::loadHelpTopics(){
+void MainWindow::loadHelpIndex(){
     if( _monkeyPath.isEmpty() ) return;
 
     QFile file( _monkeyPath+"/docs/html/index.txt" );
@@ -221,11 +230,13 @@ void MainWindow::loadHelpTopics(){
 
         QString line=lines.at( i );
 
-        int j=line.indexOf( '=' );
+        int j=line.indexOf( ':' );
         if( j==-1 ) continue;
 
         QString topic=line.left(j);
         QString url="file:///"+_monkeyPath+"/docs/html/"+line.mid(j+1);
+
+        _indexWidget->addItem( topic );
 
         _helpUrls.insert( topic,url );
     }
@@ -299,8 +310,15 @@ QWidget *MainWindow::openFile( const QString &cpath,bool addToRecent ){
             connect( webView,SIGNAL(linkClicked(QUrl)),SLOT(onLinkClicked(QUrl)) );
             _mainTabWidget->addTab( webView,"Help" );
         }
+
         webView->setUrl( cpath );
-        _mainTabWidget->setCurrentWidget( webView );
+
+        if( webView!=_mainTabWidget->currentWidget() ){
+            _mainTabWidget->setCurrentWidget( webView );
+        }else{
+            updateWindowTitle();
+        }
+
         return webView;
     }
 
@@ -760,9 +778,7 @@ void MainWindow::updateActions(){
     //help menu
     _ui->actionHelpBack->setEnabled( _helpWidget!=0 );
     _ui->actionHelpForward->setEnabled( _helpWidget!=0 );
-
-//    _ui->actionHelpQuickHelp->setEnabled( _codeEditor!=0 );
-    _ui->actionHelpQuickHelp->setVisible( false );
+    _ui->actionHelpQuickHelp->setEnabled( _codeEditor!=0 );
 }
 
 void MainWindow::updateWindowTitle(){
@@ -1487,15 +1503,13 @@ void MainWindow::onBuildAddProject(){
 
 void MainWindow::onHelpHome(){
 
-    openFile( "file:///"+_monkeyPath+"/docs/blitz-wiki.appspot.com/index4d8a.html",false );
+    QString htmlDocs=_monkeyPath+"/docs/html/Home.html";
 
-/*
     if( QFile::exists( htmlDocs ) ){
         openFile( "file:///"+htmlDocs,false );
     }else{
-        openFile( "http://blitz-wiki.appspot.com",false );
+        openFile( "file:///"+_monkeyPath+"/docs/blitz-wiki.appspot.com/index4d8a.html",false );
     }
-*/
 }
 
 void MainWindow::onHelpBack(){
@@ -1516,12 +1530,7 @@ void MainWindow::onHelpQuickHelp(){
     QString ident=_codeEditor->identAtCursor();
     if( ident.isEmpty() ) return;
 
-    qDebug()<<"ident="+ident;
-
-    QString url=_helpUrls.value( ident );
-    if( url.isEmpty() ) return;
-
-    openFile( url,false );
+    onShowHelp( ident );
 }
 
 void MainWindow::onHelpAbout(){
@@ -1534,10 +1543,15 @@ void MainWindow::onHelpAbout(){
     QMessageBox::information( this,"About Ted",ABOUT );
 }
 
-void MainWindow::onLinkClicked( const QUrl &url ){
+void MainWindow::onShowHelp( const QString &topic ){
 
-    QWebView *webView=qobject_cast<QWebView*>( sender() );
-    if( !webView ) return;
+    QString url=_helpUrls.value( topic );
+    if( url.isEmpty() ) return;
+
+    openFile( url,false );
+}
+
+void MainWindow::onLinkClicked( const QUrl &url ){
 
     QString str=url.toString();
     QString lstr=str.toLower();
@@ -1550,5 +1564,5 @@ void MainWindow::onLinkClicked( const QUrl &url ){
         }
     }
 
-    webView->setUrl( url );
+    openFile( str,false );
 }
