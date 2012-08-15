@@ -15,5 +15,5 @@ MOJO_IMAGE_FILTERING_ENABLED=true
 
 TEXT_FILES=*.txt|*.xml|*.json
 IMAGE_FILES=*.png|*.jpg
-SOUND_FILES=*.wav
-MUSIC_FILES=*.wav
+SOUND_FILES=*.wav|*.ogg
+MUSIC_FILES=*.wav|*.ogg

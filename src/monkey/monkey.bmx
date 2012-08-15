@@ -10,7 +10,7 @@ Import "resource.o"
 Import "-ladvapi32"
 ?
 
-Const VERSION=61
+Const VERSION=62
 
 ?Win32
 Extern "win32"

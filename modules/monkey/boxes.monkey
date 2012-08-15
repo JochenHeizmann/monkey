@@ -119,4 +119,8 @@ Class ArrayObject<T>
 	Method New( value:T[] )
 		Self.value=value
 	End
+	
+	Method ToArray:T[]()
+		Return value
+	End
 End

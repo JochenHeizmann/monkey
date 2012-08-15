@@ -32,7 +32,7 @@ void dbg_error( const char *p );
 //How much to alloc before GC - set to 0 for continuous GC
 //
 #ifndef CFG_CPP_GC_TRIGGER
-#define CFG_CPP_GC_TRIGGER 4*1024*1024
+#define CFG_CPP_GC_TRIGGER 0	//4*1024*1024
 #endif
 
 //#define DEBUG_GC 1
@@ -359,10 +359,12 @@ template<class T> void gc_mark_array( int n,T *p ){
 
 template<class T> class Array{
 public:
-	Array():rep( Rep::alloc(0) ){
+	Array(){
+		static Rep null;
+		rep=&null;
 	}
 
-	//Use default...
+	//Uses default...
 //	Array( const Array<T> &t )...
 	
 	Array( int length ):rep( Rep::alloc( length ) ){
@@ -376,7 +378,7 @@ public:
 	~Array(){
 	}
 
-	//Use default...
+	//Uses default...
 //	Array &operator=( const Array &t )...
 	
 	int Length()const{ 
@@ -432,7 +434,7 @@ public:
 		q=t_create( (newlen-n),q );
 		return Array( p );
 	}
-
+	
 private:
 	struct Rep : public gc_object{
 		int length;
@@ -454,24 +456,31 @@ private:
 		}
 		
 		static Rep *alloc( int length ){
-			if( !length ){
-				static Rep null;
-				return &null;
-			}
+			static Rep null;
+			if( !length ) return &null;
 			void *p=gc_malloc( sizeof(Rep)+length*sizeof(T) );
 			return ::new(p) Rep( length );
 		}
 	};
 	Rep *rep;
-
+	
 	template<class C> friend void gc_mark( Array<C> &t );
 	template<class C> friend void gc_mark_q( Array<C> &t );
-	
 	template<class C> friend void gc_assign( Array<C> &lhs,Array<C> rhs );
 	
 	Array( Rep *rep ):rep(rep){
 	}
 };
+
+template<class T> Array<T> *t_create( int n,Array<T> *p ){
+	for( int i=0;i<n;++i ) *p++=Array<T>();
+	return p;
+}
+
+template<class T> Array<T> *t_create( int n,Array<T> *p,const Array<T> *q ){
+	for( int i=0;i<n;++i ) *p++=*q++;
+	return p;
+}
 
 template<class T> void gc_mark( Array<T> &t ){
 	gc_mark( t.rep );
@@ -829,29 +838,20 @@ public:
 	
 	void Save( std::vector<unsigned char> &buf ){
 	
-		bool uni=false;
+		Char *p=rep->data;
+		Char *e=p+rep->length;
 		
-		for( int i=0;i<rep->length;++i ){
-			if( rep->data[i]>=0xfe ){
-				uni=true;
-				break;
-			}
-		}
-		
-		if( uni ){
-			Char c;
-			unsigned char *p=(unsigned char*)&c;
-			c=0xfeff;
-			buf.push_back( p[0] );
-			buf.push_back( p[1] );
-			for( int i=0;i<rep->length;++i ){
-				c=rep->data[i];
-				buf.push_back( p[0] );
-				buf.push_back( p[1] );
-			}
-		}else{
-			for( int i=0;i<rep->length;++i ){
-				buf.push_back( rep->data[i] );
+		while( p<e ){
+			Char c=*p++;
+			if( c<0x80 ){
+				buf.push_back( c );
+			}else if( c<0x800 ){
+				buf.push_back( 0xc0 | (c>>6) );
+				buf.push_back( 0x80 | (c & 0x3f) );
+			}else{
+				buf.push_back( 0xe0 | (c>>12) );
+				buf.push_back( 0x80 | ((c>>6) & 0x3f) );
+				buf.push_back( 0x80 | (c & 0x3f) );
 			}
 		}
 	}
@@ -873,48 +873,64 @@ public:
 			if( n>0 ) buf.insert( buf.end(),tmp,tmp+n );
 			if( n!=4096 ) break;
 		}
-		return buf.size() ? String::Load( &buf[0],buf.size() ) : "";
+		return buf.size() ? String::Load( &buf[0],buf.size() ) : String();
 	}
 	
 	static String Load( unsigned char *p,int n ){
 	
-		if( n<3 ) return String( p,n );
-		
-		unsigned char *term=p+n;
+		unsigned char *e=p+n;
 		std::vector<Char> chars;
-
-		int c=*p++;
-		int d=*p++;
 		
-		if( c==0xfe && d==0xff ){
-			while( p<term-1 ){
+		int t0=n>0 ? p[0] : -1;
+		int t1=n>1 ? p[1] : -1;
+
+		if( t0==0xfe && t1==0xff ){
+			p+=2;
+			while( p<e-1 ){
 				int c=*p++;
 				chars.push_back( (c<<8)|*p++ );
 			}
-		}else if( c==0xff && d==0xfe ){
-			while( p<term-1 ){
+		}else if( t0==0xff && t1==0xfe ){
+			p+=2;
+			while( p<e-1 ){
 				int c=*p++;
 				chars.push_back( (*p++<<8)|c );
 			}
 		}else{
-			int e=*p++;
-			if( c!=0xef || d!=0xbb || e!=0xbf ) return String( p-3,n );
-			while( p<term ){
-				int c=*p++;
-				if( c>=128 && p<term ){
-					int d=*p++;
-					if( c>=224 && p<term ){
-						int e=*p++;
-						if( c>=240 ) break;	//Illegal UTF8!
-						c=(c-224)*4096+(d-128)*64+(e-128);
+			int t2=n>2 ? p[2] : -1;
+			if( t0==0xef && t1==0xbb && t2==0xbf ) p+=3;
+			unsigned char *q=p;
+			bool fail=false;
+			while( p<e ){
+				unsigned int c=*p++;
+				if( c & 0x80 ){
+					if( (c & 0xe0)==0xc0 ){
+						if( p>=e || (p[0] & 0xc0)!=0x80 ){
+							fail=true;
+							break;
+						}
+						c=((c & 0x1f)<<6) | (p[0] & 0x3f);
+						p+=1;
+					}else if( (c & 0xf0)==0xe0 ){
+						if( p+1>=e || (p[0] & 0xc0)!=0x80 || (p[1] & 0xc0)!=0x80 ){
+							fail=true;
+							break;
+						}
+						c=((c & 0x0f)<<12) | ((p[0] & 0x3f)<<6) | (p[1] & 0x3f);
+						p+=2;
 					}else{
-						c=(c-192)*64+(d-128);
+						fail=true;
+						break;
 					}
 				}
 				chars.push_back( c );
 			}
+			if( fail ){
+				puts( "UTF-8 Fail!" );fflush( stdout );
+				return String( q,n );
+			}
 		}
-		return String( &chars[0],chars.size() );
+		return chars.size() ? String( &chars[0],chars.size() ) : "";
 	}
 	
 private:
