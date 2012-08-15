@@ -1,0 +1,4 @@
+
+# Module opengl.databuffer
+
+Databuffer objects provide storage for arbitrary data. For more information on databuffers, please refer to the [[DataBuffer]] class reference.

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:12px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<a href='Home.html'>
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' /><b> Monkey V60 Documentation </b>
+	</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Module list.html'>Modules</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Index.html'>Index</a>
+
+</div>
+
+<div id='page'>
+
+<!--
+
+	<div id='menu'>
+
+		
+
+	</div>
+-->
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+		<a href='Home.html'>Home</a>
+		
+		
+			
+				/  <a href='_mojo.html'>mojo</a> 
+				
+			
+				/ 
+				 app 
+			
+		
+			
+		</div>
+		
+		<div id='content'>
+		
+		
+		
+		
+			
+		
+		
+		
+		
+			<div class='box'>
+
+			
+				<h1>Module mojo.app</h1>
+			
+			
+			
+			
+			
+			
+			
+				The app module contains the App class along with various support functions for controlling application behaviour. 
+				
+			
+			
+			</div>
+
+			
+		
+			
+				<div class='box'>
+				<h2>Classes</h2>
+				<table class='small'>
+				
+					<tr><td><a href='_mojo.app.App.html'>App</a></td></tr>
+				
+				</table>
+				</div>
+			
+			
+			
+		
+			
+		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+				<div class='box'>
+				<h2>Functions</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#LoadState'>LoadState</a> : String ()</td></tr>
+				
+					<tr><td><a href='#LoadString'>LoadString</a> : String ( path:String )</td></tr>
+				
+					<tr><td><a href='#Millisecs'>Millisecs</a> : Int ()</td></tr>
+				
+					<tr><td><a href='#SaveState'>SaveState</a> : Int ( state:String )</td></tr>
+				
+					<tr><td><a href='#SetUpdateRate'>SetUpdateRate</a> : Int ( hertz:Int )</td></tr>
+				
+					<tr><td><a href='#UpdateRate'>UpdateRate</a> : Int ()</td></tr>
+				
+				</table>
+				</div>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+			
+
+			
+
+			
+				<div class='box'>
+				<h2>Function Documentation</h2>
+				
+					<a name='LoadState'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function LoadState : String ()</h3>
+					Loads a string representing the application's persistant state as previously saved with SaveState.
+<p>
+If the application state hasn't yet been previously saved, LoadState returns an empty string.
+<p>
+This is generally used to store data such as user preferences and high score tables.
+<p>
+Note: On the android target, building and uploading a new version of an application to a device will not clear the application's state. To do this, you must manually uninstall the application from the device first.
+					
+						<p><b>See also</b> <a href='_mojo.app.html#SaveState'>SaveState</a>
+					
+					
+						<p><b>Example</b> <pre>
+'run this app several times to see application state being updated.
+Import mojo.app
+Import mojo.graphics
+<p>
+Class MyApp Extends App
+<p>
+	Field state$
+	
+	Method OnCreate()
+	
+		'comment out the following line to reset state
+		state=LoadState()
+<p>
+		If state
+			Print "state found - updating state!"
+			state=Int( state )+1
+		Else
+			Print "state not found - creating initial state!"
+			state="1"
+		Endif
+		
+		SaveState state
+	End
+	
+	Method OnRender()
+		Cls 
+		DrawText "state="+state,0,0
+	End
+	
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+					
+					</div>
+				
+					<a name='LoadString'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function LoadString : String ( path:String )</h3>
+					Loads a string from path.
+					
+					
+					</div>
+				
+					<a name='Millisecs'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function Millisecs : Int ()</h3>
+					Returns the number milliseconds (thousandths of a second) the application has been running. Divide this by 1000.0 to get the number of seconds the applications has been running.
+					
+					
+						<p><b>Example</b> <pre>
+Import mojo.app
+Import mojo.graphics
+<p>
+Class MyApp Extends App
+<p>
+	Method OnCreate()
+		SetUpdateRate 10
+	End
+	
+	Method OnRender()
+		Cls 128,0,255
+		DrawText "Application has been running for: "+Millisecs()/1000.0+" seconds.",0,0
+	End
+	
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+					
+					</div>
+				
+					<a name='SaveState'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function SaveState : Int ( state:String )</h3>
+					Saves a string representing the application's persistant state.
+<p>
+This is generally used to store data such as user preferences and high score tables.
+<p>
+Note: On the android target, building and uploading a new version of an application to a device will not clear the application's state. To do this, you must manually uninstall the application from the device first.
+					
+						<p><b>See also</b> <a href='_mojo.app.html#LoadState'>LoadState</a>
+					
+					
+					</div>
+				
+					<a name='SetUpdateRate'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function SetUpdateRate : Int ( hertz:Int )</h3>
+					Sets the application's update rate.
+<p>
+This is the number of times per second that the application's OnUpdate method should be called. Commonly used update rates are 15, 30 or 60 updates per second.
+<p>
+OnRender is also called at the same frequency if possible (after each OnUpdate), meaning SetUpdateRate effectively also sets the target frames per second.
+					
+						<p><b>See also</b> <a href='_mojo.app.App.html#OnUpdate'>OnUpdate</a>, <a href='_mojo.app.html#UpdateRate'>UpdateRate</a>
+					
+					
+						<p><b>Example</b> <pre>
+Import mojo.app
+Import mojo.graphics
+<p>
+Class MyApp Extends App
+<p>
+	Field updates,updateRate
+<p>
+	Method OnCreate()
+		updateRate=15
+		SetUpdateRate updateRate
+	End
+	
+	Method OnUpdate()
+		updates+=1
+		If updates=updateRate
+			updates=0
+			updateRate*=2
+			If updateRate=240 updateRate=15
+			SetUpdateRate updateRate
+		Endif
+		
+	End
+	
+	Method OnRender()
+		Cls 128,0,255
+		DrawText "updateRate="+updateRate+", updates="+updates,0,0
+	End
+	
+End
+<p>
+Function Main()
+	New MyApp
+End
+</pre>
+					
+					</div>
+				
+					<a name='UpdateRate'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function UpdateRate : Int ()</h3>
+					Returns the current update rate, as set by SetUpdateRate.
+					
+						<p><b>See also</b> <a href='_mojo.app.html#SetUpdateRate'>SetUpdateRate</a>
+					
+					
+					</div>
+				
+				</div>
+			
+
+		
+		
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+					
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>

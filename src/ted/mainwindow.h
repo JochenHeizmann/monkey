@@ -37,7 +37,7 @@ public:
 private:
 
     void parseAppArgs();
-    void loadHelpTopics();
+    void loadHelpIndex();
 
     bool isBuildable( CodeEditor *editor );
     QString widgetPath( QWidget *widget );
@@ -122,6 +122,8 @@ public slots:
 
 private slots:
 
+    void onShowHelp( const QString &text );
+
     void onLinkClicked( const QUrl &url );
 
     void onCloseMainTab( int index );
@@ -191,6 +193,7 @@ private:
 
     QComboBox *_targetsWidget;
     QComboBox *_configsWidget;
+    QComboBox *_indexWidget;
 };
 
 #endif // MAINWINDOW_H
