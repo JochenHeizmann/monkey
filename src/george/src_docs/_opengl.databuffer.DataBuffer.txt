@@ -1,0 +1,116 @@
+
+# Class opengl.databuffer.DataBuffer
+
+Databuffer objects provide storage for arbitrary data.
+
+DataBuffer objects are most commonly used with opengl for specifying the contents of vertex buffer objects and texture images.
+
+Note: On the HTML5 target, peeks and pokes must be on 'naturally aligned' boundaries. PeekShort/PokeShort addresses must be a multiple of 2, and PeekInt/PokeInt/PeekFloat/PokeFloat addresses must be a multiple of 4.
+
+
+# Method Size:Int()
+
+Returns the size, in bytes, of the data buffer.
+
+
+# Method Discard:Void()
+
+Releases any resources used by the data buffer.
+
+Once discarded, a data buffer should not be used again.
+
+
+# Method PokeByte:Void(addr:Int,value:Int)
+
+Stores value into the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to poke
+
+value - value to poke
+
+
+# Method PokeShort:Void(addr:Int,value:Int)
+
+Stores value into the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to poke
+
+value - value to poke
+
+
+# Method PokeInt:Void(addr:Int,value:Int)
+
+Stores value into the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to poke
+
+value - value to poke
+
+
+# Method PokeFloat:Void(addr:Int,value:Float)
+
+Stores value into the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to poke
+
+value - value to poke
+
+
+# Method PeekByte:Int(addr:Int)
+
+Returns the 8 bit value contained in the databuffer at the given address.
+
+The value is signed extended.
+
+## Parameters
+
+address - byte address to peek.
+
+
+# Method PeekShort:Int(addr:Int)
+
+Returns the short value contained in the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to peek
+
+
+# Method PeekInt:Int(addr:Int)
+
+Returns the int value contained in the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to peek
+
+
+# Method PeekFloat:Float(addr:Int)
+
+Stores value into the data buffer at address addr.
+
+## Parameters
+
+addr - byte address to poke
+
+value - value to poke
+
+
+# Function Create:DataBuffer(size:Int)
+
+Creates and returns a new data buffer of the specified byte size.
+
+Values can be written into the databuffer using the various 'poke' methods, or read using the 'peek' methods.
+
+## Parameters
+
+size - buffer size, in bytes.
+
