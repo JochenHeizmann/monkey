@@ -1,0 +1,296 @@
+
+# Module monkey.math
+
+The math module provides math related constants and functions.
+
+
+# Const PI:Float
+
+
+# Const TWOPI:Float
+
+
+# Const HALFPI:Float
+
+
+# Function Sin:Float(n:Float)
+
+Returns the sine of x.
+
+## Parameters
+
+x - angle in degrees.
+
+
+# Function Cos:Float(n:Float)
+
+Returns the cosine of x.
+
+## Parameters
+
+x - angle in degrees.
+
+
+# Function Tan:Float(n:Float)
+
+Returns the tangent of x.
+
+## Parameters
+
+x - angle in degrees.
+
+
+# Function ASin:Float(n:Float)
+
+Returns the arc sine of x, expressed in degrees.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ACos:Float(n:Float)
+
+Returns the arc cosine of x, expressed in degrees.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ATan:Float(n:Float)
+
+Returns the arc tangent of x, expressed in degrees.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ATan2:Float(x:Float,y:Float)
+
+Returns the arc tangent of x / y, expressed in degrees.
+
+The function uses the signs of x and y to compute the correct quadrant for the result.
+
+## Parameters
+
+x, y - floating point values.
+
+
+# Function Sinr:Float(n:Float)
+
+Returns the sine of x.
+
+## Parameters
+
+x - angle in radians.
+
+
+# Function Cosr:Float(n:Float)
+
+Returns the cosine of x.
+
+## Parameters
+
+x - angle in radians.
+
+
+# Function Tanr:Float(n:Float)
+
+Returns the tangent of x.
+
+## Parameters
+
+x - angle in radians.
+
+
+# Function ASinr:Float(n:Float)
+
+Returns the arc sine of x, expressed in radians.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ACosr:Float(n:Float)
+
+Returns the arc cosine of x, expressed in radians.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ATanr:Float(n:Float)
+
+Returns the arc tangent of x, expressed in radians.
+
+## Parameters
+
+x - floating point value in the range -1 to 1 (inclusive).
+
+
+# Function ATan2r:Float(x:Float,y:Float)
+
+Returns the arc tangent of x / y, expressed in radians.
+
+The function uses the signs of x and y to compute the correct quadrant for the result.
+
+## Parameters
+
+x, y - floating point values.
+
+
+# Function Sqrt:Float(n:Float)
+
+Returns the square root of x.
+
+## Parameters
+
+x - floatint point value.
+
+
+# Function Floor:Float(n:Float)
+
+Returns the largest integral value that is not greater than x.
+
+## Parameters
+
+x - floatint point value.
+
+
+# Function Ceil:Float(n:Float)
+
+Returns the smallest integral value that is not less than x.
+
+## Parameters
+
+x - floatint point value.
+
+
+# Function Log:Float(n:Float)
+
+Returns the natural logarithm of x.
+
+## Parameters
+
+x - floating point value.
+
+
+# Function Pow:Float(x:Float,y:Float)
+
+Returns x raised to the power y.
+
+## Parameters
+
+x, y - float point values.
+
+
+# Function Exp:Float(x:Float)
+
+Returns the base-e exponential function of x, which is the e number raised to the power x.
+
+## Parameters
+
+x - floating point value.
+
+
+# Function Sgn:Int(x:Int)
+
+Returns -1 if x is negative, +1 if x is greater than zero or 0 if x is equal to zero.
+
+## Parameters
+
+x - input value.
+
+
+# Function Abs:Int(x:Int)
+
+Returns the absolute value of x, that is, +x if x>=0 and -x if x<0.
+
+## Parameters
+
+x - input value.
+
+
+# Function Min:Int(x:Int,y:Int)
+
+Returns the minimum of x and y.
+
+## Parameters
+
+x, y - input values.
+
+
+# Function Max:Int(x:Int,y:Int)
+
+Returns the maximum of x and y.
+
+## Parameters
+
+x, y - input values.
+
+
+# Function Clamp:Int(n:Int,min:Int,max:Int)
+
+Clamps x to the range min through max inclusive.
+
+## Parameters
+
+x - value to clamp
+
+min - minimum returnable value
+
+max - maximum returnable value
+
+
+# Function Sgn:Float(x:Float)
+
+Returns -1 if x is negative, +1 if x is greater than zero or 0 if x is equal to zero.
+
+## Parameters
+
+x - input value.
+
+
+# Function Abs:Float(x:Float)
+
+Returns the absolute value of x, that is, +x if x>=0 and -x if x<0.
+
+## Parameters
+
+x - input value.
+
+
+# Function Min:Float(x:Float,y:Float)
+
+Returns the minimum of x and y.
+
+## Parameters
+
+x, y - input values.
+
+
+# Function Max:Float(x:Float,y:Float)
+
+Returns the maximum of x and y.
+
+## Parameters
+
+x, y - input values.
+
+
+# Function Clamp:Float(n:Float,min:Float,max:Float)
+
+Clamps x to the range min through max inclusive.
+
+## Parameters
+
+x - value to clamp
+
+min - minimum returnable value
+
+max - maximum returnable value
+
