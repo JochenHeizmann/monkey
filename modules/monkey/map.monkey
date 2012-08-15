@@ -373,11 +373,11 @@ Class Node<K,V>
 		Return n+1
 	End
 
-	Method Key:K()
+	Method Key:K() Property
 		Return key
 	End
 	
-	Method Value:V()
+	Method Value:V() Property
 		Return value
 	End
 

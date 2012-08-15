@@ -1,12 +1,7 @@
 
 'A simple audio test app
 
-#HTML5_SUSPEND_ON_BLUR_ENABLED="true"
-
-#If TARGET="glfw"
-#SOUND_FILES="*.wav|*.ogg"
-#MUSIC_FILES="*.wav|*.ogg"
-#Endif
+#MOJO_AUTO_SUSPEND_ENABLED="true"
 
 Import mojo
 
