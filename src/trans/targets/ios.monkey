@@ -80,7 +80,7 @@ Class IosTarget Extends Target
 			Local str$=LoadString ( file )
 			str=str.Replace( "${IOS_BUNDLE_ID_PREFIX}",bundle_id_prefix )
 			str=str.Replace( "${IOS_BUNDLE_ID_LAST_PART}",bundle_id_last_part )
-			str=str.Replace( "${PRODUCT_NAME}",bundle_label )
+			str=str.Replace( "${IOS_BUNDLE_LABEL}",bundle_label )
 			SaveString str, file
 		End
 	End
