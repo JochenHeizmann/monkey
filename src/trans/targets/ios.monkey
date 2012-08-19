@@ -34,8 +34,14 @@ Class IosTarget Extends Target
 		If bundle_id = "" Then bundle_id = "com.yourcompany.MonkeyGame"
 
 		Local bundle_id_parts$[]=bundle_id.Split(".")
-		Local bundle_id_prefix$=".".Join(bundle_id_parts[..-1])
-		Local bundle_id_last_part$=bundle_id_parts[bundle_id_parts.Length() - 1]
+		If bundle_id_parts.Length() < 3
+			Print "Error:   IOS_BUNDLE_ID contains less then three segments."
+			Print "Ignored: Both IOS_BUNDLE_ID and IOS_BUNDLE_LABLE"
+			Return
+		End
+
+		Local bundle_id_prefix$=".".Join(bundle_id_parts[..2])
+		Local bundle_id_last_part$=".".Join(bundle_id_parts[2..])
 		dotAppFile=bundle_id_last_part+".app"
 
 		Local files$[]=["MonkeyGame.xcodeproj/project.pbxproj", "MonkeyGame-Info.plist"]
