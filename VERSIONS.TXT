@@ -1,6 +1,36 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V62 *****
+
+Modules:
+
+android mojo - MOJO_HICOLOR_TEXTURES config setting now actually does something! Set to "true" for 32 bit textures, "false" for 16 bit. Yep, I know it's badly named, HICOLOR used to mean '16bit'. Only applies to Android.
+
+c++ monkey.lang - LoadString now assumes UTF-8 by default (ie: if there's no BOM) and SaveString now saves (BOM-less) UTF-8 too. NOTE: This is pretty much the standard, and most targets assume UTF-8 like this. Ted also now behaves this way - ie: source files are assumed to be UTF-8 unless there's a BOM. You may have issues with files saved from Monk, which does not UTF-encode files (or write a BOM marker) unless the file contains at least one char >255. This means files saved from Monk with 'accented' euro-chars (which are <256) may not be UTF-encoded, and you'll have problems loading such files into Ted or using LoadString. I may eventually add a 'file encoding' option to Ted to deal with this but in the meantime you'll have to copy 'n' paste around it. One trick would be to paste a single 'Asian' char into a source file in Monk before saving which will trigger UTF-encoding.
+
+flash mojo - kludged around paused/resumed audio not looping from start issue. Not pretty, and seems to have increased loop lag a tad but wotkanyado.
+
+c++ monkey.lang - fixed bug when resizing arrays of arrays.
+
+
+Targets:
+
+glfw - added *.ogg to SOUND_FILES and MUSIC_FILES in target CONFIG.TXT.
+
+android - LoadString now assumes UTF-8 by default (ie: if there's no BOM).
+
+
+Trans (V1.38)
+
+Rebuilt for UTF-8 tweaks.
+
+
+Ted (V1.6)
+
+Added help index.
+
+
 ***** V61b ******
 
 Modules:

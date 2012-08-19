@@ -1,0 +1,9 @@
+
+# Monkey credits
+
+* Language design/programming - Mark Sibly.
+
+* Documentation - Mark Sibly, James L Boyd.
+
+* Original Monk IDE - Simon Armstrong.
+
