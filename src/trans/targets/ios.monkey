@@ -29,6 +29,8 @@ Class IosTarget Extends Target
 		Local plist$=LoadString ( "MonkeyGame-Info.plist" )
 		Local orientation$=Env.Get("IOS_SCREEN_ORIENTATION")
 
+		If plist.Find("IOS_SCREEN_ORIENTATION_") = -1 Then Return
+
 		If orientation = "portrait"
 			plist=ReplaceBlock( plist,"IOS_SCREEN_ORIENTATION_LANDSCAPE","","~n<!--" )
 		ElseIf orientation = "landscape"
