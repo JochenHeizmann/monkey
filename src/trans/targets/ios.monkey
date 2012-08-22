@@ -52,6 +52,9 @@ Class IosTarget Extends Target
 		If flag="true" Then Return
 
 		Local plist$=LoadString ( "MonkeyGame.xcodeproj/project.pbxproj" )
+
+		If plist.Find("IN_APP_BILLING_") = -1 Then Return
+
 		plist=ReplaceBlock( plist,"IN_APP_BILLING_1","","~n/* " )
 		plist=ReplaceBlock( plist,"IN_APP_BILLING_2","","~n/* " )
 		plist=ReplaceBlock( plist,"IN_APP_BILLING_3","","~n/* " )
