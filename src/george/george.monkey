@@ -109,15 +109,7 @@ Class Docs Implements LinkResolver
 	Method DeclIdent:String( decl:Decl )
 		Return decl.ident
 	End
-#rem	
-	Method DeclIdent:String( decl:Decl,generic:Bool=False )
-		Local id:=decl.ident
-		If generic Return HtmlEsc(id)
-		Local i:=id.Find("<")
-		If i<>-1 id=id[..i]
-		Return id
-	End
-#end	
+
 	Method DeclUrl:String( decl:Decl )
 		Select decl.kind
 		Case "module","class","interface","import","import p"
@@ -147,17 +139,12 @@ Class Docs Implements LinkResolver
 
 		Local url:=""
 		
-		If link.StartsWith("http:")
-			url=link
-		Else If link.StartsWith("https:")
+		If link.Contains( "/" )
 			url=link
 		Else If link.StartsWith("#")
 			url=link
 		Else
-			Select link.ToLower()
-			Case "t","k","v" Return text
-'			Case "void","bool","int","float","string","object" Return text
-			End
+			If link.Length=1 Return text
 
 			Local id:=""
 			Local i:=link.Find("#")
@@ -452,6 +439,7 @@ Class Docs Implements LinkResolver
 		'.txt index
 		Local buf:=New StringStack
 		For Local it:=Eachin index
+'			If it.Key="Demo" Continue
 			buf.Push it.Key+":"+it.Value
 		Next
 		SaveString buf.Join("~n"),"../../docs/html/index.txt"

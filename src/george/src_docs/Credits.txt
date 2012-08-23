@@ -1,9 +1,17 @@
 
 # Monkey credits
 
-* Language design/programming - Mark Sibly.
++ Language design and programming - Mark Sibly
 
-* Documentation - Mark Sibly, James L Boyd.
++ Documentation - Mark Sibly, James Boyd.
 
-* Original Monk IDE - Simon Armstrong.
++ Monkey website - Simon Harrison.
+
++ Monk IDE - Simon Armstrong.
+
++ Ted - Mark Sibly.
+
+Additional thanks to:
+
+Beaker, Richard Betson, EdzUp[GD], Warpy, MikeHart, msephton, Binary_Moon, Otus 3, CodeGit, skn3[ac], Tibit, Mathieu, Sledge, Difference, CyBeRGoth, _Skully, sknightly, Rhodesy, ziggy, Hujiklo, earok, Robert Cummings, TMK, Playniax.
 
