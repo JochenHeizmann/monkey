@@ -265,6 +265,8 @@ pre{
 				
 					<tr><td><a href='#Cls'>Cls</a> : Int ( r:Float=0, g:Float=0, b:Float=0 )</td></tr>
 				
+					<tr><td><a href='#CreateImage'>CreateImage</a> : Image ( width:Int, height:Int, flags:Int=image.defaultflags )</td></tr>
+				
 					<tr><td><a href='#DeviceHeight'>DeviceHeight</a> : Int ()</td></tr>
 				
 					<tr><td><a href='#DeviceWidth'>DeviceWidth</a> : Int ()</td></tr>
@@ -314,6 +316,8 @@ pre{
 					<tr><td><a href='#PopMatrix'>PopMatrix</a> : Int ()</td></tr>
 				
 					<tr><td><a href='#PushMatrix'>PushMatrix</a> : Int ()</td></tr>
+				
+					<tr><td><a href='#ReadPixels'>ReadPixels</a> : Void ( pixels:Int[], x:Int, y:Int, width:Int, height:Int, arrayOffset:Int=0, arrayPitch:Int=0 )</td></tr>
 				
 					<tr><td><a href='#Rotate'>Rotate</a> : Int ( angle:Float )</td></tr>
 				
@@ -379,6 +383,16 @@ The graphics module is state based, and commands that 'set' various states will 
 					Clears the graphics device to the specified color.
 <p>
 The current color, alpha and blend mode are ignored by Cls. However, the scissor rect is still used so only the area inside the scissor rect is cleared.
+					
+					
+					</div>
+				
+					<a name='CreateImage'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function CreateImage : <a href='_mojo.graphics.Image.html'>Image</a> ( width:Int, height:Int, flags:Int=image.defaultflags )</h3>
+					Creates an empty image for use with <a href='_mojo.graphics.Image.html#WritePixels'>Image.WritePixels</a>.
+<p>
+The contents of the image are initially undefined.
 					
 					
 					</div>
@@ -674,6 +688,20 @@ See DefaultFlags for a list of valid image flags.
 					Pushes the current matrix onto the internal matrix stack.
 <p>
 The matrix can be restored at a later time using PopMatrix.
+					
+					
+					</div>
+				
+					<a name='ReadPixels'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function ReadPixels : Void ( pixels:Int[], x:Int, y:Int, width:Int, height:Int, arrayOffset:Int=0, arrayPitch:Int=0 )</h3>
+					Copies a rectangular section of pixels from the current render buffer into an int array.
+<p>
+The pixel data is stored in int-per-pixel ARGB format, with the alpha component stored in bits 24-31, the red component in bits 16-23, the green component in bits 8-15 and the blue component in bits 0-7.
+<p>
+The optional <i>arrayOffset</i> parameter allows you to specify an index into the array at which to start writing pixel values.
+<p>
+The optional <i>arrayPitch</i> parameter allows you to specify a 'pitch'. This is the number of array elements between successive rows in the array. If this is 0, then <i>width</i> is used as pitch, meaning pixel data is assumed to be 'tightly packed'.
 					
 					
 					</div>
