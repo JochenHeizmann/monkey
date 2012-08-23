@@ -288,6 +288,8 @@ pre{
 				
 					<tr><td><a href='#Width'>Width</a> : Int ()</td></tr>
 				
+					<tr><td><a href='#WritePixels'>WritePixels</a> : Void ( pixels:Int[], x:Int, y:Int, width:Int, height:Int, arrayOffset:Int=0, arrayPitch:Int=0 )</td></tr>
+				
 				</table>
 				</div>
 			
@@ -438,6 +440,20 @@ The image handle is subtracted before rotation and scale are applied providing a
 					<div class='box'>
 					<h3 class='rounded'>Method Width : Int ()</h3>
 					Returns the width of the image, in pixels.
+					
+					
+					</div>
+				
+					<a name='WritePixels'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method WritePixels : Void ( pixels:Int[], x:Int, y:Int, width:Int, height:Int, arrayOffset:Int=0, arrayPitch:Int=0 )</h3>
+					Copies a rectangular section of pixels from an int array to the image.
+<p>
+The pixel data must be stored in int-per-pixel ARGB format, with the alpha component stored in bits 24-31, the red component in bits 16-23, the green component in bits 8-15 and the blue component in bits 0-7.
+<p>
+The optional <i>arrayOffset</i> parameter allows you to specify an index into the array from which to start reading pixel values.
+<p>
+The optional <i>arrayPitch</i> parameter allows you to specify a 'pitch' - the number of array elements between successive rows in the array. If this is 0, then <i>width</i> is used as pitch, meaning pixel data is assumed to be 'tightly packed'.
 					
 					
 					</div>

@@ -2,9 +2,9 @@
 Strict
 
 RebuildTrans 
+RebuildMonkey
 'RebuildMonk
 'RebuildMServer
-'RebuildMonkey
 
 End
 
