@@ -202,6 +202,10 @@
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
 
+FILE *fopenFile( String path,const char *mode ){
+	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+}
+
 //***** main.m *****
 
 int main(int argc, char *argv[]) {

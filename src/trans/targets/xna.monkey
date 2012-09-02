@@ -87,6 +87,13 @@ Class XnaTarget Extends Target
 				Default
 					Die "Invalid music file type"
 				End
+			Else If MatchPath( r,BINARY_FILES )
+					cont.Push "  <ItemGroup>"
+					cont.Push "    <Content Include=~q"+t+"~q>"
+					cont.Push "      <Name>"+f+"</Name>"
+					cont.Push "      <CopyToOutputDirectory>Always</CopyToOutputDirectory>"
+					cont.Push "    </Content>"
+					cont.Push "  </ItemGroup>"
 			Endif
 
 		Next

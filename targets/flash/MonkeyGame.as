@@ -51,12 +51,18 @@ package{
 			return munged;
 		}
 		
-		public function loadString( path:String ):String{
+		public function loadByteArray( path:String ):ByteArray{
 			var t:Class=Assets[ mungPath( path ) ];
 			if( t ){
 				var buf:ByteArray=(new t) as ByteArray;
-				if( buf ) return buf.toString();
+				return buf;
 			}
+			return null;
+		}
+		
+		public function loadString( path:String ):String{
+			var buf:ByteArray=loadByteArray( path );
+			if( buf ) return buf.toString();
 			return "";
 		}
 

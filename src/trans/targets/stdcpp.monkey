@@ -60,9 +60,9 @@ Class StdcppTarget Extends Target
 			Default
 				Select ENV_CONFIG
 				Case "release"
-					Execute "g++ -O3 -o "+out+" main.cpp"
+					Execute "g++ -O3 -DNDEBUG -o "+out+" main.cpp"
 				Case "profile"
-					Execute "g++ -O3 -o "+out+" main.cpp -lwinmm"
+					Execute "g++ -O3 -DNDEBUG -o "+out+" main.cpp -lwinmm"
 				Case "debug"
 					Execute "g++ -o "+out+" main.cpp"
 				End

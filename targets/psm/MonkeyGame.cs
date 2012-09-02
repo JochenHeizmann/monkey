@@ -20,6 +20,10 @@ public class MonkeyConfig{
 
 public class MonkeyData{
 
+	public static byte[] loadBytes( String path ){
+		return File.ReadAllBytes( "/Application/data/"+path );
+	}
+
 	public static String LoadString( String path ){
 		return File.ReadAllText( "/Application/data/"+path );
 	}
