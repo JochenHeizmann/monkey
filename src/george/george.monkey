@@ -349,7 +349,7 @@ Class Docs Implements LinkResolver
 		For Local it:=Eachin _declsByPath
 			Local decl:=it.Value
 			If decl.kind<>"module" And decl.kind<>"class" Continue
-'			Print "Making scope:"+it.Key
+			Print "Making scope:"+it.Key
 			MakeScope decl
 		Next
 	End

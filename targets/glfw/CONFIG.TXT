@@ -1,4 +1,6 @@
 
+GLFW_USE_MINGW=false
+
 GLFW_WINDOW_TITLE="Monkey Game"
 GLFW_WINDOW_WIDTH=640
 GLFW_WINDOW_HEIGHT=480
@@ -17,3 +19,4 @@ TEXT_FILES=*.txt|*.xml|*.json
 IMAGE_FILES=*.png|*.jpg
 SOUND_FILES=*.wav|*.ogg
 MUSIC_FILES=*.wav|*.ogg
+BINARY_FILES=*.bin|*.dat
