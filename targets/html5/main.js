@@ -68,6 +68,39 @@ function getMetaData( path,key ){
 	return META_DATA.slice( i,e );
 }
 
+function openXhr( path ){
+	var xhr=new XMLHttpRequest();
+	xhr.open( "GET","data/"+path,false );
+	return xhr;
+}
+
+function loadBytes( path ){
+	var xhr=new XMLHttpRequest();
+	xhr.open( "GET","data/"+path,false );
+	if( xhr.overrideMimeType ){
+		xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
+	}
+	xhr.send( null );
+
+	if( (xhr.status!=200) && (xhr.status!=0) ) return false;
+	
+	var resp=xhr.responseText;
+
+	var arr=new Int8Array( resp.length );
+	
+	for( var i=0;i<resp.length;++i ){
+		arr[i]=resp.charCodeAt(i);
+	}
+	return arr;
+}
+
+function loadString( path ){
+	var xhr=openXhr( path );
+	xhr.send( null );
+	if( (xhr.status==200) || (xhr.status==0) ) return xhr.responseText;
+	return "";
+}
+
 function loadString( path ){
 	var xhr=new XMLHttpRequest();
 	xhr.open( "GET","data/"+path,false );
