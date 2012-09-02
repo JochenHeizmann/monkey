@@ -30,6 +30,19 @@ public class MonkeyConfig{
 
 public class MonkeyData{
 
+	public static byte[] loadBytes( String path ){
+        try{
+			Stream stream=TitleContainer.OpenStream( "Content/monkey/"+path );
+			int len=(int)stream.Length;
+			byte[] buf=new byte[len];
+			int n=stream.Read( buf,0,len );
+			stream.Close();
+			if( n==len ) return buf;
+		}catch( Exception ){
+		}
+		return null;
+	}
+
 	public static String LoadString( String path ){
         try{
 			Stream stream=TitleContainer.OpenStream( "Content/monkey/"+path );

@@ -1,4 +1,3 @@
-
 IOS_RETINA_ENABLED=true
 IOS_ACCELEROMETER_ENABLED=true
 IOS_DISPLAY_LINK_ENABLED=false
@@ -15,3 +14,4 @@ TEXT_FILES=*.txt|*.xml|*.json
 IMAGE_FILES=*.png|*.jpg
 SOUND_FILES=*.wav|*.mp3|*.m4a
 MUSIC_FILES=*.wav|*.mp3|*.m4a
+BINARY_FILES=*.bin|*.dat

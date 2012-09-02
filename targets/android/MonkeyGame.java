@@ -82,32 +82,33 @@ class MonkeyData{
 		}
 		return out.toString();
 	}
-
-	static String loadString( String path ){
+	
+	static byte[] loadBytes( String path ){
 		path="monkey/"+path;
 		
 		try{
-			InputStream stream=getAssets().open( path );
-			ByteArrayOutputStream buf=new ByteArrayOutputStream();
-
-			int n;
-			byte[] tmp=new byte[4096];
-
-			while( (n=stream.read( tmp,0,tmp.length) )!=-1 ){
-				buf.write( tmp,0,n );
-			}
-
-			buf.flush();
-			stream.close();
-
-			return loadString( buf.toByteArray() );
+			AssetFileDescriptor fd=getAssets().openFd( path );
+			int size=(int)fd.getLength();
+			fd.close();
 			
-//			This doesn't appear to handle BOMs:
-//			return new String( buf.toByteArray() );	
-
+			byte[] bytes=new byte[size];
+			InputStream input=getAssets().open( path );
+			int n=input.read( bytes,0,size );
+			input.close();
+			
+			if( n==size ) return bytes;
+			
 		}catch( IOException e ){
 		}
-		return "";		
+		return null;
+	}
+
+	static String loadString( String path ){
+
+		byte[] bytes=loadBytes( path );
+		if( bytes==null ) return "";
+		
+		return loadString( bytes );
 	}
 
 	static Bitmap loadBitmap( String path ){
@@ -148,7 +149,6 @@ class MonkeyData{
 		}
 		return null;
 	}
-
 }
 
 //${TRANSCODE_BEGIN}

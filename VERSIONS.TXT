@@ -1,6 +1,33 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+***** V64 *****
+
+Modules:
+
+Moved BoxInt, ArrayBoxer etc from reflection to monkey.boxes. Forgot to update docs.
+
+Added brl modules: brl.databuffer, brl.stream, brl.datastream, brl.tcpstream. Haven't retired opengl.databuffer yet.
+
+
+Targets:
+
+Added mingw support to glfw via CONFIG.TXT setting #GLFW_USE_MINGW="true". Note: Recommended mingw gcc/g++ version is 4.6.1. I tried 4.7.1 but had the occasional random app crash.
+
+Added BINARY_FILES filter to CONFIG.TXT files.
+
+Android - added INTERNET permissions to AndroidManifest.xml template.
+
+Windows glfw - added WinSock lib to msvc project.
+
+
+Trans (V1.40)
+
+Added mingw support to glfw.
+
+Added BINARY_FILES handling.
+
+
 ***** V63 *****
 
 Modules:

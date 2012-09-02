@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+
+body{
+	margin:0px;
+	padding:0px;
+	color:#4488ff;
+	background-color:white;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#header{
+	margin:0px;
+	padding:8px;
+	vertical-align:middle;
+}
+
+#page{
+	margin:0px;
+	padding:16px 32px;
+	color:#333333;
+	background-color:#e8e8e8;
+	font-family:Arial;
+	font-size:14px;
+}
+
+#menu{
+	margin:8px;
+	padding:8px;
+	width:180px;
+	border-radius:8px;
+	background-color:white;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	vertical-align:top;
+	float:left;
+}
+
+#main{
+	padding:8px;
+	overflow:hidden;
+}
+
+#navpath{
+	margin:0px 8px 1px 8px;
+	padding:8px;
+	border-radius:8px 8px 0 0;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	background-color:#f8f8f8;
+	font-size:12px;
+}
+
+#content{
+	margin:0 8px;
+	padding:16px 32px;
+	border-radius:0 0 8px 8px;
+	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
+	background-color:white;
+}
+
+#footer{
+	clear:both;
+}
+
+.idx{
+	display:inline-block;
+	width:32%;
+	overflow:hidden;
+	vertical-align:middle;
+}
+
+.rounded{
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #cccccc;
+	background-color:#f8f8f8;
+}
+
+.box{
+	padding:0 0 24px;
+}
+
+.blk{
+	color:#000000;
+}
+
+.small{
+	font-size:12px;
+}
+
+a{
+	color:#224488;
+	text-decoration:none;
+}
+
+li{
+	margin-left:8px;
+}
+
+h1{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h2{
+	font-size:16px;
+	font-weight:bold;
+}
+
+h3{
+	font-size:14px;
+	font-weight:bold;
+}
+
+table{
+	margin:0 16px;
+	padding:4px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	border-spacing:1px;
+	text-align:left;
+}
+
+th{
+	background-color:#dddddd;
+	padding:2px 8px;
+}
+
+td{
+	background-color:#eeeeee;
+	padding:2px 8px;
+}
+
+pre{
+	margin:0 16px;
+	padding:8px;
+	border-radius:8px;
+	border:solid 1px #eeeeee;
+	background-color:#fcfcfc;
+	font-size:12px;
+	white-space:pre-wrap;	//fixme!
+}
+
+</style>
+</head>
+<body>
+
+<div id='header'>
+
+	<a href='Home.html'>
+	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' /><b> Monkey V60 Documentation </b>
+	</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Module list.html'>Modules</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
+	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Index.html'>Index</a>
+
+</div>
+
+<div id='page'>
+
+<!--
+
+	<div id='menu'>
+
+		
+
+	</div>
+-->
+
+	<div id='main'>
+	
+		<div id='navpath'>
+		
+		<a href='Home.html'>Home</a>
+		
+		
+			
+				/  <a href='_brl.html'>brl</a> 
+				
+			
+				/  <a href='_brl.databuffer.html'>databuffer</a> 
+				
+			
+				/ 
+				 DataBuffer 
+			
+		
+			
+		</div>
+		
+		<div id='content'>
+		
+		
+		
+		
+			
+		
+		
+		
+		
+			<div class='box'>
+
+			
+			
+			
+				<h1>Class DataBuffer
+				
+				</h1>
+			
+			
+			
+			
+			
+				Databuffer objects provide storage for arbitrary data. 
+				<a href='#long_desc'>More...</a>
+			
+			
+			</div>
+
+			
+		
+			
+			
+			
+		
+			
+		
+			
+			
+			
+			
+			
+			
+			
+				<div class='box'>
+				<h2>Methods</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#Discard'>Discard</a> : Void ()</td></tr>
+				
+					<tr><td><a href='#Length'>Length</a> : Int ()</td></tr>
+				
+					<tr><td><a href='#PeekByte'>PeekByte</a> : Int ( address:Int )</td></tr>
+				
+					<tr><td><a href='#PeekFloat'>PeekFloat</a> : Float ( address:Int )</td></tr>
+				
+					<tr><td><a href='#PeekInt'>PeekInt</a> : Int ( address:Int )</td></tr>
+				
+					<tr><td><a href='#PeekShort'>PeekShort</a> : Int ( address:Int )</td></tr>
+				
+					<tr><td><a href='#PokeByte'>PokeByte</a> : Void ( address:Int, value:Int )</td></tr>
+				
+					<tr><td><a href='#PokeFloat'>PokeFloat</a> : Void ( address:Int, value:Float )</td></tr>
+				
+					<tr><td><a href='#PokeInt'>PokeInt</a> : Void ( address:Int, value:Int )</td></tr>
+				
+					<tr><td><a href='#PokeShort'>PokeShort</a> : Void ( address:Int, value:Int )</td></tr>
+				
+				</table>
+				</div>
+			
+			
+			
+				<div class='box'>
+				<h2>Functions</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#Load'>Load</a> : DataBuffer ( path:String )</td></tr>
+				
+				</table>
+				</div>
+			
+			
+			
+				<a name='long_desc'></a>
+				<div class='box'>
+				<h2>Detailed Discussion</h2>
+				Databuffer objects provide storage for arbitrary data.
+<p>
+Data may be written to a databufffer using one of the 'poke' methods, and read from a databuffer using one of the 'peek' methods.
+<p>
+On the HTML5 target, there are some restrictions on how databuffers may be used:
+<p>
+<li>Internet Explorer does not currently support databuffers.</li>
+<p>
+<li>On Firefox, peeks and pokes must be on 'naturally aligned' boundaries. PeekShort/PokeShort addresses must be a multiple of 2, and PeekInt/PokeInt/PeekFloat/PokeFloat addresses must be a multiple of 4.</li>
+				</div>
+			
+			
+			
+			
+			
+			
+			
+
+			
+
+			
+				<div class='box'>
+				<h2>Method Documentation</h2>
+				
+					<a name='Discard'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method Discard : Void ()</h3>
+					Releases any resources used by the data buffer.
+<p>
+Once discarded, a data buffer should not be used again.
+					
+					
+					</div>
+				
+					<a name='Length'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method Length : Int ()</h3>
+					Returns the length, in bytes, of the data buffer.
+					
+					
+					</div>
+				
+					<a name='PeekByte'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekByte : Int ( address:Int )</h3>
+					Returns the 8 bit byte contained in the databuffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PeekFloat'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekFloat : Float ( address:Int )</h3>
+					Returns the 32 bit float value stored in the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PeekInt'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekInt : Int ( address:Int )</h3>
+					Returns the 32 bit int value contained in the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PeekShort'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekShort : Int ( address:Int )</h3>
+					Returns the 16 bit int value contained in the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PokeByte'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeByte : Void ( address:Int, value:Int )</h3>
+					Writes an 8 bit byte into the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PokeFloat'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeFloat : Void ( address:Int, value:Float )</h3>
+					Writes a 32 bit float value into the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PokeInt'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeInt : Void ( address:Int, value:Int )</h3>
+					Writes a 32 bit int value into the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PokeShort'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeShort : Void ( address:Int, value:Int )</h3>
+					Writes a 16 bit int value into the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+				</div>
+			
+
+			
+				<div class='box'>
+				<h2>Function Documentation</h2>
+				
+					<a name='Load'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function Load : <a href='_brl.databuffer.DataBuffer.html'>DataBuffer</a> ( path:String )</h3>
+					Creates and returns a databuffer containing the binary contents of the specified file.
+<p>
+If the file does not exist or cannot be read, null is returned instead.
+					
+					
+					</div>
+				
+				</div>
+			
+
+		
+		
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+		<br><br><br><br><br><br><br><br><br><br>
+					
+		</div>
+
+	</div>
+	
+	<div id='footer'>
+
+	</div>
+
+</div> 
+
+</body>
+</html>
