@@ -1,0 +1,13 @@
+
+# Module brl.datastream
+
+# Class brl.datastream.DataStream Extends Stream
+
+# Method New(buffer:DataBuffer)
+
+Creates a datastream that wraps the specified databuffer.
+
+## Parameters
+
+@buffer - databuffer to wrap.
+

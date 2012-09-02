@@ -1,0 +1,60 @@
+
+# Module brl.tcpstream
+
+A tcpstream represents a TCP connection to a host on the internet.
+
+Please see the [[TCPStream]] class reference for more information.
+
+Note that TCP streams are only currently currently supported on the glfw, ios, android and stdcpp targets.
+
+
+# Class brl.tcpstream.TCPStream Extends Stream
+
+A tcpstream represents a TCP connection to a host on the internet.
+
+After creating a tcpstream, you should use the [[Connect]] method to make a connection to a remote host.
+
+Note that TCP streams are only currently currently supported on the glfw, ios, android and stdcpp targets.
+
+Here is a simnple example of using a tcpstream to read the monkeycoder site home page:
+
+<pre>
+\#If TARGET\<\>"glfw"
+\#Error "Please build with glfw target!"
+\#Endif
+
+Import brl.tcpstream
+
+Function Main()
+
+	Local stream:=New TCPStream
+	
+	If Not stream.Connect( "www.monkeycoder.co.nz",80 )
+		Print "Failed to connect!"
+		Return
+	Endif
+	
+	Print "Connected!"
+	
+	stream.WriteLine "GET / HTTP/1.0"
+	stream.WriteLine "Host: www.monkeycoder.co.nz"
+	stream.WriteLine ""
+	
+	While Not stream.Eof()
+		Local line:=stream.ReadLine()
+		Print line
+	Wend
+	
+	stream.Close
+	
+	Print "BYE!!!!"
+
+End
+</pre>
+
+
+# Method Connect:Bool(host:String,port:Int)
+
+Attempts to connect to the specified host and returns true if successful.
+
+Once connected, you can use stream read/write commands to communicate with the host.
