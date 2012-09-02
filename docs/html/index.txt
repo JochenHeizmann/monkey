@@ -73,6 +73,7 @@ Clear:_monkey.list.List.html#Clear
 Clear (2):_monkey.map.Map.html#Clear
 Clear (3):_monkey.set.Set.html#Clear
 Clear (4):_monkey.stack.Stack.html#Clear
+Close:_brl.stream.Stream.html#Close
 Cls:_mojo.graphics.html#Cls
 Compare:_monkey.boxes.FloatObject.html#Compare
 Compare (10):_monkey.map.IntMap.html#Compare
@@ -86,6 +87,7 @@ Compare (6):_monkey.list.IntList.html#Compare
 Compare (7):_monkey.list.List.html#Compare
 Compare (8):_monkey.list.StringList.html#Compare
 Compare (9):_monkey.map.FloatMap.html#Compare
+Connect:_brl.tcpstream.TCPStream.html#Connect
 Const:Const.html
 ConstInfo:_reflection.ConstInfo.html
 Contains:_monkey.lang.String.html#Contains
@@ -106,6 +108,8 @@ CreateImage:_mojo.graphics.html#CreateImage
 Credits:Credits.html
 CurrentDir:_os.html#CurrentDir
 DataBuffer:_opengl.databuffer.DataBuffer.html
+DataBuffer (2):_brl.databuffer.DataBuffer.html
+DataStream:_brl.datastream.DataStream.html
 DebugLog:_monkey.lang.html#DebugLog
 DebugStop:_monkey.lang.html#DebugStop
 DefaultFlags:_mojo.graphics.Image.html#DefaultFlags
@@ -116,9 +120,10 @@ Demo:Demo.html
 DeviceHeight:_mojo.graphics.html#DeviceHeight
 DeviceWidth:_mojo.graphics.html#DeviceWidth
 DisableKeyboard:_mojo.input.html#DisableKeyboard
-Discard:_mojo.audio.Sound.html#Discard
-Discard (2):_mojo.graphics.Image.html#Discard
-Discard (3):_opengl.databuffer.DataBuffer.html#Discard
+Discard:_brl.databuffer.DataBuffer.html#Discard
+Discard (2):_mojo.audio.Sound.html#Discard
+Discard (3):_mojo.graphics.Image.html#Discard
+Discard (4):_opengl.databuffer.DataBuffer.html#Discard
 DrawCircle:_mojo.graphics.html#DrawCircle
 DrawEllipse:_mojo.graphics.html#DrawEllipse
 DrawImage:_mojo.graphics.html#DrawImage
@@ -140,6 +145,7 @@ EnableKeyboard:_mojo.input.html#EnableKeyboard
 End:End.html
 Endif:Endif.html
 EndsWith:_monkey.lang.String.html#EndsWith
+Eof:_brl.stream.Stream.html#Eof
 Equals:_monkey.boxes.BoolObject.html#Equals
 Equals (2):_monkey.boxes.FloatObject.html#Equals
 Equals (3):_monkey.boxes.IntObject.html#Equals
@@ -854,6 +860,7 @@ GetMatrix:_mojo.graphics.html#GetMatrix
 GetMethod:_reflection.ClassInfo.html#GetMethod
 GetMethods:_reflection.ClassInfo.html#GetMethods
 GetScissor:_mojo.graphics.html#GetScissor
+GetStream:_brl.stream.StreamError.html#GetStream
 GetValue:_reflection.ConstInfo.html#GetValue
 GetValue (2):_reflection.FieldInfo.html#GetValue
 GetValue (3):_reflection.GlobalInfo.html#GetValue
@@ -1013,11 +1020,14 @@ Keywords:Keywords.html
 Language reference:Language reference.html
 Last:_monkey.list.List.html#Last
 LastNode:_monkey.list.List.html#LastNode
-Length:_monkey.lang.Array.html#Length
-Length (2):_monkey.lang.String.html#Length
-Length (3):_monkey.stack.Stack.html#Length
+Length:_brl.databuffer.DataBuffer.html#Length
+Length (2):_brl.stream.Stream.html#Length
+Length (3):_monkey.lang.Array.html#Length
+Length (4):_monkey.lang.String.html#Length
+Length (5):_monkey.stack.Stack.html#Length
 Links:Links.html
 List:_monkey.list.List.html
+Load:_brl.databuffer.DataBuffer.html#Load
 LoadDir:_os.html#LoadDir
 LoadDir (2):_os.html#LoadDir
 LoadImage:_mojo.graphics.html#LoadImage
@@ -1083,18 +1093,27 @@ ParameterTypes:_reflection.FunctionInfo.html#ParameterTypes
 ParameterTypes (2):_reflection.MethodInfo.html#ParameterTypes
 PauseChannel:_mojo.audio.html#PauseChannel
 PauseMusic:_mojo.audio.html#PauseMusic
-PeekByte:_opengl.databuffer.DataBuffer.html#PeekByte
-PeekFloat:_opengl.databuffer.DataBuffer.html#PeekFloat
-PeekInt:_opengl.databuffer.DataBuffer.html#PeekInt
-PeekShort:_opengl.databuffer.DataBuffer.html#PeekShort
+PeekByte:_brl.databuffer.DataBuffer.html#PeekByte
+PeekByte (2):_opengl.databuffer.DataBuffer.html#PeekByte
+PeekFloat:_brl.databuffer.DataBuffer.html#PeekFloat
+PeekFloat (2):_opengl.databuffer.DataBuffer.html#PeekFloat
+PeekInt:_brl.databuffer.DataBuffer.html#PeekInt
+PeekInt (2):_opengl.databuffer.DataBuffer.html#PeekInt
+PeekShort:_brl.databuffer.DataBuffer.html#PeekShort
+PeekShort (2):_opengl.databuffer.DataBuffer.html#PeekShort
 PlayMusic:_mojo.audio.html#PlayMusic
 PlaySound:_mojo.audio.html#PlaySound
-PokeByte:_opengl.databuffer.DataBuffer.html#PokeByte
-PokeFloat:_opengl.databuffer.DataBuffer.html#PokeFloat
-PokeInt:_opengl.databuffer.DataBuffer.html#PokeInt
-PokeShort:_opengl.databuffer.DataBuffer.html#PokeShort
+PokeByte:_brl.databuffer.DataBuffer.html#PokeByte
+PokeByte (2):_opengl.databuffer.DataBuffer.html#PokeByte
+PokeFloat:_brl.databuffer.DataBuffer.html#PokeFloat
+PokeFloat (2):_opengl.databuffer.DataBuffer.html#PokeFloat
+PokeInt:_brl.databuffer.DataBuffer.html#PokeInt
+PokeInt (2):_opengl.databuffer.DataBuffer.html#PokeInt
+PokeShort:_brl.databuffer.DataBuffer.html#PokeShort
+PokeShort (2):_opengl.databuffer.DataBuffer.html#PokeShort
 Pop:_monkey.stack.Stack.html#Pop
 PopMatrix:_mojo.graphics.html#PopMatrix
+Position:_brl.stream.Stream.html#Position
 Pow:_monkey.math.html#Pow
 PrevNode:_monkey.list.Node.html#PrevNode
 Print:_monkey.lang.html#Print
@@ -1103,7 +1122,12 @@ Property:Property.html
 Public:Public.html
 Push:_monkey.stack.Stack.html#Push
 PushMatrix:_mojo.graphics.html#PushMatrix
+Read:_brl.stream.Stream.html#Read
+ReadByte:_brl.stream.Stream.html#ReadByte
+ReadFloat:_brl.stream.Stream.html#ReadFloat
+ReadInt:_brl.stream.Stream.html#ReadInt
 ReadPixels:_mojo.graphics.html#ReadPixels
+ReadShort:_brl.stream.Stream.html#ReadShort
 RealPath:_os.html#RealPath
 Remove:_monkey.list.Node.html#Remove
 Remove (2):_monkey.map.Map.html#Remove
@@ -1129,6 +1153,7 @@ SaveState:_mojo.app.html#SaveState
 SaveString:_os.html#SaveString
 Scale:_mojo.graphics.html#Scale
 Seed:_monkey.random.html#Seed
+Seek:_brl.stream.Stream.html#Seek
 Self:Self.html
 Set:_monkey.set.Set.html
 Set (2):_monkey.map.Map.html#Set
@@ -1164,6 +1189,10 @@ StartsWith:_monkey.lang.String.html#StartsWith
 Step:Step.html
 StopChannel:_mojo.audio.html#StopChannel
 StopMusic:_mojo.audio.html#StopMusic
+Stream:_brl.stream.Stream.html
+StreamError:_brl.stream.StreamError.html
+StreamReadError:_brl.stream.StreamReadError.html
+StreamWriteError:_brl.stream.StreamWriteError.html
 Strict:Strict.html
 String:_monkey.lang.String.html
 StringClass:_reflection.html#StringClass
@@ -1177,6 +1206,7 @@ StripDir:_os.html#StripDir
 StripExt:_os.html#StripExt
 Super:Super.html
 SuperClass:_reflection.ClassInfo.html#SuperClass
+TCPStream:_brl.tcpstream.TCPStream.html
 TWOPI:_monkey.math.html#TWOPI
 Tan:_monkey.math.html#Tan
 Tanr:_monkey.math.html#Tanr
@@ -1202,9 +1232,10 @@ ToFloat (2):_monkey.boxes.IntObject.html#ToFloat
 ToInt:_monkey.boxes.FloatObject.html#ToInt
 ToInt (2):_monkey.boxes.IntObject.html#ToInt
 ToLower:_monkey.lang.String.html#ToLower
-ToString:_monkey.boxes.FloatObject.html#ToString
-ToString (2):_monkey.boxes.IntObject.html#ToString
-ToString (3):_monkey.boxes.StringObject.html#ToString
+ToString:_brl.stream.StreamError.html#ToString
+ToString (2):_monkey.boxes.FloatObject.html#ToString
+ToString (3):_monkey.boxes.IntObject.html#ToString
+ToString (4):_monkey.boxes.StringObject.html#ToString
 ToUpper:_monkey.lang.String.html#ToUpper
 Top:_monkey.stack.Stack.html#Top
 TouchDown:_mojo.input.html#TouchDown
@@ -1237,14 +1268,22 @@ Void:Void.html
 Wend:Wend.html
 While:While.html
 Width:_mojo.graphics.Image.html#Width
+Write:_brl.stream.Stream.html#Write
+WriteByte:_brl.stream.Stream.html#WriteByte
+WriteFloat:_brl.stream.Stream.html#WriteFloat
+WriteInt:_brl.stream.Stream.html#WriteInt
 WritePixels:_mojo.graphics.Image.html#WritePixels
+WriteShort:_brl.stream.Stream.html#WriteShort
 XPadding:_mojo.graphics.Image.html#XPadding
 XYPadding:_mojo.graphics.Image.html#XYPadding
 YPadding:_mojo.graphics.Image.html#YPadding
 app:_mojo.app.html
 audio:_mojo.audio.html
 boxes:_monkey.boxes.html
+brl:_brl.html
 databuffer:_opengl.databuffer.html
+databuffer (2):_brl.databuffer.html
+datastream:_brl.datastream.html
 glActiveTexture:_opengl.gles20.html#glActiveTexture
 glActiveTexture (2):_opengl.gles11.html#glActiveTexture
 glAlphaFunc:_opengl.gles11.html#glAlphaFunc
@@ -1507,6 +1546,8 @@ random:_monkey.random.html
 reflection:_reflection.html
 set:_monkey.set.html
 stack:_monkey.stack.html
+stream:_brl.stream.html
+tcpstream:_brl.tcpstream.html
 value:_monkey.boxes.ArrayObject.html#value
 value (2):_monkey.boxes.BoolObject.html#value
 value (3):_monkey.boxes.FloatObject.html#value

@@ -1307,12 +1307,9 @@ Class Parser
 		Case "local"  decl=New LocalDecl( id,attrs,ty,init )
 		End Select
 		
-		If decl.IsExtern() 
-			If CParse( "=" )
-				decl.munged=ParseStringLit()
-			Else
-				decl.munged=decl.ident
-			Endif
+		If decl.IsExtern() Or CParse( "extern" )
+			decl.munged=decl.ident
+			If CParse( "=" ) decl.munged=ParseStringLit()
 		Endif
 	
 		Return decl
@@ -1408,19 +1405,16 @@ Class Parser
 		
 		Local funcDecl:FuncDecl=New FuncDecl( id,attrs,ty,args.ToArray() )
 		
-		If funcDecl.IsExtern()
+		If funcDecl.IsExtern() Or CParse( "extern" )
 			funcDecl.munged=funcDecl.ident
 			If CParse( "=" )
 				funcDecl.munged=ParseStringLit()
 				'Array $resize hack! move outta here...
-				If funcDecl.munged="$resize"
-					funcDecl.retType=Type.emptyArrayType
-				Endif
+				If funcDecl.munged="$resize" funcDecl.retType=Type.emptyArrayType
 			Endif
-			Return funcDecl
 		Endif
 		
-		If funcDecl.IsAbstract() Return funcDecl
+		If funcDecl.IsExtern() Or funcDecl.IsAbstract() Return funcDecl
 		
 		PushBlock funcDecl
 		While _toke<>"end"
@@ -1506,7 +1500,7 @@ Class Parser
 
 		Local classDecl:ClassDecl=New ClassDecl( id,attrs,args.ToArray(),superTy,imps.ToArray() )
 		
-		If classDecl.IsExtern()
+		If classDecl.IsExtern() Or CParse( "extern" )
 			classDecl.munged=classDecl.ident
 			If CParse( "=" ) classDecl.munged=ParseStringLit()
 		Endif

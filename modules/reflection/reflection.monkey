@@ -21,48 +21,6 @@ Const ATTRIBUTE_ABSTRACT=	$04
 Const ATTRIBUTE_FINAL=		$08
 Const ATTRIBUTE_INTERFACE=	$10
 
-'Helper class to box/unbox arrays
-Class ArrayBoxer<T>
-	Function Box:Object( value:T[] )
-		Return New ArrayObject<T>( value )
-	End
-	Function Unbox:T[]( box:Object )
-		Return ArrayObject<T>( box ).value
-	End
-End
-
-Function BoxBool:Object( value:Bool )
-	Return New BoolObject( value )
-End
-
-Function BoxInt:Object( value:Int )
-	Return New IntObject( value )
-End
-
-Function BoxFloat:Object( value:Float )
-	Return New FloatObject( value )
-End
-
-Function BoxString:Object( value:String )
-	Return New StringObject( value )
-End
-
-Function UnboxBool:Bool( box:Object )
-	Return BoolObject( box ).value
-End
-
-Function UnboxInt:Int( box:Object )
-	Return IntObject( box ).value
-End
-
-Function UnboxFloat:Float( box:Object )
-	Return FloatObject( box ).value
-End
-
-Function UnboxString:String( box:Object )
-	Return StringObject( box ).value
-End
-
 Function BoolClass:ClassInfo()
 	Return _boolClass
 End

@@ -7,6 +7,14 @@
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
 
+FILE *fopenFile( String path,const char *mode ){
+#if _WIN32
+	return _wfopen( path.ToCString<wchar_t>(),L"rb" );
+#else
+	return fopen( path.ToCString<char>(),"rb" );
+#endif
+}
+
 int main( int argc,const char **argv ){
 
 	try{

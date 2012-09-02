@@ -45,7 +45,7 @@ Class Test Extends App
 		Else If KeyDown( KEY_DOWN )
 			ty+=.0125
 		Endif
-
+#End
 		If KeyHit( KEY_LMB )
 			c+=1
 			If c=8 c=1
@@ -53,7 +53,6 @@ Class Test Extends App
 			g=(c&2) Shr 1 * 255
 			b=(c&4) Shr 2 * 255
 		Endif
-#end
 
 	End
 
@@ -88,7 +87,7 @@ Class Test Extends App
 				DrawPoint x,y
 			Next
 		Next
-#end		
+#End		
 		SetColor 0,128,255
 		DrawOval 64,64,640-128,480-128
 

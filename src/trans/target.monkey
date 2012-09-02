@@ -70,10 +70,13 @@ Class Target
 			IMAGE_FILES=Env.Get( "IMAGE_FILES" )
 			SOUND_FILES=Env.Get( "SOUND_FILES" )
 			MUSIC_FILES=Env.Get( "MUSIC_FILES" )
+			BINARY_FILES=Env.Get( "BINARY_FILES" )
+			
 			DATA_FILES=TEXT_FILES
 			If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
 			If SOUND_FILES DATA_FILES+="|"+SOUND_FILES
 			If MUSIC_FILES DATA_FILES+="|"+MUSIC_FILES
+			If BINARY_FILES DATA_FILES+="|"+BINARY_FILES
 		
 			Local cd:=CurrentDir
 
@@ -98,6 +101,7 @@ Class Target
 	Field IMAGE_FILES$
 	Field SOUND_FILES$
 	Field MUSIC_FILES$
+	Field BINARY_FILES$
 	
 	'actual data files
 	'
