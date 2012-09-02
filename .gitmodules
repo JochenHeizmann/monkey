@@ -1,0 +1,3 @@
+[submodule "modules/mojo"]
+	path = modules/mojo
+	url = git@github.com:michaelcontento/monkey-mojo.git
