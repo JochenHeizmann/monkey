@@ -73,6 +73,10 @@ Class PsmTarget Extends Target
 				Default
 					Die "Invalid music file type"
 				End
+			Else If MatchPath( r,BINARY_FILES )
+				    cont.Push "    <Content Include=~q"+t+"~q>"
+					cont.Push "      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>"
+					cont.Push "    </Content>"
 			Endif
 
 		Next
