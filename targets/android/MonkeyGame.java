@@ -87,17 +87,22 @@ class MonkeyData{
 		path="monkey/"+path;
 		
 		try{
-			AssetFileDescriptor fd=getAssets().openFd( path );
-			int size=(int)fd.getLength();
-			fd.close();
+			//Man, they sure don't make this easy for ya do they?!?
+			InputStream in=getAssets().open( path );
 			
-			byte[] bytes=new byte[size];
-			InputStream input=getAssets().open( path );
-			int n=input.read( bytes,0,size );
-			input.close();
+			ByteArrayOutputStream out=new ByteArrayOutputStream(1024);
+			byte[] buf=new byte[4096];
 			
-			if( n==size ) return bytes;
+			for(;;){
+				int n=in.read( buf );
+				if( n<0 ) break;
+				out.write( buf,0,n );
+			}
 			
+			in.close();
+			
+			return out.toByteArray();
+
 		}catch( IOException e ){
 		}
 		return null;
