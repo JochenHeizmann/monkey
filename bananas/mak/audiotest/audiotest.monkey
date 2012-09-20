@@ -1,9 +1,4 @@
-
 'A simple audio test app
-
-#GLFW_USE_MINGW="true"
-
-#MOJO_AUTO_SUSPEND_ENABLED="true"
 
 Import mojo
 
@@ -63,7 +58,7 @@ Class MyApp Extends App
 		soundFmt="wav"
 		musicFmt="m4a"
 		'
-#Elseif TARGET="pss"
+#Elseif TARGET="psm"
 		'
 		'PSS supports WAV for sounds, MP3 for music.
 		'

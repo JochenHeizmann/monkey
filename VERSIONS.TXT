@@ -1,6 +1,45 @@
 
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
+
+***** V65 *****
+
+Modules:
+
+mojo - Added async loaders.
+
+mojo - fixed dependancies on bool config settings - changed lots of =="true" to =="1".
+
+reflection - no longer sets reflection filter to '*', so by default nothing will be reflected even if you import reflection.
+
+brl.databuffer - android version no longer supports 'direct' ByteBuffers.
+
+Added brl modules: brl.asyncevent, brl.asyncstream, brl.asynctcpstream, brl.asynctcpconnector, brl.ringbuffer.
+
+
+Targets:
+
+Updated GLFW to 2.7.6 for Mac joypad support - added IOKit framework to glfw xcode project.
+
+Converted all CONFIG.TXT files to monkey preprocessor source.
+
+
+Trans (V1.41):
+
+Target CONFIG.TXT files are now monkey files that are preprocessed only. This means you will need to prefix each CONFIG.TXT line with '#' and enquote params. This is a definite 'delete/update' .build dir change.
+
+Added preprocessor config var += operator, mainly for use with adding reflection filters.
+
+Preprocessor config vars can now be modified, UNTIL they are used - ie: once a config var is evaluated for use with #If, #Print, #Error #blah= etc, it cannot be modified.
+
+Added String.ToChars:Int[]() method.
+
+
+Ted (1.7):
+
+Added find in files to folder context menu.
+
+
 ***** V64 *****
 
 Modules:

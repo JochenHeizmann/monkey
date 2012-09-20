@@ -19,7 +19,7 @@ Class IosTarget Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
+		For Local kv:=Eachin _cfgVars
 			config.Push "#define CFG_"+kv.Key+" "+kv.Value
 		Next
 		Return config.Join( "~n" )

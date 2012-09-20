@@ -1,7 +1,9 @@
 
 'Little app to dump app decls in your app!
 
-'#REFLECTION_FILTER="reflectiontest*"
+#REFLECTION_FILTER="reflectiontest*"
+
+#REFLECTION_FILTER+="|mojo*"
 
 Import reflection
 Import mojo

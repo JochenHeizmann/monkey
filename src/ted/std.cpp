@@ -39,6 +39,7 @@ QString fixPath( QString path ){
     path=QDir::cleanPath( path );
 
 #ifdef Q_OS_WIN32
+    if( path.startsWith( "//" ) ) return path;
     if( path.startsWith( '/' ) ) path=QDir::rootPath()+path.mid( 1 );
     if( path.endsWith( '/' ) && !path.endsWith( ":/" ) ) path=path.left( path.length()-1 );
 #else

@@ -183,6 +183,12 @@ public class bb_std_lang{
 	static public int length( Array arr ){
 		return arr!=null ? arr.Length : 0;
 	}
+	
+	static public int[] toChars( String str ){
+		int[] arr=new int[str.Length];
+		for( int i=0;i<str.Length;++i ) arr[i]=(int)str[i];
+		return arr;
+	}
 }
 
 class ThrowableObject : Exception{

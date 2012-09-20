@@ -4,6 +4,9 @@
 //${CONFIG_BEGIN}
 //${CONFIG_END}
 
+#define _QUOTE(X) #X
+#define _STRINGIZE( X ) _QUOTE(X)
+
 //For monkey main to set...
 int (*runner)();
 
@@ -18,10 +21,11 @@ void GameMain(){
 //${TRANSCODE_END}
 
 FILE *fopenFile( String path,const char *mode ){
+	if( path.ToLower().StartsWith( "monkey://data/" ) ) path=String("data/")+path.Slice(14);
 #if _WIN32
-	return _wfopen( (String("data/")+path).ToCString<wchar_t>(),L"rb" );
+	return _wfopen( path.ToCString<wchar_t>(),L"rb" );
 #else
-	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+	return fopen( path.ToCString<char>(),"rb" );
 #endif
 }
 
@@ -32,7 +36,15 @@ static String extractExt( String path ){
 }
 
 unsigned char *loadImage( String path,int *width,int *height,int *depth ){
-	return stbi_load( (String("data/")+path).ToCString<char>(),width,height,depth,0 );
+	FILE *f=fopenFile( path,"rb" );
+	if( !f ) return 0;
+	unsigned char *data=stbi_load_from_file( f,width,height,depth,0 );
+	fclose( f );
+	return data;
+}
+
+unsigned char *loadImage( unsigned char *data,int length,int *width,int *height,int *depth ){
+	return stbi_load_from_memory( data,length,width,height,depth,0 );
 }
 
 void unloadImage( unsigned char *data ){
@@ -112,9 +124,15 @@ static unsigned char *loadSound_wav( String path,int *plength,int *pchannels,int
 
 static unsigned char *loadSound_ogg( String path,int *length,int *channels,int *format,int *hertz ){
 
+	FILE *f=fopenFile( path,"rb" );
+	if( !f ) return 0;
+	
 	int error;
-	stb_vorbis *v=stb_vorbis_open_filename( (String("data/")+path).ToCString<char>(),&error,0 );
-	if( !v ) return 0;
+	stb_vorbis *v=stb_vorbis_open_file( f,0,&error,0 );
+	if( !v ){
+		fclose( f );
+		return 0;
+	}
 	
 	stb_vorbis_info info=stb_vorbis_get_info( v );
 	
@@ -142,6 +160,7 @@ static unsigned char *loadSound_ogg( String path,int *length,int *channels,int *
 	*hertz=info.sample_rate;
 	
 	stb_vorbis_close(v);
+	fclose( f );
 
 	return (unsigned char*)data;
 }
@@ -198,7 +217,7 @@ int main( int argc,const char *argv[] ){
 
 	glfwSetWindowPos( (desktopMode.Width-w)/2,(desktopMode.Height-h)/2 );	
 
-	glfwSetWindowTitle( CFG_GLFW_WINDOW_TITLE );
+	glfwSetWindowTitle( _STRINGIZE(CFG_GLFW_WINDOW_TITLE) );
 	
 	if( (alcDevice=alcOpenDevice( 0 )) ){
 		if( (alcContext=alcCreateContext( alcDevice,0 )) ){

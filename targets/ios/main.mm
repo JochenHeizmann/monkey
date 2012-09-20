@@ -203,7 +203,8 @@
 //${TRANSCODE_END}
 
 FILE *fopenFile( String path,const char *mode ){
-	return fopen( (String("data/")+path).ToCString<char>(),"rb" );
+	if( path.StartsWith( "monkey://data/" ) ) path=String("data/")+path.Slice(14);
+	return fopen( path.ToCString<char>(),"rb" );
 }
 
 //***** main.m *****

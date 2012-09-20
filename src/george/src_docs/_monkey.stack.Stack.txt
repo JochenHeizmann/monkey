@@ -63,7 +63,18 @@ This will increase the length of the stack by 1.
 
 ## Parameters
 
-value - value to push.
+@value - value to push.
+
+
+# Method Push:Int(values:T[])
+
+Pushes an array of values on the top of the stack starting with element 0.
+
+This will increase the length of the stack by the length of the array.
+
+## Parameters
+
+@values - values to push.
 
 
 # Method Pop:T()

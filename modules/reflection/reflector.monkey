@@ -103,9 +103,12 @@ Class Reflector
 	End
 	
 	Function MatchPath?( text$,pattern$ )
+	
 		Local alts:=pattern.Split( "|" )
 
 		For Local alt:=Eachin alts
+			If Not alt Continue
+			
 			Local bits:=alt.Split( "*" )
 			If bits.Length=1
 				If bits[0]=text Return True
@@ -501,11 +504,12 @@ Class Reflector
 	End
 
 	Method Semant( app:AppDecl )
-	
-		Local filter:=Env.Get( "REFLECTION_FILTER" )
+
+		Local filter:=GetCfgVar( "REFLECTION_FILTER" )
 		If Not filter Return
+		filter=filter.Replace( ";","|" )
 		
-		debug=Env.Get( "DEBUG_REFLECTION" )="true"
+		debug=GetCfgVar( "DEBUG_REFLECTION" )="1"
 		
 		For Local mdecl:=Eachin app.imported.Values()
 			Local path:=ModPath( mdecl )
@@ -651,6 +655,7 @@ Class Reflector
 		Local source:=output.Join( "~n" )
 		
 		Local attrs:=DECL_REFLECTOR
+		
 		If debug
 			Print "Reflection source:~n"+source
 		Else

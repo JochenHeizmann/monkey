@@ -55,6 +55,18 @@ Class Stack<T>
 		data[length]=value
 		length+=1
 	End
+	
+	Method Push( values:T[],offset:Int=0 )
+		For Local i:=offset Until values.Length
+			Push values[i]
+		Next
+	End
+
+	Method Push( values:T[],offset:Int,count:Int )
+		For Local i:=0 Until count
+			Push values[offset+i]
+		Next
+	End
 
 	Method Pop:T()
 		length-=1
@@ -124,7 +136,7 @@ Private
 
 	Field data:T[]
 	Field length
-
+	
 End
 
 Class Enumerator<T>

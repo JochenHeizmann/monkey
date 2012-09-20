@@ -158,6 +158,8 @@ pre{
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
 	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
+	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
@@ -195,87 +197,85 @@ pre{
 		<div id='content'>
 		
 		
-			<h1> App config settings</h1>
+			<p>
+<h1> App config settings</h1>
 <p>
 App config settings are settings that affect how a project is built.
 <p>
 These are used for features that are highly target specific, or that somehow affect the build process in some way and can't be implemented using plain Monkey code.
 <p>
-There are 3 ways to specify app config settings:
+There are 2 ways to specify app config settings:
 <p>
-<li>With <a href='Trans.html'>Trans</a> using the command line, eg: <code>trans +OPENGL_GLES20_ENABLED=true -target=html5 myapp.monkey</code></li>
+<li>With <a href='Trans.html'>Trans</a> using the command line.</li>
 <p>
-<li>In Monkey source code using the preprocessor, eg: <code>#OPENGL_GLES20_ENABLED="true"</code></li>
+<li>In Monkey source code using the preprocessor, eg: <code>#OPENGL_GLES20_ENABLED=true</code>. Settings made this way will not overwrite settings passed to Trans.</li>
 <p>
-<li>By editing the CONFIG.TXT files in your apps .build/target folder.</li>
+<li>By editing the CONFIG.TXT file in your apps .build/target folder. Settings in CONFIG.TXT will not overwrite any settings passed to Trans or in Monkey source code, so this provides a mechanism for defining 'default' settings.</li>
 <p>
-Once set, an app config setting can't be changed. Any attempt to change it will silently fail.
-<p>
-The following app config settings are currently supported:
+The following app config settings are currently supported, shown with example values.
 <p>
 <pre>
-'Data file filters
+'Data file filters - note: actual allowable values depends on target
 '
-TEXT_FILES:String
-IMAGE_FILES:String
-SOUND_FILES:String
-MUSIC_FILES:String
-'
+#TEXT_FILES="*.txt|*.xml|*.json"
+#IMAGE_FILES="*.png|*.jpg"
+#SOUND_FILES="*.wav|*.ogg"
+#MUSIC_FILES="*.wav|*.ogg"
+#BINARY_FILES="*.bin|*.dat"
+<p>
 'Mojo settings
 '
-MOJO_HICOLOR_TEXTURES:Bool=true
-MOJO_IMAGE_FILTERING_ENABLED:Bool=true
-'
+#MOJO_AUTO_SUSPEND_ENABLED=false
+#MOJO_HICOLOR_TEXTURES=true
+#MOJO_IMAGE_FILTERING_ENABLED=true
+<p>
 'GLFW settings
 '
-GLFW_WINDOW_TITLE:String="Monkey Game"
-GLFW_WINDOW_WIDTH:Int=640
-GLFW_WINDOW_HEIGHT:Int=480
-GLFW_WINDOW_RESIZABLE:Bool=false
-GLFW_WINDOW_FULLSCREEN:Bool=false
-'
+#GLFW_WINDOW_TITLE="Monkey Game"
+#GLFW_WINDOW_WIDTH=640
+#GLFW_WINDOW_HEIGHT=480
+#GLFW_WINDOW_RESIZABLE=false
+#GLFW_WINDOW_FULLSCREEN=false
+<p>
 'XNA settings
 '
-XNA_WINDOW_WIDTH:Int=640
-XNA_WINDOW_HEIGHT:Int=480
-XNA_WINDOW_WIDTH_XBOX:Int=640
-XNA_WINDOW_HEIGHT_XBOX:Int=480
-XNA_WINDOW_WIDTH_PHONE:Int=320
-XNA_WINDOW_HEIGHT_PHONE:Int=480
-XNA_WINDOW_RESIZABLE:Bool=false
-XNA_WINDOW_FULLSCREEN:Bool=false
-'
+#XNA_WINDOW_WIDTH=640
+#XNA_WINDOW_HEIGHT=480
+#XNA_WINDOW_WIDTH_XBOX=640
+#XNA_WINDOW_HEIGHT_XBOX=480
+#XNA_WINDOW_WIDTH_PHONE=320
+#XNA_WINDOW_HEIGHT_PHONE=480
+#XNA_WINDOW_RESIZABLE=false
+#XNA_WINDOW_FULLSCREEN=false
+<p>
 'IOS settings
 '
-IOS_RETINA_ENABLED:Bool=true
-IOS_ACCELEROMETER_ENABLED:Bool=true
-IOS_DISPLAY_LINK_ENABLED:Bool=false
-'
+#IOS_RETINA_ENABLED=true
+#IOS_ACCELEROMETER_ENABLED=true
+#IOS_DISPLAY_LINK_ENABLED=false
+<p>
 'Android settings
 '
-ANDROID_APP_LABEL:String="Monkey Game"
-ANDROID_APP_PACKAGE:String=com.monkey
-ANDROID_SCREEN_ORIENTATION=portrait  'one of: user, portrait, landscape, behind, sensor, nosensor, unspecified
-ANDROID_NATIVE_GL_ENABLED=false
+#ANDROID_APP_LABEL="Monkey Game"
+#ANDROID_APP_PACKAGE="com.monkey"
+#ANDROID_SCREEN_ORIENTATION="portrait"  	'one of: user, portrait, landscape, behind, sensor, nosensor, unspecified
+#ANDROID_NATIVE_GL_ENABLED=false
+<p>
+'OpenGL settings - valid for html5, glfw, android, ios targets
 '
-'HTML5 settings
-'
-HTML5_SUSPEND_ON_BLUR_ENABLED:Bool=false
-'
-'OpenGL settings - valid for html5, glfw, android, ios
-'
-OPENGL_GLES20_ENABLED:Bool=false
-OPENGL_DEPTH_BUFFER_ENABLED:Bool=false
-'
+#OPENGL_GLES20_ENABLED=false
+#OPENGL_DEPTH_BUFFER_ENABLED=false
+<p>
 'Reflection settings
 '
-REFLECTION_FILTER:String="*"
-'
+#REFLECTION_FILTER="mymodule*|mojo*"
+<p>
 'C++ settings - valid for glfw, ios, stdcpp
 '
-CPP_INCREMENTAL_GC:Int=1
-CPP_DOUBLE_PRECISION_FLOATS:Int=0
+#CPP_DOUBLE_PRECISION_FLOATS=False
 </pre>
+<p>
+Not all settings are supported by all targets, and when not supported they will silently fail.
 <p>
 		
 		
@@ -283,6 +283,48 @@ CPP_DOUBLE_PRECISION_FLOATS:Int=0
 			
 		
 		
+		
+			
+			
+			
+			
+			
+			</div>
+
+			
+		
+			
+			
+			
+			
+			
+		
+			
+		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+			
+
+			
+
+			
+
 		
 		
 		<br><br><br><br><br><br><br><br><br><br>

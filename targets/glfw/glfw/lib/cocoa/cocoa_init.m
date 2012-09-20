@@ -146,6 +146,8 @@ int _glfwPlatformInit( void )
 
     _glfwInitTimer();
 
+    _glfwInitJoysticks();
+
     _glfwLibrary.eventSource = CGEventSourceCreate( kCGEventSourceStateHIDSystemState );
     if( !_glfwLibrary.eventSource )
     {
@@ -156,7 +158,7 @@ int _glfwPlatformInit( void )
                                                     0.0 );
 
     _glfwPlatformSetTime( 0.0 );
-    
+
     return GL_TRUE;
 }
 
@@ -179,6 +181,8 @@ int _glfwPlatformTerminate( void )
         CFRelease( _glfwLibrary.eventSource );
         _glfwLibrary.eventSource = NULL;
     }
+
+    _glfwTerminateJoysticks();
 
     [_glfwLibrary.autoreleasePool release];
     _glfwLibrary.autoreleasePool = nil;

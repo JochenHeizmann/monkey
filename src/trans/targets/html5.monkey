@@ -29,8 +29,8 @@ Class Html5Target Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
-			config.Push "CFG_"+kv.Key+"="+LangEnquote( kv.Value )+";"
+		For Local kv:=Eachin _cfgVars
+			config.Push "CFG_"+kv.Key+"="+Enquote( kv.Value,"js" )+";"
 		Next
 		Return config.Join( "~n" )
 	End

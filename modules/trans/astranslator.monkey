@@ -263,12 +263,13 @@ Class AsTranslator Extends CTranslator
 		Case "tolower" Return texpr+".toLowerCase()"
 		Case "toupper" Return texpr+".toUpperCase()"
 		Case "contains" Return Bra( texpr+".indexOf"+Bra( arg0 )+"!=-1" )
-		Case "startswith" Return "string_starts_with"+Bra( texpr+","+arg0 )
-		Case "endswith" Return "string_ends_with"+Bra( texpr+","+arg0 )
+		Case "startswith" Return "string_startswith"+Bra( texpr+","+arg0 )
+		Case "endswith" Return "string_endswith"+Bra( texpr+","+arg0 )
+		Case "tochars" Return "string_tochars"+Bra( texpr )
 
 		'string functions
 		Case "fromchar" Return "String.fromCharCode"+Bra( arg0 )
-		Case "fromchars" Return "string_from_chars"+Bra( arg0 )
+		Case "fromchars" Return "string_fromchars"+Bra( arg0 )
 
 		'trig functions - degrees
 		Case "sin","cos","tan" Return "Math."+id+Bra( Bra( arg0 )+"*D2R" )

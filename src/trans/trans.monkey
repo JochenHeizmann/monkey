@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.40"
+Const VERSION$="1.41"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
@@ -35,7 +35,7 @@ Function LoadConfig()
 
 	Local cfg$=LoadString( cfgpath )
 	
-	Env.Set "TRANSDIR",ExtractDir( AppPath )
+	SetCfgVar "TRANSDIR",ExtractDir( AppPath )
 
 	For Local line$=Eachin cfg.Split( "~n" )
 	
@@ -52,7 +52,7 @@ Function LoadConfig()
 		
 		Local path$=StripQuotes( rhs )
 
-		While path.EndsWith( "/" ) Or path.EndsWith( "\" )
+		While path.EndsWith( "/" ) Or path.EndsWith( "\" ) 
 			path=path[..-1]
 		Wend
 		
@@ -76,10 +76,6 @@ Function LoadConfig()
 		Case "MINGW_PATH"
 			If Not MINGW_PATH And FileType( path )=FILETYPE_DIR
 				MINGW_PATH=path
-			Endif
-		Case "PSS_PATH"
-			If Not PSS_PATH And FileType( path )=FILETYPE_DIR
-				PSS_PATH=path
 			Endif
 		Case "PSM_PATH"
 			If Not PSM_PATH And FileType( path )=FILETYPE_DIR
@@ -126,7 +122,7 @@ Function LoadConfig()
 		
 	End
 	
-	Env.Remove "TRANSDIR"
+	SetCfgVar "TRANSDIR",""
 
 	Return True
 End
@@ -205,7 +201,7 @@ Function Main()
 				Die "Unrecognized command line option: "+lhs
 			End
 		Else If lhs.StartsWith( "+" )
-			Env.Set lhs[1..],rhs
+			SetCfgVar lhs[1..],rhs
 		Else
 			Die "Command line arg error: "+arg
 		End
@@ -215,10 +211,6 @@ Function Main()
 	If Not target Die "No target specified"
 	
 	ENV_CONFIG=CASED_CONFIG.ToLower()
-	
-	CONFIG_DEBUG=(ENV_CONFIG="debug")
-	CONFIG_RELEASE=(ENV_CONFIG="release")
-	CONFIG_PROFILE=(ENV_CONFIG="profile")
 	
 	If Not OPT_ACTION OPT_ACTION=ACTION_BUILD
 	

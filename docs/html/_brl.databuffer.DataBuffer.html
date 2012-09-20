@@ -158,6 +158,8 @@ pre{
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
 	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
+	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
@@ -213,9 +215,10 @@ pre{
 			
 			
 			
-				<h1>Class DataBuffer
+				<h1>Class DataBuffer</h1>
 				
-				</h1>
+				
+				
 			
 			
 			
@@ -232,11 +235,22 @@ pre{
 			
 			
 			
+			
+			
 		
 			
 		
 			
 			
+			
+				<div class='box'>
+				<h2>Constructors</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#New'>New</a>  ( length:Int )</td></tr>
+				
+				</table>
+				</div>
 			
 			
 			
@@ -246,11 +260,21 @@ pre{
 				<h2>Methods</h2>
 				<table class='small'>
 				
+					<tr><td><a href='#CopyBytes'>CopyBytes</a> : Void ( srcAddress:Int, dst:DataBuffer, dstAddress:Int, count:Int )</td></tr>
+				
 					<tr><td><a href='#Discard'>Discard</a> : Void ()</td></tr>
 				
 					<tr><td><a href='#Length'>Length</a> : Int ()</td></tr>
 				
 					<tr><td><a href='#PeekByte'>PeekByte</a> : Int ( address:Int )</td></tr>
+				
+					<tr><td><a href='#PeekBytes'>PeekBytes</a> : Int[] ( address:Int=0 )</td></tr>
+				
+					<tr><td><a href='#PeekBytes (2)'>PeekBytes</a> : Int[] ( address:Int, count:Int )</td></tr>
+				
+					<tr><td><a href='#PeekBytes (3)'>PeekBytes</a> : Void ( address:Int, bytes:int[], address:Int=0 )</td></tr>
+				
+					<tr><td><a href='#PeekBytes (4)'>PeekBytes</a> : Void ( address:Int, bytes:int[], address:Int, count:Int )</td></tr>
 				
 					<tr><td><a href='#PeekFloat'>PeekFloat</a> : Float ( address:Int )</td></tr>
 				
@@ -259,6 +283,10 @@ pre{
 					<tr><td><a href='#PeekShort'>PeekShort</a> : Int ( address:Int )</td></tr>
 				
 					<tr><td><a href='#PokeByte'>PokeByte</a> : Void ( address:Int, value:Int )</td></tr>
+				
+					<tr><td><a href='#PokeBytes'>PokeBytes</a> : Void ( address:Int, bytes:Int[], offset:Int=0 )</td></tr>
+				
+					<tr><td><a href='#PokeBytes (2)'>PokeBytes</a> : Void ( address:Int, bytes:Int[], offset:Int, count:Int )</td></tr>
 				
 					<tr><td><a href='#PokeFloat'>PokeFloat</a> : Void ( address:Int, value:Float )</td></tr>
 				
@@ -289,6 +317,8 @@ pre{
 <p>
 Data may be written to a databufffer using one of the 'poke' methods, and read from a databuffer using one of the 'peek' methods.
 <p>
+Parameters that specify buffer addresses or array indices for data transfers are not currently range checked. In general, you should always ensure that these are always valid, ie: >=0 And <=length of the buffer/array. Any transfer count parameters should always be >=0, but will always be clipped to make sure no overreads or overwrites occur.
+<p>
 On the HTML5 target, there are some restrictions on how databuffers may be used:
 <p>
 <li>Internet Explorer does not currently support databuffers.</li>
@@ -302,12 +332,35 @@ On the HTML5 target, there are some restrictions on how databuffers may be used:
 			
 			
 			
+				<div class='box'>
+				<h2>Constructor Documentation</h2>
+				
+					<a name='New'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method New  ( length:Int )</h3>
+					Creates a new data buffer of the specified byte length.
+<p>
+Values can be written into the databuffer using the various 'poke' methods, or read using the 'peek' methods.
+					
+					
+					</div>
+				
+				</div>
+			
 
 			
 
 			
 				<div class='box'>
 				<h2>Method Documentation</h2>
+				
+					<a name='CopyBytes'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method CopyBytes : Void ( srcAddress:Int, dst:<a href='_brl.databuffer.DataBuffer.html'>DataBuffer</a>, dstAddress:Int, count:Int )</h3>
+					Copies <i>count</i> bytes starting at <i>srcAddress</i> from this buffer to <i>dst</i>.
+					
+					
+					</div>
 				
 					<a name='Discard'></a>
 					<div class='box'>
@@ -331,6 +384,38 @@ Once discarded, a data buffer should not be used again.
 					<div class='box'>
 					<h3 class='rounded'>Method PeekByte : Int ( address:Int )</h3>
 					Returns the 8 bit byte contained in the databuffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PeekBytes'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekBytes : Int[] ( address:Int=0 )</h3>
+					Peeks and returns bytes from <i>address</i> until the end of the databuffer in an int array.
+					
+					
+					</div>
+				
+					<a name='PeekBytes (2)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekBytes : Int[] ( address:Int, count:Int )</h3>
+					Peeks and returns <i>count</i> bytes starting at <i>address</i> in an int array.
+					
+					
+					</div>
+				
+					<a name='PeekBytes (3)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekBytes : Void ( address:Int, bytes:int[], address:Int=0 )</h3>
+					Copies bytes from <i>address</i> until the end of the databuffer to <i>bytes</i>.
+					
+					
+					</div>
+				
+					<a name='PeekBytes (4)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PeekBytes : Void ( address:Int, bytes:int[], address:Int, count:Int )</h3>
+					Copies <i>count</i> bytes starting at <i>address</i> from the data to <i>bytes</i>.
 					
 					
 					</div>
@@ -363,6 +448,26 @@ Once discarded, a data buffer should not be used again.
 					<div class='box'>
 					<h3 class='rounded'>Method PokeByte : Void ( address:Int, value:Int )</h3>
 					Writes an 8 bit byte into the data buffer at <i>address</i>.
+					
+					
+					</div>
+				
+					<a name='PokeBytes'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeBytes : Void ( address:Int, bytes:Int[], offset:Int=0 )</h3>
+					Copies bytes from the <i>bytes</i> array to the databuffer.
+<p>
+Copying starts at <i>offset</i> within the array and <i>address</i> within the databuffer, and continues until eith the end of the array or the end of the databuffer is reached.
+					
+					
+					</div>
+				
+					<a name='PokeBytes (2)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method PokeBytes : Void ( address:Int, bytes:Int[], offset:Int, count:Int )</h3>
+					Copies bytes from the <i>bytes</i> array to the databuffer.
+<p>
+Copying starts at <i>offset</i> within the array and <i>address</i> within the databuffer, and continues until eith the end of array is reached, the end of the databuffer is reached, or <i>count</i> bytes have been transferred.
 					
 					
 					</div>

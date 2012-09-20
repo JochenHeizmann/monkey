@@ -250,7 +250,7 @@ Class IdentExpr Extends Expr
 			
 			Local bop$=op[..1]
 			Select bop
-			Case "*","/","shl","shr","+","-","&","|","~"
+			Case "*","/","shl","shr","+","-","&","|","~~"
 				rhs=New BinaryMathExpr( bop,lhs,rhs )
 			Default
 				InternalErr
@@ -432,7 +432,7 @@ Class Parser
 	
 	Method ParseStringLit$()
 		If _tokeType<>TOKE_STRINGLIT Err "Expecting string literal."
-		Local str$=BmxUnquote( _toke )
+		Local str$=Dequote( _toke,"monkey" )
 		NextToke
 		Return str
 	End
@@ -700,7 +700,7 @@ Class Parser
 				expr=New ConstExpr( Type.floatType,_toke )
 				NextToke
 			Case TOKE_STRINGLIT
-				expr=New ConstExpr( Type.stringType,BmxUnquote( _toke ) )
+				expr=New ConstExpr( Type.stringType,Dequote( _toke,"monkey" ) )
 				NextToke
 			Default
 				Err "Syntax error - unexpected token '"+_toke+"'"
@@ -1582,7 +1582,8 @@ Class Parser
 		Local cd$=CurrentDir
 		ChangeDir ExtractDir( _toker.Path )
 		
-		For Local dir:=Eachin ENV_MODPATH.Split( ";" )
+		For Local dir:=Eachin GetCfgVar("MODPATH").Split( ";" )
+			If Not dir Continue
 		
 			filepath=RealPath( dir )+"/"+modpath.Replace( ".","/" )+"."+FILE_EXT			'/blah/etc.monkey
 			Local filepath2$=StripExt( filepath )+"/"+StripDir( filepath )					'/blah/etc/etc.monkey
@@ -1682,7 +1683,7 @@ Class Parser
 			Case "import"
 				NextToke
 				If _tokeType=TOKE_STRINGLIT
-					ImportFile ReplaceEnvTags( ParseStringLit() )
+					ImportFile EvalCfgTags( ParseStringLit() )
 				Else
 					ImportModule ParseModPath(),attrs
 				Endif
@@ -1783,172 +1784,11 @@ Class Parser
 
 End
 
-Function Eval$( source$,ty:Type )
-
-	Local env:=New ScopeDecl
-	
-	For Local kv:=Eachin Env
-		env.InsertDecl New ConstDecl( kv.Key,0,Type.stringType,New ConstExpr( Type.stringType,kv.Value ) )
-	Next
-
-	PushEnv env
-	
-	Local toker:=New Toker( "",source )
-	
-	Local parser:=New Parser( toker,Null )
-	
-	Local expr:=parser.ParseExpr()
-	
-	expr=expr.Semant()
-	
-	If ty expr=expr.Cast( ty )
-	
-	Local val$=expr.Eval()
-	
-	PopEnv
-	
-	Return val
-End
-
-Function Eval$( toker:Toker,type:Type )
-	Local src$
-	While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
-		src+=toker.Toke
-		toker.NextToke
-	Wend
-	Local t:=Eval( src,type )
-	Return t
-End
-
-Function PreProcess$( path$ )
-
-	Local ifnest,con,line,source:=New StringList
-	
-	Local toker:=New Toker( path,LoadString( path ) )
-
-	toker.NextToke
-	
-	Repeat
-
-		If line
-			source.AddLast "~n"
-			While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
-				toker.NextToke
-			Wend
-			If Not toker.Toke Exit
-			toker.NextToke
-		Endif
-		line+=1
-		
-		_errInfo=toker.Path+"<"+toker.Line+">"
-		
-		If toker.TokeType=TOKE_SPACE toker.NextToke
-		
-		If toker.Toke<>"#"
-			If con=ifnest
-				Local line$
-				While toker.Toke And toker.Toke<>"~n" And toker.TokeType<>TOKE_LINECOMMENT
-					Local toke$=toker.Toke
-					line+=toke
-					toker.NextToke
-				Wend
-				If line source.AddLast line
-			Endif
-			Continue
-		Endif
-		
-		Local toke:=toker.NextToke
-		Local stm:=toke.ToLower()
-		Local ty:=toker.TokeType()
-		
-		toker.NextToke
-	
-		If stm="end" Or stm="else"
-			If toker.TokeType=TOKE_SPACE toker.NextToke
-			If toker.Toke.ToLower()="if" 
-				toker.NextToke
-				stm+="if"
-			Endif
-		Endif
-		
-		Select stm
-		Case "if"
-		
-			If con=ifnest
-				If Eval( toker,Type.boolType ) con+=1
-			Endif
-			
-			ifnest+=1
-			
-		Case "rem"
-		
-			ifnest+=1
-			
-		Case "else","elseif"
-		
-			If Not ifnest Err "#Else without #If"
-			
-			If con=ifnest
-				con=-con
-			Else If con=ifnest-1
-				If stm="elseif"
-					If Eval( toker,Type.boolType ) con+=1
-				Else
-					con+=1
-				Endif
-			Endif
-			
-		Case "end","endif"
-		
-			If Not ifnest Err "#End without #If"
-			
-			ifnest-=1
-			If con<0 con=-con
-			If ifnest<con con=ifnest
-			
-		Case "print"
-		
-			If con=ifnest
-				Print ReplaceEnvTags( Eval( toker,Type.stringType ) )
-			Endif
-			
-		Case "error"
-		
-			If con=ifnest
-				Err ReplaceEnvTags( Eval( toker,Type.stringType ) )
-			Endif
-
-		Default
-			If con=ifnest
-				If ty=TOKE_IDENT
-					If toker.Toke()="="
-						toker.NextToke
-						Local val:=ReplaceEnvTags( Eval( toker,Type.stringType ) )
-						If Env.Contains( toke )
-						Else
-							Env.Set toke,val
-						Endif
-					Else
-						Err "Syntax error - expecting assignement"
-					Endif
-				
-				Else
-					Err "Unrecognized preprocessor directive '"+toke+"'"
-				Endif
-			Endif				
-		End
-
-	Forever
-	
-	Return source.Join( "" )
-End
-
 '***** PUBLIC API ******
 
+'for reflector to tack on code to reflection module...
 Function ParseSource( source$,app:AppDecl,mdecl:ModuleDecl,defattrs=0 )
 
-'	source=PreProcess( source )
-	
 	Local toker:=New Toker( "$SOURCE",source )
 	
 	Local parser:=New Parser( toker,app,mdecl,defattrs )
@@ -1958,10 +1798,6 @@ Function ParseSource( source$,app:AppDecl,mdecl:ModuleDecl,defattrs=0 )
 End
 
 Function ParseModule:ModuleDecl( path$,app:AppDecl )
-
-'	Print "Parsing "+path
-
-	Env.Set "PARSER_FUNC_ATTRS","0"
 
 	Local source:=PreProcess( path )
 	
@@ -1975,10 +1811,6 @@ Function ParseModule:ModuleDecl( path$,app:AppDecl )
 End
 
 Function ParseApp:AppDecl( path$ )
-
-'	Print "Parsing app:"+path
-
-	Env.Set "PARSER_FUNC_ATTRS","0"
 
 	Local app:AppDecl=New AppDecl
 	

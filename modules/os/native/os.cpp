@@ -169,6 +169,7 @@ int FileTime( String path ){
 
 String LoadString( String path ){
 	if( FILE *fp=_fopen( OS_STR(path),OS_STR("rb") ) ){
+//		Print( String( "LoadString:" )+path );
 		String str=String::Load( fp );
 		fclose( fp );
 		return str;

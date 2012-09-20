@@ -21,8 +21,8 @@ Class AndroidTarget Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
-			config.Push "static final String "+kv.Key+"="+LangEnquote( kv.Value )+";"
+		For Local kv:=Eachin _cfgVars
+			config.Push "static final String "+kv.Key+"="+Enquote( kv.Value,"java" )+";"
 		Next
 		Return config.Join( "~n" )
 	End
@@ -32,10 +32,10 @@ Class AndroidTarget Extends Target
 		'create data dir
 		CreateDataDir "assets/monkey"
 
-		Local app_label$=Env.Get( "ANDROID_APP_LABEL" )
-		Local app_package$=Env.Get( "ANDROID_APP_PACKAGE" )
+		Local app_label$=GetCfgVar( "ANDROID_APP_LABEL" )
+		Local app_package$=GetCfgVar( "ANDROID_APP_PACKAGE" )
 		
-		Env.Set "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
+		SetCfgVar "ANDROID_SDK_DIR",ANDROID_PATH.Replace( "\","\\" )
 		
 		'template files
 		For Local file$=Eachin LoadDir( "templates",True )
@@ -84,7 +84,7 @@ Class AndroidTarget Extends Target
 		
 		SaveString main,jpath
 		
-		If Env.Get( "ANDROID_NATIVE_GL_ENABLED" )="true"
+		If GetCfgVar( "ANDROID_NATIVE_GL_ENABLED" )="1"
 			CopyDir "nativegl/libs","libs",True
 			CreateDir "src/com"
 			CreateDir "src/com/monkey"

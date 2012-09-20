@@ -1,6 +1,4 @@
 
-#REFLECTION_FILTER="*"
-
 Private
 
 'box implementations private!

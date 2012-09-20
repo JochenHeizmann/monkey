@@ -1,7 +1,9 @@
 
-class BBTCPStream extends BBStream{
+class BBTcpStream extends BBStream{
 	
 	java.net.Socket _sock;
+	InputStream _input;
+	OutputStream _output;
 	int _state;				//0=INIT, 1=CONNECTED, 2=CLOSED, -1=ERROR
 
 	boolean Connect( String addr,int port ){
@@ -11,6 +13,8 @@ class BBTCPStream extends BBStream{
 		try{
 			_sock=new java.net.Socket( addr,port );
 			if( _sock.isConnected() ){
+				_input=_sock.getInputStream();
+				_output=_sock.getOutputStream();
 				_state=1;
 				return true;
 			}
@@ -22,8 +26,17 @@ class BBTCPStream extends BBStream{
 		return false;
 	}
 	
-	boolean IsConnected(){
-		return _state==1;
+	int ReadAvail(){
+		try{
+			return _input.available();
+		}catch( IOException ex ){
+		}
+		_state=-1;
+		return 0;
+	}
+	
+	int WriteAvail(){
+		return 0;
 	}
 	
 	int Eof(){
@@ -49,15 +62,12 @@ class BBTCPStream extends BBStream{
 		if( _state!=1 ) return 0;
 		
 		try{
-			byte[] lock=buffer.Lock( offset,count,false,true );
-			int n=_sock.getInputStream().read( lock,buffer.LockedOffset(),count );
-			buffer.Unlock();
+			int n=_input.read( buffer._data.array(),offset,count );
 			if( n>=0 ) return n;
 			_state=2;
-			return 0;
 		}catch( IOException ex ){
+			_state=-1;
 		}
-		_state=-1;
 		return 0;
 	}
 	
@@ -66,13 +76,11 @@ class BBTCPStream extends BBStream{
 		if( _state!=1 ) return 0;
 		
 		try{
-			byte[] lock=buffer.Lock( offset,count,true,false );
-			_sock.getOutputStream().write( lock,buffer.LockedOffset(),count );
-			buffer.Unlock();
+			_output.write( buffer._data.array(),offset,count );
 			return count;
 		}catch( IOException ex ){
+			_state=-1;
 		}
-		_state=-1;
 		return 0;
 	}
 }

@@ -1,10 +1,6 @@
 Strict
 
-
-' Config for android version
-#ANDROID_NATIVE_GL_ENABLED="true"
 #ANDROID_SCREEN_ORIENTATION="landscape"
-
 
 Import mojo
 

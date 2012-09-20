@@ -158,6 +158,8 @@ pre{
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
 	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
+	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
@@ -223,15 +225,16 @@ pre{
 			${ENDIF}
 			
 			${IF SCOPE EQ Class}
-				<h1>Class ${IDENT}${ARGS}
-				${IF EXTENDS}Extends ${XEXTENDS}${ENDIF}
-				${IF IMPLEMENTS}Implements ${XIMPLEMENTS}${ENDIF}</h1>
+				<h1>Class ${IDENT}${ARGS}</h1>
+				${IF EXTENDS}<b>Extends</b> ${XEXTENDS}<br><br>${ENDIF}
+				${IF IMPLEMENTS}<b>Implements</b> ${XIMPLEMENTS}<br><br>${ENDIF}
+				${ENDIF}
 			${ENDIF}
 			
 			${IF SCOPE EQ Interface}
 				<h1>Interface ${IDENT}${ARGS}
-				${IF EXTENDS}Extends ${XEXTENDS}${ENDIF}
-				${IF IMPLEMENTS}Implements ${XIMPLEMENTS}${ENDIF}</h1>
+				${IF EXTENDS}<b>Extends</b> ${XEXTENDS}<br><br>${ENDIF}
+				${IF IMPLEMENTS}<b>Implements</b> ${XIMPLEMENTS}<br><br>${ENDIF}
 			${ENDIF}
 			
 			${IF SHORT_DESC}
@@ -257,6 +260,17 @@ pre{
 				<h2>Classes</h2>
 				<table class='small'>
 				${FOR CLASSES}
+					<tr><td><a href='${URL}'>${IDENT}</a></td></tr>
+				${NEXT}
+				</table>
+				</div>
+			${ENDIF}
+			
+			${IF IFACES}
+				<div class='box'>
+				<h2>Interfaces</h2>
+				<table class='small'>
+				${FOR IFACES}
 					<tr><td><a href='${URL}'>${IDENT}</a></td></tr>
 				${NEXT}
 				</table>

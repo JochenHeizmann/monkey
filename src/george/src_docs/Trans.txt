@@ -25,7 +25,7 @@ trans [-check] [-update] [-build] [-run] [-config=...] [+setting=...] -target=..
 <tr><td>-target</td><td>Must be one of 'android', 'flash', 'glfw', 'html5', 'ios' or 'stdcpp'.</td></tr>
 </table>
 
-Arguments starting with + can be used to specify app config settings. Such arguments must be of the form +key=value. 
+Arguments starting with + can be used to specify app config settings. Such arguments must be of the form +key=value. Note that boolean settings made this way should be specified using 1 or 0, not True or False, eg: '+GLFW_AUTO_SUSPEND_ENABLED=1'.
 
 When trans is invoked, you must specify at least the target to build and the main source file, eg: "trans -target=html5 myapp.money". Trans then goes about generating the output app in the .build directory.
 

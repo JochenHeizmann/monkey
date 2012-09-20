@@ -18,7 +18,7 @@ See LICENSE.TXT for licensing terms.
 #include "process.h"
 #include "findinfilesdialog.h"
 
-#define TED_VERSION "1.6"
+#define TED_VERSION "1.7"
 
 #define SETTINGS_VERSION 2
 
@@ -158,6 +158,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::Mai
     _projectPopupMenu->addAction( _ui->actionNewFile );
     _projectPopupMenu->addAction( _ui->actionNewFolder );
     _projectPopupMenu->addSeparator();
+    _projectPopupMenu->addAction( _ui->actionEditFindInFiles );
+    _projectPopupMenu->addSeparator();
     _projectPopupMenu->addAction( _ui->actionOpen_on_Desktop );
     _projectPopupMenu->addSeparator();
     _projectPopupMenu->addAction( _ui->actionCloseProject );
@@ -171,6 +173,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow( parent ),_ui( new Ui::Mai
     _dirPopupMenu=new QMenu;
     _dirPopupMenu->addAction( _ui->actionNewFile );
     _dirPopupMenu->addAction( _ui->actionNewFolder );
+    _dirPopupMenu->addSeparator();
+    _dirPopupMenu->addAction( _ui->actionEditFindInFiles );
     _dirPopupMenu->addSeparator();
     _dirPopupMenu->addAction( _ui->actionOpen_on_Desktop );
     _dirPopupMenu->addSeparator();
@@ -326,7 +330,7 @@ QWidget *MainWindow::openFile( const QString &cpath,bool addToRecent ){
 
     if( path.isEmpty() ){
 
-        path=fixPath( QFileDialog::getOpenFileName( this,"Open File",_defaultDir,"Source Files (*.monkey *.cpp *.cs *.js *.as *.java);;Image Files(*.jpg *.png *.bmp)" ) );
+        path=fixPath( QFileDialog::getOpenFileName( this,"Open File",_defaultDir,"Source Files (*.monkey *.cpp *.cs *.js *.as *.java);;Image Files(*.jpg *.png *.bmp);;All Files(*.*)" ) );
         if( path.isEmpty() ) return 0;
 
         _defaultDir=extractDir( path );
@@ -943,7 +947,15 @@ void MainWindow::onProjectMenu( const QPoint &pos ){
             }
         }
     }else if( action==_ui->actionCloseProject ){
+
         _projectTreeModel->removeProject( info.filePath() );
+
+    }else if( action==_ui->actionEditFindInFiles ){
+
+        _findInFilesDialog->show( info.filePath() );
+
+        _findInFilesDialog->raise();
+
     }
 }
 

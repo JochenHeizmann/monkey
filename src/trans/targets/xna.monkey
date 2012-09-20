@@ -19,8 +19,8 @@ Class XnaTarget Extends Target
 
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
-			config.Push "public const String "+kv.Key+"="+LangEnquote( kv.Value )+";"
+		For Local kv:=Eachin _cfgVars
+			config.Push "public const String "+kv.Key+"="+Enquote( kv.Value,"cs" )+";"
 		Next
 		Return config.Join( "~n" )
 	End

@@ -158,6 +158,8 @@ pre{
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
 	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
+	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
@@ -216,6 +218,7 @@ pre{
 			
 			
 			
+			
 				The graphics module contains various functions that allow you to draw 2D graphics on all supported monkey target platforms. 
 				<a href='#long_desc'>More...</a>
 			
@@ -233,6 +236,8 @@ pre{
 				
 				</table>
 				</div>
+			
+			
 			
 			
 			
@@ -306,6 +311,8 @@ pre{
 					<tr><td><a href='#GetFont'>GetFont</a> : Image ()</td></tr>
 				
 					<tr><td><a href='#GetMatrix'>GetMatrix</a> : Float[] ()</td></tr>
+				
+					<tr><td><a href='#GetMatrix (2)'>GetMatrix</a> : Int ( matrix:Float[] )</td></tr>
 				
 					<tr><td><a href='#GetScissor'>GetScissor</a> : Float[] ()</td></tr>
 				
@@ -622,6 +629,16 @@ AdditiveBlend
 					<div class='box'>
 					<h3 class='rounded'>Function GetMatrix : Float[] ()</h3>
 					Returns the current transformation matrix as an array of 6 floats.
+					
+					
+					</div>
+				
+					<a name='GetMatrix (2)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function GetMatrix : Int ( matrix:Float[] )</h3>
+					Copies the current transformation matrix to <i>matrix</i>.
+<p>
+The length of <i>matrix</i> must be at least 6.
 					
 					
 					</div>

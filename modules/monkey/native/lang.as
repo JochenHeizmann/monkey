@@ -195,15 +195,21 @@ function string_trim( str:String ):String{
 	return str.slice( i,i2 );
 }
 
-function string_starts_with( str:String,sub:String ):Boolean{
+function string_tochars( str:String ):Array{
+	var arr:Array=new Array( str.length );
+	for( var i:int=0;i<str.length;++i ) arr[i]=str.charCodeAt(i);
+	return arr;	
+}
+
+function string_startswith( str:String,sub:String ):Boolean{
 	return sub.length<=str.length && str.slice(0,sub.length)==sub;
 }
 
-function string_ends_with( str:String,sub:String ):Boolean{
+function string_endswith( str:String,sub:String ):Boolean{
 	return sub.length<=str.length && str.slice(str.length-sub.length,str.length)==sub;
 }
 
-function string_from_chars( chars:Array ):String{
+function string_fromchars( chars:Array ):String{
 	var str:String="",i:int;
 	for( i=0;i<chars.length;++i ){
 		str+=String.fromCharCode( chars[i] );

@@ -1,8 +1,4 @@
 
-#GLFW_USE_MINGW="true"
-
-#MOJO_AUTO_SUSPEND_ENABLED="true"
-
 Import mojo
 
 Const WIDTH#=320

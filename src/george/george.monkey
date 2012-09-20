@@ -62,9 +62,9 @@ Class Docs Implements LinkResolver
 		Return str.Replace("&","&amp;").Replace("<","&lt;").Replace(">","&gt;")
 	End
 	
-	Method AddDecl:Void( decl:Decl,id:String,map:StringMap<Decl> )
+	Method AddDecl:Void( decl:Decl,id:String,map:StringMap<Decl>,notctors:Bool=True )
 	
-		If decl.kind="ctor" Return
+		If notctors And decl.kind="ctor" Return
 		
 		Local t:=id,n:=1
 
@@ -282,13 +282,28 @@ Class Docs Implements LinkResolver
 		page.EndList
 		
 		'classes...
-		Local clss:=New StringMap<Decl>
+		Local classes:=New StringMap<Decl>
 		For Local decl:=Eachin _declsByPath.Values()
 			If decl.kind<>"class" Or DeclScope(decl)<>scope Continue
-			clss.Set DeclIdent(decl),decl
+			classes.Set DeclIdent(decl),decl
 		Next
 		page.BeginList "CLASSES"
-		For Local it:=Eachin clss
+		For Local it:=Eachin classes
+			page.AddItem
+			page.Set "IDENT",it.Key
+			page.Set "PATH",DeclPath(it.Value)
+			page.Set "URL",DeclUrl(it.Value)
+		Next
+		page.EndList
+		
+		'interfaces...
+		Local ifaces:=New StringMap<Decl>
+		For Local decl:=Eachin _declsByPath.Values()
+			If decl.kind<>"interface" Or DeclScope(decl)<>scope Continue
+			ifaces.Set DeclIdent(decl),decl
+		Next
+		page.BeginList "IFACES"
+		For Local it:=Eachin ifaces
 			page.AddItem
 			page.Set "IDENT",it.Key
 			page.Set "PATH",DeclPath(it.Value)
@@ -300,16 +315,20 @@ Class Docs Implements LinkResolver
 		Local sorted:=New StringMap<StringMap<Decl>>
 
 		For Local decl:=Eachin scope.decls
+		
 			If decl.kind.StartsWith("import") Continue
+			
 			Local map:=sorted.Get(decl.kind)
 			If Not map
 				map=New StringMap<Decl>
 				sorted.Set decl.kind,map
 			Endif
-			AddDecl decl,DeclIdent(decl),map
+			
+			AddDecl decl,DeclIdent(decl),map,False
 		Next
 	
 		Local kinds:=["const","global","field","ctor","prop","method","function"]
+		
 		For Local kind:=Eachin kinds
 		
 			Local map:=sorted.Get(kind)
@@ -348,7 +367,7 @@ Class Docs Implements LinkResolver
 	Method MakeScopes:Void()	
 		For Local it:=Eachin _declsByPath
 			Local decl:=it.Value
-			If decl.kind<>"module" And decl.kind<>"class" Continue
+			If decl.kind<>"module" And decl.kind<>"class" And decl.kind<>"interface" Continue
 			Print "Making scope:"+it.Key
 			MakeScope decl
 		Next
@@ -397,6 +416,19 @@ Class Docs Implements LinkResolver
 		Next
 		page.EndList
 		SavePage page,"Class index"
+
+		page=New Page(_template)
+		page.Set "INDEX","Interface index"
+		page.BeginList "ITEMS"
+		For Local it:=Eachin _declsByIdent
+			Local decl:=it.Value
+			If decl.kind<>"interface" Continue
+			page.AddItem
+			page.Set "TEXT",it.Key
+			page.Set "URL",DeclUrl(decl)
+		Next
+		page.EndList
+		SavePage page,"Interface index"
 
 		'function index
 		page=New Page(_template)
@@ -488,7 +520,7 @@ Class Docs Implements LinkResolver
 				decl=p.ParseDecl()
 				
 				Select decl.kind
-				Case "module","class"
+				Case "module","class","interface"
 					If Not decls.IsEmpty()
 						scope.decls=decls.ToArray()
 						decls.Clear
@@ -509,6 +541,7 @@ Class Docs Implements LinkResolver
 					decl=scope
 					Continue
 				Case "const","global","field","ctor","prop","method","function"
+				
 					If Not scope Err
 					decl.path=scope.path+"."+decl.ident
 					decls.Push decl

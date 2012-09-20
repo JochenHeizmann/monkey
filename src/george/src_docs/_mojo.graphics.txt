@@ -246,6 +246,13 @@ ix, iy, jx, jy, tx, ty - matrix components.
 Returns the current transformation matrix as an array of 6 floats.
 
 
+# Function GetMatrix:Int( matrix:Float[] )
+
+Copies the current transformation matrix to @matrix.
+
+The length of @matrix must be at least 6.
+
+
 # Function PushMatrix:Int()
 
 Pushes the current matrix onto the internal matrix stack.

@@ -10,6 +10,7 @@ Const PROFILE?=True
 
 Class CppTranslator Extends CTranslator
 
+	Field unsafe
 	Field lastDbgInfo$
 	Field dbgLocals:=New Stack<LocalDecl>
 
@@ -33,7 +34,7 @@ Class CppTranslator Extends CTranslator
 			If BoolType( ty ) Return "true"
 			If IntType( ty ) Return value
 			If FloatType( ty ) Return "FLOAT("+value+")"
-			If StringType( ty ) Return "String("+Enquote( value )+")"
+			If StringType( ty ) Return "String("+Enquote( value )+","+value.Length+")"
 		Else
 			If BoolType( ty ) Return "false"
 			If NumericType( ty ) Return "0"
@@ -70,8 +71,12 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method EmitEnter( func:FuncDecl )
+
+		If unsafe Return
+		
 		Local id:=func.ident
 		If ClassDecl( func.scope ) id=func.scope.ident+"."+id
+		
 		Emit "DBG_ENTER(~q"+id+"~q)"
 		If func.IsCtor() Or func.IsMethod()
 			Emit func.scope.munged+" *self=this;"
@@ -80,10 +85,16 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method EmitEnterBlock()
+	
+		If unsafe Return
+		
 		Emit "DBG_BLOCK();"
 	End
 	
 	Method EmitSetErr( info$ )
+	
+		If unsafe Return
+		
 		If info=lastDbgInfo Return
 		lastDbgInfo=info
 		For Local decl:=Eachin dbgLocals
@@ -97,13 +108,18 @@ Class CppTranslator Extends CTranslator
 		dbgLocals.Clear
 	End
 	
+	Method CheckSafe( decl:Decl )
+		If Not unsafe Or decl.IsExtern Or decl.ident.EndsWith( "__UNSAFE__" ) Return
+		Err "Unsafe call!!!!!"
+	End
+	
 	'***** Declarations *****
 	
 	Method TransStatic$( decl:Decl )
 		If decl.IsExtern()
 			Return decl.munged
-		Else If _env And decl.scope And decl.scope=_env.ClassScope()
-			Return decl.munged
+'		Else If _env And decl.scope And decl.scope=_env.ClassScope()
+'			Return decl.munged
 		Else If ClassDecl( decl.scope )
 			Return decl.scope.munged+"::"+decl.munged
 		Else If ModuleDecl( decl.scope )
@@ -122,6 +138,7 @@ Class CppTranslator Extends CTranslator
 	End
 		
 	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr )
+		CheckSafe decl
 		If decl.IsMethod()
 			If lhs Return TransSubExpr( lhs )+"->"+decl.munged+TransArgs( args,decl )
 			Return decl.munged+TransArgs( args,decl )
@@ -130,6 +147,7 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransSuperFunc$( decl:FuncDecl,args:Expr[] )
+		CheckSafe decl
 		Return decl.ClassScope().munged+"::"+decl.munged+TransArgs( args,decl )
 	End
 	
@@ -290,6 +308,7 @@ Class CppTranslator Extends CTranslator
 		Case "contains" Return texpr+".Contains"+Bra( arg0 )
 		Case "startswith" Return texpr+".StartsWith"+Bra( arg0 )
 		Case "endswith" Return texpr+".EndsWith"+Bra( arg0 )
+		Case "tochars" Return texpr+".ToChars()"
 		
 		'string functions
 		Case "fromchar" Return "String"+Bra( "(Char)"+Bra(arg0)+",1" )
@@ -395,6 +414,8 @@ Class CppTranslator Extends CTranslator
 	Method EmitFuncDecl( decl:FuncDecl )
 		If decl.IsAbstract() Return
 		
+		unsafe=decl.ident.EndsWith( "__UNSAFE__" )
+		
 		BeginLocalScope
 
 		Local args$
@@ -415,6 +436,8 @@ Class CppTranslator Extends CTranslator
 		Emit "}"
 		
 		EndLocalScope
+		
+		unsafe=false
 	End
 	
 	Method EmitClassProto( classDecl:ClassDecl )

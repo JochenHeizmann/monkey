@@ -46,7 +46,7 @@ Class Expr
 	End
 	
 	Method Trans$()
-		Todo
+		Err "TODO!"
 	End
 	
 	Method TransStmt$()
@@ -159,23 +159,10 @@ Class ConstExpr Extends Expr
 	
 	Method New( ty:Type,value$ )
 		If IntType( ty )
-			Local radix
 			If value.StartsWith( "%" )
-				radix=1
+				value=StringToInt( value[1..],2 )
 			Else If value.StartsWith( "$" )
-				radix=4
-			Endif
-			If radix
-				Local val=0
-				For Local i=1 Until value.Length
-					Local ch=value[i]
-					If ch>=48 And ch<58
-						val=val Shl radix | (ch & 15)
-					Else
-						val=val Shl radix | ((ch & 15)+9)
-					Endif
-				Next
-				value=String( val )
+				value=StringToInt( value[1..],16 )
 			Endif
 		Else If FloatType( ty )
 			If Not (value.Contains("e") Or value.Contains("E") Or value.Contains("."))
@@ -1039,7 +1026,7 @@ Class SliceExpr Extends Expr
 		If StringType( expr.exprType )
 			Return expr.Eval()[ from..term ]
 		Else If ArrayType( expr.exprType )
-			Todo
+			Err "TODO!"
 		Endif
 	End
 	

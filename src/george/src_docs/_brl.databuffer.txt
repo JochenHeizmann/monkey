@@ -12,6 +12,8 @@ Databuffer objects provide storage for arbitrary data.
 
 Data may be written to a databufffer using one of the 'poke' methods, and read from a databuffer using one of the 'peek' methods.
 
+Parameters that specify buffer addresses or array indices for data transfers are not currently range checked. In general, you should always ensure that these are always valid, ie: >=0 And <=length of the buffer/array. Any transfer count parameters should always be >=0, but will always be clipped to make sure no overreads or overwrites occur.
+
 On the HTML5 target, there are some restrictions on how databuffers may be used:
 
 + Internet Explorer does not currently support databuffers.
@@ -51,6 +53,19 @@ Writes an 8 bit byte into the data buffer at @address.
 addr - byte address to poke
 
 value - value to poke
+
+# Method PokeBytes:Void(address:Int,bytes:Int[],offset:Int=0)
+
+Copies bytes from the @bytes array to the databuffer.
+
+Copying starts at @offset within the array and @address within the databuffer, and continues until eith the end of the array or the end of the databuffer is reached.
+
+
+# Method PokeBytes:Void(address:Int,bytes:Int[],offset:Int,count:Int )
+
+Copies bytes from the @bytes array to the databuffer.
+
+Copying starts at @offset within the array and @address within the databuffer, and continues until eith the end of array is reached, the end of the databuffer is reached, or @count bytes have been transferred.
 
 
 # Method PokeShort:Void(address:Int,value:Int)
@@ -95,6 +110,52 @@ Returns the 8 bit byte contained in the databuffer at @address.
 @address - byte address to peek.
 
 
+# Method PeekBytes:Int[](address:Int=0)
+
+Peeks and returns bytes from @address until the end of the databuffer in an int array.
+
+## Parameters
+
+@address - byte address to staring peeking.
+
+
+# Method PeekBytes:Int[](address:Int,count:Int)
+
+Peeks and returns @count bytes starting at @address in an int array.
+
+## Parameters
+
+@address - byte address to staring peeking.
+
+@count - number of bytes to peek.
+
+# Method PeekBytes:Void( address:Int,bytes:int[],address:Int=0 )
+
+Copies bytes from @address until the end of the databuffer to @bytes.
+
+## Parameters
+
+@address - byte address to staring peeking.
+
+@bytes - array to write bgytes to.
+
+@count - number of bytes to peek.
+
+
+# Method PeekBytes:Void( address:Int,bytes:int[],address:Int,count:Int )
+
+Copies @count bytes starting at @address from the data to @bytes.
+
+## Parameters
+
+@address - byte address to staring peeking.
+
+@bytes - array to write bgytes to.
+
+@count - number of bytes to peek.
+
+
+
 # Method PeekShort:Int(address:Int)
 
 Returns the 16 bit int value contained in the data buffer at @address.
@@ -122,6 +183,11 @@ Returns the 32 bit float value stored in the data buffer at @address.
 @address - byte address to poke
 
 @value - value to poke
+
+
+# Method CopyBytes:Void( srcAddress:Int,dst:DataBuffer,dstAddress:Int,count:Int )
+
+Copies @count bytes starting at @srcAddress from this buffer to @dst.
 
 
 # Function Load:DataBuffer(path:String)

@@ -26,6 +26,7 @@ public:
     void writeSettings();
 
     void show();
+    void show( const QString &path );
 
 public slots:
 

@@ -3,8 +3,7 @@ class BBDataBuffer{
 
 	boolean _New( int length ){
 		if( _data!=null ) return false;
-//		_data=ByteBuffer.allocate( length );
-		_data=ByteBuffer.allocateDirect( length );
+		_data=ByteBuffer.allocate( length );
 		_data.order( ByteOrder.nativeOrder() );
 		_length=length;
 		return true;
@@ -20,48 +19,9 @@ class BBDataBuffer{
 		
 		if( !_New( length ) ) return false;
 		
-		byte[] lock=Lock( 0,length,false,true );
-		System.arraycopy( bytes,0,lock,LockedOffset(),length );
-		Unlock();
+		System.arraycopy( bytes,0,_data.array(),0,length );
 		
 		return true;
-	}
-	
-	byte[] Lock( int offset,int count,boolean read,boolean write ){
-		if( _locked!=null ) return null;
-		if( _data.isDirect() ){
-			_locked=new byte[count];
-			_lockedOffset=0;
-			if( read ){
-				_data.mark();
-				_data.position( offset );
-				_data.get( _locked,0,count );
-				_data.reset();
-			}
-		}else{
-			_locked=_data.array();
-			_lockedOffset=_data.arrayOffset()+offset;
-		}
-		_lockOffset=offset;
-		_lockCount=count;
-		_writeLock=write;
-		return _locked;
-	}
-	
-	int LockedOffset(){
-		return _lockedOffset;
-	}
-	
-	void Unlock(){
-		if( _locked==null ) return;
-		if( _writeLock && _data.isDirect() ){
-			_data.mark();
-			_data.position( _lockOffset );
-			_data.put( _locked,0,_lockCount );
-			_data.reset();
-		}
-		_lockedOffset=0;
-		_locked=null;
 	}
 	
 	int Length(){
@@ -112,11 +72,4 @@ class BBDataBuffer{
 	
 	ByteBuffer _data;
 	int _length;
-	
-	byte[] _locked;
-	int _lockedOffset;
-	
-	int _lockOffset;
-	int _lockCount;
-	boolean _writeLock;
 }

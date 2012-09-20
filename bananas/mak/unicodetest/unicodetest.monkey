@@ -32,7 +32,6 @@ Class MyApp Extends App
 		os.SaveString strs[0],"str0.txt"
 		strs[6]=os.LoadString( "str0.txt" )
 #end
-
 		ascii=app.LoadString( "ascii.txt" )
 		
 		SetUpdateRate 60

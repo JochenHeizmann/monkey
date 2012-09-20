@@ -1,5 +1,9 @@
 
-Import stream
+Import brl.stream
+
+Private
+Import brl.thread
+Public
 
 #If LANG="cpp"
 Import "native/tcpstream.cpp"
@@ -9,44 +13,73 @@ Import "native/tcpstream.java"
 
 Extern
 
-Class BBTCPStream Extends BBStream
+Class BBTcpStream Extends BBStream
 
-	Method Connect:Bool( address:String,port:Int )
-	
-	Method IsConnected:Bool()
-	
+	Method Connect:Bool( host:String,port:Int )
 	Method ReadAvail:Int()
+	Method WriteAvail:Int()
 
 End
 
 Public
 
-Class TCPStream Extends Stream
+Class TcpStream Extends Stream
 
 	Method New()
-		_stream=New BBTCPStream
-		Super.SetBBStream _stream
+		_stream=New BBTcpStream
 	End
 
-	Method Connect:Bool( address:String,port:Int )
-		Return _stream.Connect( address,port )
-	End
-	
-	Method IsConnected:Bool()
-		Return _stream.IsConnected()
+	Method Connect:Bool( host:String,port:Int )
+		Return _stream.Connect( host,port )
 	End
 	
 	Method ReadAvail:Int()
 		Return _stream.ReadAvail()
 	End
 	
+	Method WriteAvail:Int()
+		Return _stream.WriteAvail()
+	End
+	
+	'Stream
+	Method Eof:Int()
+		Return _stream.Eof()
+	End
+	
+	Method Close:Void()
+		If _stream 
+			_stream.Close
+			_stream=Null
+		Endif
+	End
+	
+	Method Length:Int()
+		Return _stream.Length()
+	End
+	
+	Method Position:Int()
+		Return _stream.Position()
+	End
+	
+	Method Seek:Int( position:Int )
+		Return _stream.Seek( position )
+	End
+	
+	Method Read:Int( buffer:DataBuffer,offset:Int,count:Int )
+		Return _stream.Read( buffer,offset,count )
+	End
+	
+	Method Write:Int( buffer:DataBuffer,offset:Int,count:Int )
+		Return _stream.Write( buffer,offset,count )
+	End
+	
 	'***** INTERNAL *****
-	Method New( stream:BBTCPStream )
-		_stream=stream
+	Method GetBBTcpStream:BBTcpStream()
+		Return _stream
 	End
 	
 	Private
 	
-	Field _stream:BBTCPStream
-
+	Field _stream:BBTcpStream
+	
 End

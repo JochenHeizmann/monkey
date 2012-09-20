@@ -141,6 +141,11 @@ Returns true if this string ends with @str, else false.
 @str - string to check for.
 
 
+# Method ToChars:Int[]()
+
+Converts string to an array of character codes.
+
+
 # Function FromChar:String(charCode:Int)
 
 Creates and returns a string of length 1 containing the character code specified by @charCode.

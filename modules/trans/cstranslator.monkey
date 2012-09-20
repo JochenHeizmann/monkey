@@ -282,6 +282,7 @@ Class CsTranslator Extends CTranslator
 		Case "contains" Return Bra( texpr+".IndexOf"+Bra( arg0 )+"!=-1" )
 		Case "startswith" Return texpr+".StartsWith"+Bra( arg0 )
 		Case "endswith" Return texpr+".EndsWith"+Bra( arg0 )
+		Case "tochars" Return "bb_std_lang.toChars"+Bra( texpr );
 
 		'string functions
 		Case "fromchar" Return "new String"+Bra("(char)"+Bra( arg0 )+",1")

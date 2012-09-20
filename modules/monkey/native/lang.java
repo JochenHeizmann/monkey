@@ -149,6 +149,12 @@ class bb_std_lang{
 		return new String( chrs,0,n );
 	}
 	
+	static int[] toChars( String str ){
+		int[] arr=new int[str.length()];
+		for( int i=0;i<str.length();++i ) arr[i]=(int)str.charAt( i );
+		return arr;
+	}
+	
 	//***** Array Stuff *****
 	
 	static Object sliceArray( Object arr,int from ){
@@ -213,7 +219,6 @@ class bb_std_lang{
 	static int arrayLength( Object arr ){
 		return arr!=null ? Array.getLength( arr ) : 0;
 	}
-
 }
 
 class ThrowableObject extends RuntimeException{

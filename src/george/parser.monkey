@@ -2,7 +2,7 @@
 Import toker
 
 Class Decl
-	'
+
 	Field kind:String					'arg, const, global, function etc
 	Field ident:String					'ID - for scopes, includes path.
 	Field args:String					'generic args
@@ -10,7 +10,7 @@ Class Decl
 	Field value:String					'for consts or arg defaults
 	Field exts:String					'extends
 	Field impls:String					'implements
-	'
+
 	Field path:String
 	Field decls:Decl[]
 	Field docs:=New StringMap<String>
@@ -35,7 +35,7 @@ Class Parser
 			decl=New Decl(Parse())
 			decl.ident=ParseIdent()
 			
-		Case "class"
+		Case "class","interface"
 		
 			decl=New Decl(Parse())
 			decl.ident=ParseIdent()
@@ -83,9 +83,11 @@ Class Parser
 			decl.type=ParseType()
 			decl.args=ParseArgs()
 			
-			If decl.ident="New" decl.kind="ctor"
-
-			If CParse("property") decl.kind="prop"
+			If decl.ident="New"
+				decl.kind="ctor"
+			Else If CParse("property") 
+				decl.kind="prop"
+			Endif
 		
 		Default 
 			Err

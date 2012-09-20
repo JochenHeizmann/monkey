@@ -119,7 +119,7 @@ Class List<T>
 	Method AddLast:Node<T>( data:T )
 		Return New Node<T>( _head,_head._pred,data )
 	End
-
+	
 	Method ObjectEnumerator:Enumerator<T>()
 		Return New Enumerator<T>( Self )
 	End

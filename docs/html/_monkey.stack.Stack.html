@@ -158,6 +158,8 @@ pre{
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
 	
+	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
+	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
 	
 	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
@@ -213,9 +215,10 @@ pre{
 			
 			
 			
-				<h1>Class Stack
+				<h1>Class Stack</h1>
 				
-				</h1>
+				
+				
 			
 			
 			
@@ -232,11 +235,24 @@ pre{
 			
 			
 			
+			
+			
 		
 			
 		
 			
 			
+			
+				<div class='box'>
+				<h2>Constructors</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#New'>New</a>  ()</td></tr>
+				
+					<tr><td><a href='#New (2)'>New</a>  ( data:T[] )</td></tr>
+				
+				</table>
+				</div>
 			
 			
 			
@@ -268,6 +284,8 @@ pre{
 				
 					<tr><td><a href='#Push'>Push</a> : Int ( value:T )</td></tr>
 				
+					<tr><td><a href='#Push (2)'>Push</a> : Int ( values:T[] )</td></tr>
+				
 					<tr><td><a href='#Remove'>Remove</a> : Int ( index:Int )</td></tr>
 				
 					<tr><td><a href='#RemoveEach'>RemoveEach</a> : Int ( value:T )</td></tr>
@@ -298,6 +316,27 @@ Stacks may also be efficiently indexed using an integer index, and elements may 
 			
 			
 			
+			
+				<div class='box'>
+				<h2>Constructor Documentation</h2>
+				
+					<a name='New'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method New  ()</h3>
+					Creates a new empty Stack object.
+					
+					
+					</div>
+				
+					<a name='New (2)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method New  ( data:T[] )</h3>
+					Creates a new Stack object initialized with an array of values.
+					
+					
+					</div>
+				
+				</div>
 			
 
 			
@@ -435,6 +474,16 @@ If the stack is empty, the behaviour of Pop is undefined.
 					Pushes a value on the top of the stack.
 <p>
 This will increase the length of the stack by 1.
+					
+					
+					</div>
+				
+					<a name='Push (2)'></a>
+					<div class='box'>
+					<h3 class='rounded'>Method Push : Int ( values:T[] )</h3>
+					Pushes an array of values on the top of the stack starting with element 0.
+<p>
+This will increase the length of the stack by the length of the array.
 					
 					
 					</div>

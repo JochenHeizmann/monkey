@@ -7,25 +7,26 @@
 
 #else
 
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
-#include <netdb.h>
+#include <netinet/tcp.h>
 
 #define closesocket close
 #define ioctlsocket ioctl
 
 #endif
 
-class BBTCPStream : public BBStream{
+class BBTcpStream : public BBStream{
 public:
 
-	BBTCPStream();
-	~BBTCPStream();
+	BBTcpStream();
+	~BBTcpStream();
 	
 	bool Connect( String addr,int port );
-	bool IsConnected();
 	int ReadAvail();
+	int WriteAvail();
 	
 	int Eof();
 	void Close();
@@ -39,7 +40,7 @@ private:
 
 // ***** socket.cpp *****
 
-BBTCPStream::BBTCPStream():_sock(-1),_state(0){
+BBTcpStream::BBTcpStream():_sock(-1),_state(0){
 #if _WIN32
 	static bool started;
 	if( !started ){
@@ -50,23 +51,41 @@ BBTCPStream::BBTCPStream():_sock(-1),_state(0){
 #endif
 }
 
-BBTCPStream::~BBTCPStream(){
+BBTcpStream::~BBTcpStream(){
 	if( _sock>=0 ) closesocket( _sock );
 }
 
-bool BBTCPStream::Connect( String addr,int port ){
+bool BBTcpStream::Connect( String addr,int port ){
 
 	if( _state ) return false;
 
+	if( addr.Length()>1023 ) return false;
+	
+	char buf[1024];
+	for( int i=0;i<addr.Length();++i ) buf[i]=addr[i];
+	buf[addr.Length()]=0;
+
 	_sock=socket( AF_INET,SOCK_STREAM,IPPROTO_TCP );
 	if( _sock>=0 ){
-		if( hostent *host=gethostbyname( addr.ToCString<char>() ) ){
+		if( hostent *host=gethostbyname( buf ) ){
 			if( char *hostip=inet_ntoa(*(struct in_addr *)*host->h_addr_list) ){
 				struct sockaddr_in sa;
 				sa.sin_family=AF_INET;
 				sa.sin_addr.s_addr=inet_addr( hostip );
 				sa.sin_port=htons( port );
 				if( connect( _sock,(const sockaddr*)&sa,sizeof(sa) )>=0 ){
+/*				
+					int rcvbuf=16384;
+					if( setsockopt( _sock,SOL_SOCKET,SO_RCVBUF,(const char*)&rcvbuf,sizeof(rcvbuf) )<0 ){
+						puts( "setsockopt failed!" );
+					}
+*/
+				
+					int nodelay=1;
+					if( setsockopt( _sock,IPPROTO_TCP,TCP_NODELAY,(const char*)&nodelay,sizeof(nodelay) )<0 ){
+						puts( "setsockopt failed!" );
+					}
+
 					_state=1;
 					return true;
 				}
@@ -78,65 +97,45 @@ bool BBTCPStream::Connect( String addr,int port ){
 	return false;
 }
 
-int BBTCPStream::ReadAvail(){
+int BBTcpStream::ReadAvail(){
 
 	if( _state!=1 ) return 0;
 	
+#ifdef FIONREAD	
 	u_long arg;
 	if( ioctlsocket( _sock,FIONREAD,&arg )>=0 ) return arg;
-	
 	_state=-1;
+#endif
+
 	return 0;
 }
 
-bool BBTCPStream::IsConnected(){
+int BBTcpStream::WriteAvail(){
 
-	return _state==1;
-	
-/*	
-	if( _state!=1 ) return false;
+	if( _state!=1 ) return 0;
 
-	fd_set r_set,w_set,e_set;
-	FD_ZERO( &r_set );
-	FD_ZERO( &w_set );
-	FD_ZERO( &e_set );
-	FD_SET( _sock,&r_set );
-	
-	struct timeval tv;
-	tv.tv_sec=0;
-	tv.tv_usec=0;
-	
-	int n=select( _sock+1,&r_set,&w_set,&e_set,&tv );
-	
-	if( n>=0 ){
-		if( !n ) return true;
-		u_long arg;
-		if( ioctlsocket( _sock,FIONREAD,&arg )>=0 ){
-			if( arg ) return true;
-			_state=2;
-			return false;
-		}
-	}
-
+#ifdef FIONWRITE
+	u_long arg;
+	if( ioctlsocket( _sock,FIONREAD,&arg )>=0 ) return arg;
 	_state=-1;
-	
-	return false;
-*/
+#endif
+
+	return 0;
 }
 
-int BBTCPStream::Eof(){
+int BBTcpStream::Eof(){
 	if( _state>=0 ) return _state==2;
 	return -1;
 }
 
-void BBTCPStream::Close(){
+void BBTcpStream::Close(){
 	if( _sock<0 ) return;
 	if( _state==1 ) _state=2;
 	closesocket( _sock );
 	_sock=-1;
 }
 
-int BBTCPStream::Read( BBDataBuffer *buffer,int offset,int count ){
+int BBTcpStream::Read( BBDataBuffer *buffer,int offset,int count ){
 
 	if( _state!=1 ) return 0;
 
@@ -147,7 +146,7 @@ int BBTCPStream::Read( BBDataBuffer *buffer,int offset,int count ){
 	
 }
 
-int BBTCPStream::Write( BBDataBuffer *buffer,int offset,int count ){
+int BBTcpStream::Write( BBDataBuffer *buffer,int offset,int count ){
 	if( _state!=1 ) return 0;
 	int n=send( _sock,(const char*)buffer->ReadPointer(offset),count,0 );
 	if( n>=0 ) return n;

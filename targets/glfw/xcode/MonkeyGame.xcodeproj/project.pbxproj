@@ -33,6 +33,7 @@
 		7C8DB52F12AF2C210090FC6E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C8DB52E12AF2C210090FC6E /* OpenGL.framework */; };
 		7CACF7FC12B5BBD4002E52F2 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CACF7FB12B5BBD4002E52F2 /* OpenAL.framework */; };
 		7CACF8E812B5D1AF002E52F2 /* data in Resources */ = {isa = PBXBuildFile; fileRef = 7CACF8E612B5D1AF002E52F2 /* data */; };
+		7CDF25461602B81600B598F3 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CDF25451602B81600B598F3 /* IOKit.framework */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -72,6 +73,7 @@
 		7C8DB52E12AF2C210090FC6E /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		7CACF7FB12B5BBD4002E52F2 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		7CACF8E612B5D1AF002E52F2 /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = data; sourceTree = "<group>"; };
+		7CDF25451602B81600B598F3 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = ../../../../../../../System/Library/Frameworks/IOKit.framework; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* MonkeyGame-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MonkeyGame-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MonkeyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MonkeyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -84,6 +86,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				7C8DB52F12AF2C210090FC6E /* OpenGL.framework in Frameworks */,
 				7CACF7FC12B5BBD4002E52F2 /* OpenAL.framework in Frameworks */,
+				7CDF25461602B81600B598F3 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,6 +184,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7CDF25451602B81600B598F3 /* IOKit.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 				7C8DB52E12AF2C210090FC6E /* OpenGL.framework */,

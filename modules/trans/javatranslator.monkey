@@ -8,6 +8,8 @@ Import trans
 
 Class JavaTranslator Extends CTranslator
 
+	Field unsafe
+
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
 		If BoolType( ty ) Return "boolean"
@@ -69,14 +71,23 @@ Class JavaTranslator Extends CTranslator
 	End
 	
 	Method EmitEnter( func:FuncDecl )
+
+		If unsafe Return
+	
 		Emit "bb_std_lang.pushErr();"
 	End
 	
 	Method EmitSetErr( info$ )
+	
+		If unsafe Return
+		
 		Emit "bb_std_lang.errInfo=~q"+info.Replace( "\","/" )+"~q;"
 	End
 	
 	Method EmitLeave()
+
+		If unsafe Return
+	
 		Emit "bb_std_lang.popErr();"
 	End
 
@@ -284,6 +295,7 @@ Class JavaTranslator Extends CTranslator
 		Case "contains" Return Bra( texpr+".indexOf"+Bra( arg0 )+"!=-1" )
 		Case "startswith" Return texpr+".startsWith"+Bra( arg0 )
 		Case "endswith" Return texpr+".endsWith"+Bra( arg0 )
+		Case "tochars" Return "bb_std_lang.toChars"+Bra( texpr )
 
 		'string functions		
 		Case "fromchar" Return "String.valueOf"+Bra("(char)"+Bra( arg0 ) )
@@ -324,6 +336,9 @@ Class JavaTranslator Extends CTranslator
 	'***** Declarations *****
 	
 	Method EmitFuncDecl( decl:FuncDecl )
+	
+		unsafe=decl.ident.EndsWith( "__UNSAFE__" )
+
 		BeginLocalScope
 		
 		Local args$
@@ -348,6 +363,8 @@ Class JavaTranslator Extends CTranslator
 		Endif
 		
 		EndLocalScope
+		
+		unsafe=False
 	End
 	
 	Method EmitClassDecl( classDecl:ClassDecl )

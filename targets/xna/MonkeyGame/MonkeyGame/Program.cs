@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Globalization;
+using System.Threading;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -30,9 +31,16 @@ public class MonkeyConfig{
 
 public class MonkeyData{
 
+	public static String ContentPath( String path ){
+		if( path.ToLower().StartsWith("monkey://data/") ) return "Content/monkey/"+path.Substring(14);
+		return "";
+	}
+
 	public static byte[] loadBytes( String path ){
+		path=ContentPath( path );
+		if( path=="" ) return null;
         try{
-			Stream stream=TitleContainer.OpenStream( "Content/monkey/"+path );
+			Stream stream=TitleContainer.OpenStream( path );
 			int len=(int)stream.Length;
 			byte[] buf=new byte[len];
 			int n=stream.Read( buf,0,len );
@@ -44,8 +52,10 @@ public class MonkeyData{
 	}
 
 	public static String LoadString( String path ){
+		path=ContentPath( path );
+		if( path=="" ) return "";
         try{
-			Stream stream=TitleContainer.OpenStream( "Content/monkey/"+path );
+			Stream stream=TitleContainer.OpenStream( path );
 			StreamReader reader=new StreamReader( stream );
 			String text=reader.ReadToEnd();
 			reader.Close();
@@ -56,24 +66,30 @@ public class MonkeyData{
 	}
 	
 	public static Texture2D LoadTexture2D( String path,ContentManager content ){
+		path=ContentPath( path );
+		if( path=="" ) return null;
 		try{
-			return content.Load<Texture2D>( "Content/monkey/"+path );
+			return content.Load<Texture2D>( path );
 		}catch( Exception ){
 		}
 		return null;
 	}
 
 	public static SoundEffect LoadSoundEffect( String path,ContentManager content ){
+		path=ContentPath( path );
+		if( path=="" ) return null;
 		try{
-			return content.Load<SoundEffect>( "Content/monkey/"+path );
+			return content.Load<SoundEffect>( path );
 		}catch( Exception ){
 		}
 		return null;
 	}
 	
 	public static Song LoadSong( String path,ContentManager content ){
+		path=ContentPath( path );
+		if( path=="" ) return null;
 		try{
-			return content.Load<Song>( "Content/monkey/"+path );
+			return content.Load<Song>( path );
 		}catch( Exception ){
 		}
 		return null;

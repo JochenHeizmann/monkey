@@ -383,8 +383,10 @@ Strings also support a number of 'pseudo' methods and functions:
 <tr><td>Method ToUpper:String()</td><td> Returns the current string converted to uppercase.</td></tr>
 <tr><td>Method Trim:String()</td><td> Returns the current string with all leading and trailing whitespace characters removed.</td></tr>
 <tr><td>Method Split:String[]( separator:String )</td><td> Returns an array of strings that contains the substrings in the current string deliminated by separator.</td></tr>
+<tr><td>Method ToChars:Int[]()</td><td> Converts string to an array of character codes.</td></tr>
 <tr><td>Method Join:String( pieces:String[] )</td><td> Returns the elements of pieces concatened together with the current string inserted between each substring.</td></tr>
 <tr><td>Function FromChar:String( char )</td><td> Returns a string of length 1 consisting of a single character code.</td></tr>
+<tr><td>Function FromChars:String( chars:Int[] )</td><td> Creates a string from an array of character codes.</td></tr>
 </table>
 
 For example:

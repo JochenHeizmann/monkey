@@ -3,6 +3,8 @@
 package com.monkey;
 //${PACKAGE_END}
 
+import java.net.*;
+
 //${IMPORTS_BEGIN}
 //${IMPORTS_END}
 
@@ -83,8 +85,15 @@ class MonkeyData{
 		return out.toString();
 	}
 	
+	static String assetPath( String path ){
+		if( path.toLowerCase().startsWith("monkey://data/") ) return "monkey/"+path.substring(14);
+		return "";
+	}
+	
 	static byte[] loadBytes( String path ){
-		path="monkey/"+path;
+	
+		path=assetPath( path );
+		if( path=="" ) return null;
 		
 		try{
 			//Man, they sure don't make this easy for ya do they?!?
@@ -98,38 +107,48 @@ class MonkeyData{
 				if( n<0 ) break;
 				out.write( buf,0,n );
 			}
-			
 			in.close();
-			
 			return out.toByteArray();
-
+			
 		}catch( IOException e ){
 		}
 		return null;
 	}
 
 	static String loadString( String path ){
-
 		byte[] bytes=loadBytes( path );
-		if( bytes==null ) return "";
-		
-		return loadString( bytes );
+		if( bytes!=null ) return loadString( bytes );
+		return "";
 	}
 
 	static Bitmap loadBitmap( String path ){
-		path="monkey/"+path;
 
+		Bitmap bitmap=null;
+		
+		BitmapFactory.Options opts=new BitmapFactory.Options();
+		opts.inPurgeable=true;
+		
 		try{
-			BitmapFactory.Options opts = new BitmapFactory.Options(); 
-			opts.inPurgeable=true; 
-			return BitmapFactory.decodeStream( getAssets().open( path ),null,opts );
+			if( path.toLowerCase().startsWith("monkey://data/") ){
+				path=assetPath( path );
+				InputStream in=getAssets().open( path );
+				bitmap=BitmapFactory.decodeStream( in,null,opts );
+				in.close();
+			}else{
+				URL url=new URL( path );
+				URLConnection con=url.openConnection();
+				BufferedInputStream in=new BufferedInputStream( con.getInputStream() );
+				bitmap=BitmapFactory.decodeStream( in,null,opts );
+				in.close();
+			}
 		}catch( IOException e ){
 		}
-		return null;
+		return bitmap;
 	}
 
 	static int loadSound( String path,SoundPool pool ){
-		path="monkey/"+path;
+		path=assetPath( path );
+		if( path=="" ) return 0;
 
 		try{
 			return pool.load( getAssets().openFd( path ),1 );
@@ -139,16 +158,18 @@ class MonkeyData{
 	}
 	
 	static MediaPlayer openMedia( String path ){
-		path="monkey/"+path;
+		path=assetPath( path );
+		if( path=="" ) return null;
 
 		try{
-			android.content.res.AssetFileDescriptor afd=getAssets().openFd( path );
+			android.content.res.AssetFileDescriptor fd=getAssets().openFd( path );
 
 			MediaPlayer mp=new MediaPlayer();
-			mp.setDataSource( afd.getFileDescriptor(),afd.getStartOffset(),afd.getLength() );
+			mp.setDataSource( fd.getFileDescriptor(),fd.getStartOffset(),fd.getLength() );
 			mp.prepare();
 			
-			afd.close();
+			fd.close();
+			
 			return mp;
 		}catch( IOException e ){
 		}

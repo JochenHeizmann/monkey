@@ -85,15 +85,6 @@ FLEX_PATH="${SYSTEMDRIVE}\flex_sdk"
 '--------------------
 
 '--------------------
-'Play Station Suite SDK path.
-'
-'PSS_PATH must be set for PSS target support.
-'
-'Note: This will soon be replaced by the Play Station Mobile target - use that instead!
-'
-PSS_PATH="${PROGRAMFILES}\SCE\Pss"
-
-'--------------------
 'Play Station Mobile SDK path.
 '
 'PSM_PATH must be set for PSM target support.
@@ -101,6 +92,7 @@ PSS_PATH="${PROGRAMFILES}\SCE\Pss"
 'Note: This will soon replace the Play Station Suite target - use this instead!!!!!
 '
 PSM_PATH="${PROGRAMFILES}\SCE\PSM"
+'--------------------
 
 '--------------------
 'MSBUILD path.

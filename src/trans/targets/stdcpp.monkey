@@ -23,7 +23,7 @@ Class StdcppTarget Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
+		For Local kv:=Eachin _cfgVars
 			config.Push "#define CFG_"+kv.Key+" "+kv.Value
 		Next
 		Return config.Join( "~n" )
@@ -32,9 +32,9 @@ Class StdcppTarget Extends Target
 	Method MakeTarget()
 	
 		Select ENV_CONFIG
-		Case "debug" Env.Set "DEBUG","1"
-		Case "release" Env.Set "RELEASE","1"
-		Case "profile" Env.Set "PROFILE","1"
+		Case "debug" SetCfgVar "DEBUG","1"
+		Case "release" SetCfgVar "RELEASE","1"
+		Case "profile" SetCfgVar "PROFILE","1"
 		End
 		
 		Local main$=LoadString( "main.cpp" )
@@ -49,24 +49,21 @@ Class StdcppTarget Extends Target
 			Local out$="main_"+HostOS
 			DeleteFile out
 			
+			Local OPTS:="",LIBS:=""
+			
 			Select ENV_HOST
 			Case "macos"
-				Select ENV_CONFIG
-				Case "release"
-					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -O3 -o "+out+" main.cpp"
-				Case "debug"
-					Execute "g++ -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3 -o "+out+" main.cpp"
-				End
-			Default
-				Select ENV_CONFIG
-				Case "release"
-					Execute "g++ -O3 -DNDEBUG -o "+out+" main.cpp"
-				Case "profile"
-					Execute "g++ -O3 -DNDEBUG -o "+out+" main.cpp -lwinmm"
-				Case "debug"
-					Execute "g++ -o "+out+" main.cpp"
-				End
+				OPTS+=" -arch i386 -read_only_relocs suppress -mmacosx-version-min=10.3"
+			Case "winnt"
+				LIBS+=" -lwinmm -lws2_32"
 			End
+			
+			Select ENV_CONFIG
+			Case "release"
+				OPTS+=" -O3 -DNDEBUG"
+			End
+			
+			Execute "g++"+OPTS+" -o "+out+" main.cpp"+LIBS
 
 			If OPT_ACTION>=ACTION_RUN
 				Execute "~q"+RealPath( out )+"~q"

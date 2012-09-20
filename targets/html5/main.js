@@ -51,6 +51,10 @@ var game_runner;
 //${METADATA_END}
 
 function getMetaData( path,key ){
+
+	if( path.toLowerCase().indexOf("monkey://data/")!=0 ) return "";
+	path=path.slice(14);
+
 	var i=META_DATA.indexOf( "["+path+"]" );
 	if( i==-1 ) return "";
 	i+=path.length+2;
@@ -68,48 +72,50 @@ function getMetaData( path,key ){
 	return META_DATA.slice( i,e );
 }
 
-function openXhr( path ){
-	var xhr=new XMLHttpRequest();
-	xhr.open( "GET","data/"+path,false );
+function fixDataPath( path ){
+	if( path.toLowerCase().indexOf("monkey://data/")==0 ) return "data/"+path.slice(14);
+	return path;
+}
+
+function openXMLHttpRequest( req,path,async ){
+
+	path=fixDataPath( path );
+	
+	var xhr=new XMLHttpRequest;
+	xhr.open( req,path,async );
 	return xhr;
 }
 
-function loadBytes( path ){
-	var xhr=new XMLHttpRequest();
-	xhr.open( "GET","data/"+path,false );
-	if( xhr.overrideMimeType ){
-		xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
-	}
+function loadArrayBuffer( path ){
+
+	var xhr=openXMLHttpRequest( "GET",path,false );
+
+	if( xhr.overrideMimeType ) xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
+
 	xhr.send( null );
-
-	if( (xhr.status!=200) && (xhr.status!=0) ) return false;
 	
-	var resp=xhr.responseText;
+	if( xhr.status!=200 && xhr.status!=0 ) return null;
 
-	var arr=new Int8Array( resp.length );
-	
-	for( var i=0;i<resp.length;++i ){
-		arr[i]=resp.charCodeAt(i);
+	var r=xhr.responseText;
+	var buf=new ArrayBuffer( r.length );
+
+	for( var i=0;i<r.length;++i ){
+		this.dataView.setInt8( i,r.charCodeAt(i) );
 	}
-	return arr;
+	return buf;
 }
 
 function loadString( path ){
-	var xhr=openXhr( path );
-	xhr.send( null );
-	if( (xhr.status==200) || (xhr.status==0) ) return xhr.responseText;
-	return "";
-}
-
-function loadString( path ){
+	path=fixDataPath( path );
 	var xhr=new XMLHttpRequest();
-	xhr.open( "GET","data/"+path,false );
+	xhr.open( "GET",path,false );
 	xhr.send( null );
 	if( (xhr.status==200) || (xhr.status==0) ) return xhr.responseText;
 	return "";
 }
 
 function loadImage( path,onloadfun ){
+
 	var ty=getMetaData( path,"type" );
 	if( ty.indexOf( "image/" )!=0 ) return null;
 
@@ -118,13 +124,16 @@ function loadImage( path,onloadfun ){
 	image.meta_width=parseInt( getMetaData( path,"width" ) );
 	image.meta_height=parseInt( getMetaData( path,"height" ) );
 	image.onload=onloadfun;
-	image.src="data/"+path;
+	image.src="data/"+path.slice(14);
 	
 	return image;
 }
 
 function loadAudio( path ){
-	var audio=new Audio( "data/"+path );
+
+	path=fixDataPath( path );
+	
+	var audio=new Audio( path );
 	return audio;
 }
 

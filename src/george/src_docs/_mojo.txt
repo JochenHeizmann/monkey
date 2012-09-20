@@ -9,6 +9,8 @@
 
 # Import mojo.input
 
+# Import mojo.asyncloaders
+
 Tho mojo modules provide a lightweight programming framework designed primarily for creating simple 2d games.
 
 Mojo applications must extend the mojo App class declared in mojo.app and create a new instance of this class somewhere inside the Monkey Main() function. This is what actually creates the application.

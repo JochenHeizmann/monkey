@@ -1,5 +1,5 @@
 
-'#ANDROID_NATIVE_GL_ENABLED="true"	'to run on android 2.2 - WARNING: uses native code.
+'#ANDROID_NATIVE_GL_ENABLED=True	'to run on android 2.2 - WARNING: uses native code.
 #ANDROID_SCREEN_ORIENTATION="user"
 
 Import mojo

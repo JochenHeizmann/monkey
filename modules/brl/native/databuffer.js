@@ -5,48 +5,33 @@
 //
 function BBDataBuffer(){
 	this.arrayBuffer=null;
+	this.dataView=null;
 	this.length=0;
 }
 
-BBDataBuffer.prototype._Init=function( buffer,length ){
+BBDataBuffer.prototype._Init=function( buffer ){
 	this.arrayBuffer=buffer;
-	this.length=length;
-	this.byteArray=new Int8Array( buffer );
-	this.shortArray=new Int16Array( buffer );
-	this.intArray=new Int32Array( buffer );
-	this.floatArray=new Float32Array( buffer );
+	this.dataView=new DataView( buffer );
+	this.length=buffer.byteLength;
 }
 
 BBDataBuffer.prototype._New=function( length ){
 	if( this.arrayBuffer ) return false;
 	
-	var buf=new ArrayBuffer( (length+3)&~3 );
+	var buf=new ArrayBuffer( length );
 	if( !buf ) return false;
 	
-	this._Init( buf,length );
-	
+	this._Init( buf );
 	return true;
 }
 
 BBDataBuffer.prototype._Load=function( path ){
 	if( this.arrayBuffer ) return false;
-
-	var xhr=openXhr( path );
-	if( !xhr ) return false;
-		
-	if( xhr.overrideMimeType ){
-		xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
-	}
-	xhr.send( null );
-	if( (xhr.status!=200) && (xhr.status!=0) ) return false;
 	
-	var r=xhr.responseText;
+	var buf=loadArrayBuffer( path );
+	if( !buf ) return false;
 	
-	this._New( r.length );
-	
-	for( var i=0;i<r.length;++i ){
-		this.byteArray[i]=r.charCodeAt(i);
-	}
+	_Init( buf );
 	return true;
 }
 
@@ -57,42 +42,39 @@ BBDataBuffer.prototype.Length=function(){
 BBDataBuffer.prototype.Discard=function(){
 	if( this.arrayBuffer ){
 		this.arrayBuffer=null;
+		this.dataView=null;
 		this.length=0;
-		this.byteArray=null;
-		this.shortArray=null;
-		this.intArray=null;
-		this.floatArray=null
 	}
 }
 
 BBDataBuffer.prototype.PokeByte=function( addr,value ){
-	this.byteArray[addr]=value;
+	this.dataView.setInt8( addr,value );
 }
 
 BBDataBuffer.prototype.PokeShort=function( addr,value ){
-	this.shortArray[addr>>1]=value;
+	this.dataView.setInt16( addr,value );	
 }
 
 BBDataBuffer.prototype.PokeInt=function( addr,value ){
-	this.intArray[addr>>2]=value;
+	this.dataView.setInt32( addr,value );	
 }
 
 BBDataBuffer.prototype.PokeFloat=function( addr,value ){
-	this.floatArray[addr>>2]=value;
+	this.dataView.setFloat32( addr,value );	
 }
 
 BBDataBuffer.prototype.PeekByte=function( addr ){
-	return this.byteArray[addr];
+	return this.dataView.getInt8( addr );
 }
 
 BBDataBuffer.prototype.PeekShort=function( addr ){
-	return this.shortArray[addr>>1];
+	return this.dataView.getInt16( addr );
 }
 
 BBDataBuffer.prototype.PeekInt=function( addr ){
-	return this.intArray[addr>>2];
+	return this.dataView.getInt32( addr );
 }
 
 BBDataBuffer.prototype.PeekFloat=function( addr ){
-	return this.floatArray[addr>>2];
+	return this.dataView.getFloat32( addr );
 }

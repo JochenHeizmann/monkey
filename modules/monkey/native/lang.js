@@ -171,22 +171,27 @@ function string_trim( str ){
 	return str.slice( i,i2 );
 }
 
-function string_starts_with( str,substr ){
+function string_startswith( str,substr ){
 	return substr.length<=str.length && str.slice(0,substr.length)==substr;
 }
 
-function string_ends_with( str,substr ){
+function string_endswith( str,substr ){
 	return substr.length<=str.length && str.slice(str.length-substr.length,str.length)==substr;
 }
 
-function string_from_chars( chars ){
+function string_tochars( str ){
+	var arr=new Array( str.length );
+	for( var i=0;i<str.length;++i ) arr[i]=str.charCodeAt(i);
+	return arr;
+}
+
+function string_fromchars( chars ){
 	var str="",i;
 	for( i=0;i<chars.length;++i ){
 		str+=String.fromCharCode( chars[i] );
 	}
 	return str;
 }
-
 
 function object_downcast( obj,clas ){
 	if( obj instanceof clas ) return obj;

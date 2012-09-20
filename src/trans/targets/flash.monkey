@@ -16,8 +16,8 @@ Class FlashTarget Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
-			config.Push "internal static var "+kv.Key+":String="+LangEnquote( kv.Value )
+		For Local kv:=Eachin _cfgVars
+			config.Push "internal static var "+kv.Key+":String="+Enquote( kv.Value,"as" )
 		Next
 		Return config.Join( "~n" )
 	End

@@ -70,6 +70,11 @@ void FindInFilesDialog::show(){
     }
 }
 
+void FindInFilesDialog::show( const QString &path ){
+    _ui->dirLineEdit->setText( path );
+    show();
+}
+
 void FindInFilesDialog::find(){
 
     QString findText=_ui->findLineEdit->text();

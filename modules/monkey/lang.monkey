@@ -34,6 +34,8 @@ Class @String Extends Null="String"
 	Method StartsWith:Bool( subString:String )="$startswith"
 	Method EndsWith:Bool( subString:String )="$endswith"
 	
+	Method ToChars:Int[]()="$tochars"
+	
 	Function FromChar:String( charCode:Int )="$fromchar"
 	Function FromChars:String( charCodes:Int[] )="$fromchars"
 

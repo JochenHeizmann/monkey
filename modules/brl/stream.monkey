@@ -1,5 +1,5 @@
 
-Import databuffer
+Import brl.databuffer
 
 #If LANG="cpp"
 Import "native/stream.cpp"
@@ -17,13 +17,14 @@ Extern
 
 Class BBStream
 
+	'blah...
 	Method Eof:Int()
 	Method Close:Void()
 	Method Length:Int()
 	Method Position:Int()
 	Method Seek:Int( position:Int )
-	Method Read:Int( buf:BBDataBuffer,offset:Int,count:Int )
-	Method Write:Int( buf:BBDataBuffer,offset:Int,count:Int )
+	Method Read:Int( buf:DataBuffer,offset:Int,count:Int )
+	Method Write:Int( buf:DataBuffer,offset:Int,count:Int )
 	
 End
 
@@ -31,74 +32,56 @@ Public
 
 Class Stream
 
-	Method New()
-		If Not _tmp_buf _tmp_buf=New DataBuffer(BUF_SZ)
-	End
-
-	Method Eof:Int()
-		Return _bb_stream.Eof()
-	End
+	Method Eof:Int() Abstract
 	
-	Method Close:Void()
-		_bb_stream.Close
-	End
+	Method Close:Void() Abstract
 	
-	Method Length:Int()
-		Return _bb_stream.Length()
-	End
+	Method Length:Int() Abstract
 	
-	Method Position:Int()
-		Return _bb_stream.Position()
-	End
+	Method Position:Int() Abstract
 	
-	Method Seek:Int( position:Int )
-		Return _bb_stream.Seek( position )
-	End
+	Method Seek:Int( position:Int ) Abstract
+	
+	Method Read:Int( buffer:DataBuffer,offset:Int,count:Int ) Abstract
+	
+	Method Write:Int( buffer:DataBuffer,offset:Int,count:Int ) Abstract
 	
 	Method Skip:Int( count:Int )
 		Local n:=0
 		While n<count
-			Local t:=_bb_stream.Read( _tmp_buf,Min( count-n,BUF_SZ ),0 )
+			Local t:=Read( _tmpbuf,Min( count-n,BUF_SZ ),0 )
 			If Not t And Eof() Throw New StreamReadError( Self )
 			n+=t
 		Wend
 		Return n
 	End
 	
-	Method Read:Int( buffer:DataBuffer,offset:Int,count:Int )
-		Return _bb_stream.Read( buffer,offset,count )
-	End
-	
-	Method Write:Int( buffer:DataBuffer,offset:Int,count:Int )
-		Return _bb_stream.Write( buffer,offset,count )
-	End
-	
 	Method ReadByte:Int()
 		_Read 1
-		Return _tmp_buf.PeekByte( 0 )
+		Return _tmpbuf.PeekByte( 0 )
 	End
 	
 	Method ReadShort:Int()
 		_Read 2
-		Return _tmp_buf.PeekShort( 0 )
+		Return _tmpbuf.PeekShort( 0 )
 	End
 	
 	Method ReadInt:Int()
 		_Read 4
-		Return _tmp_buf.PeekInt( 0 )
+		Return _tmpbuf.PeekInt( 0 )
 	End
 	
 	Method ReadFloat:Float()
 		_Read 4
-		Return _tmp_buf.PeekFloat( 0 )
+		Return _tmpbuf.PeekFloat( 0 )
 	End
 	
 	Method ReadLine:String()
 		Local buf:=New Stack<Int>
 		While Not Eof()
-			Local n:=Read( _tmp_buf,0,1 )
+			Local n:=Read( _tmpbuf,0,1 )
 			If Not n Exit
-			Local ch:=_tmp_buf.PeekByte( 0 )
+			Local ch:=_tmpbuf.PeekByte( 0 )
 			If Not ch Or ch=10 Exit
 			If ch<>13 buf.Push ch
 		Wend
@@ -106,22 +89,22 @@ Class Stream
 	End
 	
 	Method WriteByte:Void( value:Int )
-		_tmp_buf.PokeByte 0,value
+		_tmpbuf.PokeByte 0,value
 		_Write 1
 	End
 	
 	Method WriteShort:Void( value:Int )
-		_tmp_buf.PokeShort 0,value
+		_tmpbuf.PokeShort 0,value
 		_Write 2
 	End
 	
 	Method WriteInt:Void( value:Int )
-		_tmp_buf.PokeInt 0,value
+		_tmpbuf.PokeInt 0,value
 		_Write 4
 	End
 	
 	Method WriteFloat:Void( value:Float )
-		_tmp_buf.PokeFloat 0,value
+		_tmpbuf.PokeFloat 0,value
 		_Write 4
 	End
 	
@@ -133,30 +116,23 @@ Class Stream
 		WriteByte 10
 	End
 
-	'***** INTERNAL *****
-	Method SetBBStream:Void( stream:BBStream )
-		_bb_stream=stream
-	End
-		
 	Private
 	
 	Const BUF_SZ=4096
 
-	Field _bb_stream:BBStream
-		
-	Global _tmp_buf:DataBuffer
+	Global _tmpbuf:=New DataBuffer( BUF_SZ )
 	
 	Method _Read:Void( n:Int )
 		Local i:=0
 		Repeat
-			i+=Read( _tmp_buf,i,n-i )
+			i+=Read( _tmpbuf,i,n-i )
 			If i=n Return
 			If Eof() Throw New StreamReadError( Self )
 		Forever
 	End
 	
 	Method _Write:Void( n:Int )
-		If Write( _tmp_buf,0,n )<>n Throw New StreamWriteError( Self )
+		If Write( _tmpbuf,0,n )<>n Throw New StreamWriteError( Self )
 	End
 	
 End

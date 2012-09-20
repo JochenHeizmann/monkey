@@ -37,10 +37,12 @@ Class Target
 		
 		srcPath=path
 		
-		Env.Set "HOST",ENV_HOST
-		Env.Set "LANG",ENV_LANG
-		Env.Set "TARGET",ENV_TARGET
-		Env.Set "CONFIG",ENV_CONFIG
+		SetCfgVar "HOST",ENV_HOST
+		SetCfgVar "CONFIG",ENV_CONFIG
+		SetCfgVar "MODPATH",ENV_MODPATH
+		SetCfgVar "SAFEMODE",ENV_SAFEMODE
+		SetCfgVar "LANG",ENV_LANG
+		SetCfgVar "TARGET",ENV_TARGET
 		
 		Translate
 
@@ -62,15 +64,15 @@ Class Target
 			Endif
 	
 			If FileType( targetPath )<>FILETYPE_DIR Die "Failed to create target dir: "+targetPath
-
-			Local cfgPath:=targetPath+"/CONFIG.TXT"
-			If FileType( cfgPath )=FILETYPE_FILE LoadEnv cfgPath
 			
-			TEXT_FILES=Env.Get( "TEXT_FILES" )
-			IMAGE_FILES=Env.Get( "IMAGE_FILES" )
-			SOUND_FILES=Env.Get( "SOUND_FILES" )
-			MUSIC_FILES=Env.Get( "MUSIC_FILES" )
-			BINARY_FILES=Env.Get( "BINARY_FILES" )
+			Local cfgPath:=targetPath+"/CONFIG.MONKEY"
+			If FileType( cfgPath )=FILETYPE_FILE PreProcess cfgPath
+			
+			TEXT_FILES=GetCfgVar( "TEXT_FILES" )
+			IMAGE_FILES=GetCfgVar( "IMAGE_FILES" )
+			SOUND_FILES=GetCfgVar( "SOUND_FILES" )
+			MUSIC_FILES=GetCfgVar( "MUSIC_FILES" )
+			BINARY_FILES=GetCfgVar( "BINARY_FILES" )
 			
 			DATA_FILES=TEXT_FILES
 			If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
@@ -129,7 +131,7 @@ Class Target
 			If OPT_ACTION>=ACTION_SEMANT
 				Print "Semanting..."
 				
-				If Env.Get("REFLECTION_FILTER")
+				If GetCfgVar("REFLECTION_FILTER")
 					Local r:=New Reflector
 					r.Semant app
 				Else
@@ -261,7 +263,7 @@ Function ReplaceEnv$( str$ )
 		Endif
 		
 		Local t:=str[i+2..e]
-		Local v:=Env.Get(t)
+		Local v:=GetCfgVar(t)
 		If Not v v=GetEnv(t)
 		v=v.Replace( "~q","" )
 		
@@ -277,30 +279,6 @@ Function ReplaceEnv$( str$ )
 	
 	Return bits.Join( "" )
 	
-End
-
-'read a text file into env
-'
-Function LoadEnv( path$ )
-
-	Local cfg$=LoadString( path )
-
-	For Local line$=Eachin cfg.Split( "~n" )
-	
-		line=line.Trim()
-		If Not line Or line.StartsWith( "'" ) Continue
-		
-		Local i=line.Find( "=" )
-		If i=-1 Die "Error in config file, path="+path+", line="+line
-		
-		Local lhs$=line[..i].Trim()
-		
-		If Not Env.Contains( lhs )
-			Local rhs$=line[i+1..].Trim()
-			Env.Set lhs,ReplaceEnv( rhs )
-		Endif
-		
-	Next
 End
 
 Function ReplaceBlock$( text$,tag$,repText$,mark$="~n//" )
@@ -331,7 +309,8 @@ Function MatchPath?( text$,pattern$ )
 	Local alts:=pattern.Split( "|" )
 
 	For Local alt:=Eachin alts
-	
+		If Not alt Continue
+		
 		Local bits:=alt.Split( "*" )
 		
 		If bits.Length=1

@@ -3,8 +3,8 @@
 #Error "The opengl.gles20 module is not avaiable for the ${TARGET} target."
 #Endif
 
-#OPENGL_GLES20_ENABLED="true"
-#OPENGL_DEPTH_BUFFER_ENABLED="true"
+#OPENGL_GLES20_ENABLED=True
+#OPENGL_DEPTH_BUFFER_ENABLED=True
 
 Import databuffer
 

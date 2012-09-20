@@ -32,7 +32,7 @@ void dbg_error( const char *p );
 //How much to alloc before GC - set to 0 for continuous GC
 //
 #ifndef CFG_CPP_GC_TRIGGER
-#define CFG_CPP_GC_TRIGGER 0	//4*1024*1024
+#define CFG_CPP_GC_TRIGGER 4*1024*1024
 #endif
 
 //#define DEBUG_GC 1
@@ -807,6 +807,12 @@ public:
 		return Slice( from,rep->length );
 	}
 	
+	Array<int> ToChars()const{
+		Array<int> chars( rep->length );
+		for( int i=0;i<rep->length;++i ) chars[i]=rep->data[i];
+		return chars;
+	}
+	
 	int ToInt()const{
 		return atoi( ToCString<char>() );
 	}
@@ -926,11 +932,11 @@ public:
 				chars.push_back( c );
 			}
 			if( fail ){
-				puts( "UTF-8 Fail!" );fflush( stdout );
+				puts( "Invalid UTF-8!" );fflush( stdout );
 				return String( q,n );
 			}
 		}
-		return chars.size() ? String( &chars[0],chars.size() ) : "";
+		return chars.size() ? String( &chars[0],chars.size() ) : String();
 	}
 	
 private:

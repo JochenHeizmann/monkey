@@ -22,17 +22,18 @@ Class GlfwTarget Extends Target
 	
 	Method Config$()
 		Local config:=New StringStack
-		For Local kv:=Eachin Env
+		For Local kv:=Eachin _cfgVars
 			config.Push "#define CFG_"+kv.Key+" "+kv.Value
 		Next
 		Return config.Join( "~n" )
 	End
 	
 	Method MakeMingw()
-		CreateDir "mingw/"+CASED_CONFIG
-		
-		CreateDataDir "mingw/"+CASED_CONFIG+"/data"
 
+		CreateDir "mingw/"+CASED_CONFIG
+
+		CreateDataDir "mingw/"+CASED_CONFIG+"/data"
+		
 		Local main$=LoadString( "main.cpp" )
 		
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
@@ -48,7 +49,6 @@ Class GlfwTarget Extends Target
 			Select ENV_CONFIG
 			Case "release"
 				ccopts="-O3 -DNDEBUG"
-			Case "debug"
 			End
 			
 			Execute "mingw32-make CCOPTS=~q"+ccopts+"~q OUT=~q"+CASED_CONFIG+"/MonkeyGame~q"
@@ -116,7 +116,7 @@ Class GlfwTarget Extends Target
 		Select ENV_HOST
 		Case "winnt"
 			If MINGW_PATH And MSBUILD_PATH
-				If Env.Get( "GLFW_USE_MINGW" )="true"
+				If GetCfgVar( "GLFW_USE_MINGW" )="1"
 					MakeMingw
 				Else
 					MakeVc2010

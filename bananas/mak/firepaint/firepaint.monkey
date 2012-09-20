@@ -3,10 +3,6 @@
 '
 'Really a multitouch test...
 
-#GLFW_USE_MINGW="true"
-
-#MOJO_AUTO_SUSPEND_ENABLED="true"
-
 Import mojo
 
 Global BigList:=New List<Spark>

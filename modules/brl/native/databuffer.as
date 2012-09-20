@@ -4,6 +4,11 @@ class BBDataBuffer{
 	internal var _data:ByteArray=null;
 	internal var _length:int=0;
 	
+	public function _Init( data:ByteArray ):void{
+		_data=data;
+		_length=data.length;
+	}
+	
 	public function _New( length:int ):Boolean{
 		if( _data ) return false
 		_data=new ByteArray;
@@ -16,14 +21,14 @@ class BBDataBuffer{
 		if( _data ) return false
 		var data:ByteArray=game.loadByteArray( path );
 		if( !data ) return false;
-		_data=data;
-		_length=data.length;
+		_Init( data );
 		return true;
 	}
 	
 	public function Discard():void{
 		if( _data ){
 			_data.clear();
+			_data=null;
 			_length=0;
 		}
 	}

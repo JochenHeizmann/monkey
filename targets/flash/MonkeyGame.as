@@ -4,6 +4,7 @@ package{
 	import flash.display.*;
 	import flash.events.*;
 	import flash.media.*;
+	import flash.net.*;
 	import flash.utils.ByteArray;
 
 	[SWF(width="640",height="480")]
@@ -34,12 +35,16 @@ package{
 		}
 		
 		private function mungPath( path:String ):String{
+		
+			if( path.toLowerCase().indexOf("monkey://data/")!=0 ) return "";
+			path=path.slice(14);
+			
 			var i:int=path.indexOf( "." ),ext:String="";
 			if( i!=-1 ){
 				ext=path.slice(i+1);
 				path=path.slice(0,i);
 			}
-			
+
 			var munged:String="_";
 			var bits:Array=path.split( "/" );
 			
@@ -51,12 +56,15 @@ package{
 			return munged;
 		}
 		
+		public function urlRequest( path:String ):URLRequest{
+			if( path.toLowerCase().indexOf("monkey://data/")==0 ) path="data/"+path.slice(14);
+			return new URLRequest( path );
+		}
+		
 		public function loadByteArray( path:String ):ByteArray{
-			var t:Class=Assets[ mungPath( path ) ];
-			if( t ){
-				var buf:ByteArray=(new t) as ByteArray;
-				return buf;
-			}
+			path=mungPath( path );
+			var t:Class=Assets[path];
+			if( t ) return (new t) as ByteArray;
 			return null;
 		}
 		
@@ -67,13 +75,15 @@ package{
 		}
 
 		public function loadBitmap( path:String ):Bitmap{
-			var t:Class=Assets[ mungPath( path ) ];
+			path=mungPath( path );
+			var t:Class=Assets[path];
 			if( t ) return (new t) as Bitmap;
 			return null;
 		}
 		
 		public function loadSound( path:String ):Sound{
-			var t:Class=Assets[ mungPath( path ) ];
+			path=mungPath( path );
+			var t:Class=Assets[path];
 			if( t ) return (new t) as Sound;
 			return null;
 		}

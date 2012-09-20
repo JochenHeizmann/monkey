@@ -1,5 +1,5 @@
 
-#MOJO_AUTO_SUSPEND_ENABLED="true"
+#MOJO_AUTO_SUSPEND_ENABLED=True
 
 Import mojo
 
