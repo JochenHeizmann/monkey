@@ -78,8 +78,8 @@ Class Reflector
 		If Not p.EndsWith( ".monkey" ) InternalErr
 		p=p[..-7]		
 		
-		For Local dir:=Eachin ENV_MODPATH.Split( ";" )
-			If dir="." Continue
+		For Local dir:=Eachin GetCfgVar( "MODPATH" ).Split( ";" )
+			If Not dir or dir="." Continue
 			
 			dir=dir.Replace( "\","/" )
 			If Not dir.EndsWith("/") dir+="/"
@@ -173,10 +173,6 @@ Class Reflector
 	
 		If path And ClassDecl( decl.scope ) Return decl.ident
 			
-'		If FieldDecl( decl ) Return decl.ident
-		
-'		If FuncDecl( decl ) And FuncDecl( decl ).IsMethod() Return decl.ident
-
 		Local mdecl:=ModuleDecl( decl )
 		If mdecl
 			If path Return modpaths.Get( mdecl.filepath )
@@ -187,6 +183,10 @@ Class Reflector
 		If cdecl And cdecl.munged="Object"
 			If path Return "monkey.lang.Object"
 			Return "Object"
+		Endif
+		If cdecl And cdecl.munged="ThrowableObject"
+			If path Return "monkey.lang.Throwable"
+			Return "Throwable"
 		Endif
 	
 		Local ident:=DeclExpr( decl.scope,path )+"."+decl.ident
@@ -211,6 +211,7 @@ Class Reflector
 	
 	Method ValidClass?( cdecl:ClassDecl )
 		If cdecl.munged="Object" Return True
+		If cdecl.munged="ThrowableObject" Return True
 		If Not cdecl.ExtendsObject() Return False
 		If Not refmods.Contains( cdecl.ModuleScope().filepath ) Return False
 		For Local arg:=Eachin cdecl.instArgs

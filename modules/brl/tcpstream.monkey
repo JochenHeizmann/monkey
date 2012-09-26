@@ -1,15 +1,11 @@
 
+#If LANG<>"cpp" And LANG<>"java"
+#Error "tcp streams are unavailable on this target"
+#Endif
+
 Import brl.stream
 
-Private
-Import brl.thread
-Public
-
-#If LANG="cpp"
-Import "native/tcpstream.cpp"
-#Elseif LANG="java"
-Import "native/tcpstream.java"
-#Endif
+Import "native/tcpstream.${LANG}"
 
 Extern
 
@@ -42,15 +38,15 @@ Class TcpStream Extends Stream
 	End
 	
 	'Stream
-	Method Eof:Int()
-		Return _stream.Eof()
-	End
-	
 	Method Close:Void()
 		If _stream 
 			_stream.Close
 			_stream=Null
 		Endif
+	End
+	
+	Method Eof:Int()
+		Return _stream.Eof()
 	End
 	
 	Method Length:Int()

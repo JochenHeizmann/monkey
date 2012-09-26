@@ -42,8 +42,6 @@ Class Firepaint Extends App
 	
 	Method OnUpdate()
 	
-		Local dw=DeviceWidth,dh=DeviceHeight
-		
 		Local out:=New List<Spark>
 		For Local spark:=Eachin sparks
 			spark.a=Max(spark.a-.01,0.0)
@@ -58,7 +56,7 @@ Class Firepaint Extends App
 		
 		For Local i=0 Until 32
 			If TouchDown( i )
-				For Local j=1 To 100
+				For Local j=1 To 10
 					sparks.AddLast New Spark( TouchX(i),TouchY(i) )
 				next
 			Endif

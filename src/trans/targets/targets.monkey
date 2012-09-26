@@ -8,8 +8,8 @@ Import glfw
 Import xna
 Import ios
 Import stdcpp
-Import metro
 Import psm
+Import win8
 
 Function ValidTargets$()
 
@@ -25,8 +25,8 @@ Function ValidTargets$()
 	If XnaTarget.IsValid() valid.Push "xna"
 	If IosTarget.IsValid() valid.Push "ios"
 	If StdcppTarget.IsValid() valid.Push "stdcpp"
-	If MetroTarget.IsValid() valid.Push "metro"
 	If PsmTarget.IsValid() valid.Push "psm"
+	If Win8Target.IsValid() valid.Push "win8"
 	
 	ChangeDir cd
 	
@@ -52,8 +52,8 @@ Function SelectTarget:Target( target$ )
 		Return New IosTarget
 	Case "stdcpp"
 		Return New StdcppTarget
-	Case "metro"
-		Return New MetroTarget
+	Case "win8"
+		Return New Win8Target
 	Case "psm"
 		Return New PsmTarget
 	Default

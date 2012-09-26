@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Globalization;
 using System.Threading;
+using System.Diagnostics;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -31,8 +32,24 @@ public class MonkeyConfig{
 
 public class MonkeyData{
 
+	public static FileStream OpenFile( String path,FileMode mode ){
+		if( path.StartsWith("monkey://internal/") ){
+#if WINDOWS
+			IsolatedStorageFile file=IsolatedStorageFile.GetUserStoreForAssembly();
+#else
+			IsolatedStorageFile file=IsolatedStorageFile.GetUserStoreForApplication();
+#endif
+			if( file==null ) return null;
+			
+			IsolatedStorageFileStream stream=file.OpenFile( path.Substring(18),mode );
+			
+			return stream;
+		}
+		return null;
+	}
+
 	public static String ContentPath( String path ){
-		if( path.ToLower().StartsWith("monkey://data/") ) return "Content/monkey/"+path.Substring(14);
+		if( path.StartsWith("monkey://data/") ) return "Content/monkey/"+path.Substring(14);
 		return "";
 	}
 
@@ -50,7 +67,7 @@ public class MonkeyData{
 		}
 		return null;
 	}
-
+	
 	public static String LoadString( String path ){
 		path=ContentPath( path );
 		if( path=="" ) return "";

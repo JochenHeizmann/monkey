@@ -1,6 +1,6 @@
 
-#If TARGET<>"stdcpp" And TARGET<>"glfw" And TARGET<>"android" And TARGET<>"ios"
-#Error "The async stream module is only available on the stdcpp, glfw, android and ios targets"
+#If LANG<>"cpp" And LANG<>"java"
+#Error "Async streams are not available on this target"
 #Endif
 
 Import brl.stream

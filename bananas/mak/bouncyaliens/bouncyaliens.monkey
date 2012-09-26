@@ -52,7 +52,7 @@ Class MyApp Extends App
 		image1=LoadImage( "alien1.png",8,Image.MidHandle )
 		image2=LoadImage( "alien2.png",8,Image.MidHandle )
 		
-		For Local i=0 Until 500
+		For Local i=0 Until 100
 			sprites.Push New Sprite
 		Next
 		

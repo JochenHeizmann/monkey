@@ -160,19 +160,26 @@ Function PreProcess$( path$ )
 		
 			If cnest=ifnest
 				If ty=TOKE_IDENT
+				
+					If toker.TokeType=TOKE_SPACE toker.NextToke
 					Local op:=toker.Toke()
+					
 					If op="=" Or op="+="
+					
 						Select toke
 						Case "HOST","LANG","CONFIG","TARGET","SAFEMODE"
 							Err "App config var '"+toke+"' cannot be modified"
 						End
+						
 						toker.NextToke
+						
 						Local val:=EvalCfgTags( Eval( toker,Type.stringType ) )
+						
 						If op="="
 							If Not GetCfgVar( toke ) SetCfgVar toke,val
 						Else If op="+="
 							Local var:=GetCfgVar( toke )
-							If var And Not val.StartsWith( ";" ) var+=";"
+							If var And Not val.StartsWith( ";" ) val=";"+val
 							SetCfgVar toke,var+val
 						Endif
 					Else
@@ -191,4 +198,3 @@ Function PreProcess$( path$ )
 	
 	Return source.Join( "" )
 End
-

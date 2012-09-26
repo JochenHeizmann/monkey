@@ -180,6 +180,7 @@ False:False.html
 Field:Field.html
 FieldInfo:_reflection.FieldInfo.html
 FileSize:_os.html#FileSize
+FileStream:_brl.filestream.FileStream.html
 FileTime:_os.html#FileTime
 FileType:_os.html#FileType
 Final:Final.html
@@ -187,7 +188,7 @@ Find:_monkey.lang.String.html#Find
 FindLast:_monkey.lang.String.html#FindLast
 FindLast (2):_monkey.lang.String.html#FindLast
 First:_monkey.list.List.html#First
-First Monkey steps:First Monkey steps.html
+First monkey steps:First monkey steps.html
 FirstNode:_monkey.list.List.html#FirstNode
 Flags:_mojo.graphics.Image.html#Flags
 Float:Float.html
@@ -899,7 +900,6 @@ Implements:Implements.html
 Import:Import.html
 Insert:_monkey.set.Set.html#Insert
 Insert (2):_monkey.stack.Stack.html#Insert
-Int:Int.html
 IntClass:_reflection.html#IntClass
 IntList:_monkey.list.IntList.html
 IntMap:_monkey.map.IntMap.html
@@ -1116,6 +1116,7 @@ OnResume:_mojo.app.App.html#OnResume
 OnSuspend:_mojo.app.App.html#OnSuspend
 OnUpdate:_mojo.app.App.html#OnUpdate
 OnWriteComplete:_brl.asyncstream.IOnWriteComplete.html#OnWriteComplete
+Open:_brl.filestream.FileStream.html#Open
 PI:_monkey.math.html#PI
 ParameterTypes:_reflection.FunctionInfo.html#ParameterTypes
 ParameterTypes (2):_reflection.MethodInfo.html#ParameterTypes
@@ -1179,6 +1180,7 @@ RemoveLast:_monkey.list.List.html#RemoveLast
 Repeat:Repeat.html
 Replace:_monkey.lang.String.html#Replace
 Resize:_monkey.lang.Array.html#Resize
+Resource paths:Resource paths.html
 ResumeChannel:_mojo.audio.html#ResumeChannel
 ResumeMusic:_mojo.audio.html#ResumeMusic
 ReturnType:_reflection.FunctionInfo.html#ReturnType
@@ -1307,7 +1309,6 @@ UpdateRate:_mojo.app.html#UpdateRate
 Value:_monkey.list.Node.html#Value
 Value (2):_monkey.map.Node.html#Value
 Values:_monkey.map.Map.html#Values
-Void:Void.html
 Wend:Wend.html
 While:While.html
 Width:_mojo.graphics.Image.html#Width
@@ -1334,6 +1335,7 @@ brl:_brl.html
 databuffer:_opengl.databuffer.html
 databuffer (2):_brl.databuffer.html
 datastream:_brl.datastream.html
+filestream:_brl.filestream.html
 glActiveTexture:_opengl.gles20.html#glActiveTexture
 glActiveTexture (2):_opengl.gles11.html#glActiveTexture
 glAlphaFunc:_opengl.gles11.html#glAlphaFunc
@@ -1584,6 +1586,7 @@ gles11:_opengl.gles11.html
 gles20:_opengl.gles20.html
 graphics:_mojo.graphics.html
 input:_mojo.input.html
+int:int.html
 lang:_monkey.lang.html
 list:_monkey.list.html
 map:_monkey.map.html
@@ -1604,3 +1607,4 @@ value (2):_monkey.boxes.BoolObject.html#value
 value (3):_monkey.boxes.FloatObject.html#value
 value (4):_monkey.boxes.IntObject.html#value
 value (5):_monkey.boxes.StringObject.html#value
+void:void.html

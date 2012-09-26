@@ -19,6 +19,7 @@ Global FLASH_PLAYER$
 Global OPT_ACTION
 Global OPT_CLEAN
 Global OPT_OUTPUT$
+Global OPT_MODPATH$
 Global CASED_CONFIG$="Debug"
 
 'from OPT_ACTION
@@ -38,11 +39,12 @@ Class Target
 		srcPath=path
 		
 		SetCfgVar "HOST",ENV_HOST
-		SetCfgVar "CONFIG",ENV_CONFIG
-		SetCfgVar "MODPATH",ENV_MODPATH
-		SetCfgVar "SAFEMODE",ENV_SAFEMODE
 		SetCfgVar "LANG",ENV_LANG
 		SetCfgVar "TARGET",ENV_TARGET
+		SetCfgVar "CONFIG",ENV_CONFIG
+		SetCfgVar "SAFEMODE",ENV_SAFEMODE
+
+		SetCfgVar "MODPATH",OPT_MODPATH
 		
 		Translate
 

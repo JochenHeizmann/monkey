@@ -27,12 +27,12 @@ Class Test Extends App
 	Method OnUpdate()
 
 		'Enable to test image thrashing!
-#rem		
-#if TARGET<>"html5"
-'		image.Discard	'should work with/without
+'#rem		
+#If TARGET<>"html5"
+		image.Discard	'should work with/without
 		LoadStuff
-#end
-#end
+#End
+'#End
 
 #rem
 		If KeyDown( KEY_RIGHT )

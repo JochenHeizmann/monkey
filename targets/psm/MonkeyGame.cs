@@ -21,6 +21,14 @@ public class MonkeyConfig{
 
 public class MonkeyData{
 
+	public static FileStream OpenFile( String path,FileMode mode ){
+		if( path.StartsWith( "monkey://internal/" ) ){
+			FileStream stream=new FileStream( "/Documents/"+path.Substring(18),mode );
+			return stream;
+		}
+		return null;
+	}
+
 	public static String dataPath( String path ){
 		if( path.ToLower().StartsWith("monkey://data/") ) return "/Application/data/"+path.Substring(14);
 		return "";

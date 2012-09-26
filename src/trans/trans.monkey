@@ -6,7 +6,7 @@
 
 Import targets
 
-Const VERSION$="1.41"
+Const VERSION$="1.42"
 
 Function StripQuotes$( str$ )
 	If str.StartsWith( "~q" ) And str.EndsWith( "~q" ) Return str[1..-1]
@@ -145,7 +145,7 @@ Function Main()
 	srcpath=RealPath( srcpath )
 	
 	ENV_HOST=HostOS
-	ENV_MODPATH=".;"+ExtractDir( srcpath )+";"+RealPath( ExtractDir( AppPath )+"/../modules" )
+	OPT_MODPATH=".;"+ExtractDir( srcpath )+";"+RealPath( ExtractDir( AppPath )+"/../modules" )
 
 	Local target:Target
 	
@@ -196,7 +196,7 @@ Function Main()
 				target=SelectTarget( rhs.ToLower() )
 				If Not target Die "Command line error - invalid target: "+rhs
 			Case "-modpath"
-				ENV_MODPATH=StripQuotes( rhs )
+				OPT_MODPATH=StripQuotes( rhs )
 			Default
 				Die "Unrecognized command line option: "+lhs
 			End

@@ -62,7 +62,7 @@ flags - image flags.
 
 ## See also
 
-[[Image.DefaultFlags|DefaultFlags]], [[Image.GrabImage|GrabImage]]
+[[Resource paths]], [[Image.DefaultFlags|DefaultFlags]], [[Image.GrabImage|GrabImage]]
 
 
 # Function LoadImage:Image(path:String,frameWidth:Int,frameHeight:Int,frameCount:Int,flags:Int=Image.DefaultFlags)
@@ -94,7 +94,7 @@ flags - image flags.
 
 ## See also
 
-[[Image.DefaultFlags|DefaultFlags]], [[Image.GrabImage|GrabImage]]
+[[Resource paths]], [[Image.DefaultFlags|DefaultFlags]], [[Image.GrabImage|GrabImage]]
 
 
 # Function SetColor:Int(r:Float,g:Float,b:Float)

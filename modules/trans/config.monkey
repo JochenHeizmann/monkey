@@ -10,18 +10,16 @@ Global ENV_HOST$
 Global ENV_LANG$
 Global ENV_CONFIG$
 Global ENV_TARGET$
-Global ENV_MODPATH$
 Global ENV_SAFEMODE	'True for safe mode!
 
 Global _cfgVars:=New StringMap<String>
 
 Function SetCfgVar( key$,val$ )
-	If val _cfgVars.Set key,val
+	_cfgVars.Set key,val
 End
 
 Function GetCfgVar$( key$ )
-	If _cfgVars.Contains( key ) Return _cfgVars.Get( key )
-	Return ""
+	Return _cfgVars.Get( key )
 End
 
 Function EvalCfgTags$( cfg$ )

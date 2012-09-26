@@ -196,7 +196,10 @@ Creates and returns a databuffer containing the binary contents of the specified
 
 If the file does not exist or cannot be read, null is returned instead.
 
-
 ## Parameters
 
 @path - path of file to load.
+
+## See also
+
+[[Resource paths]]

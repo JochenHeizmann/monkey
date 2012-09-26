@@ -85,6 +85,19 @@ class MonkeyData{
 		return out.toString();
 	}
 	
+	static String filePath( String path ){
+		if( !path.startsWith("monkey://") ){
+			return path;
+		}else if( path.startsWith("monkey://internal/") ){
+			File f=MonkeyGame.activity.getFilesDir();
+			if( f!=null ) return f+"/"+path.substring(18);
+		}else if( path.startsWith("monkey://external/") ){
+			File f=MonkeyGame.activity.getExternalFilesDir(null);
+			if( f!=null ) return f+"/"+path.substring(18);
+		}
+		return "";
+	}
+	
 	static String assetPath( String path ){
 		if( path.toLowerCase().startsWith("monkey://data/") ) return "monkey/"+path.substring(14);
 		return "";

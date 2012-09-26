@@ -1,15 +1,5 @@
 
-#If LANG="cpp"
-Import "native/databuffer.cpp"
-#Else If LANG="java"
-Import "native/databuffer.java"
-#Else If LANG="js"
-Import "native/databuffer.js"
-#Else If LANG="cs"
-Import "native/databuffer.cs"
-#Else If LANG="as"
-Import "native/databuffer.as"
-#Endif
+Import "native/databuffer.${LANG}"
 
 Extern
 

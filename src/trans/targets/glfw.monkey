@@ -31,6 +31,8 @@ Class GlfwTarget Extends Target
 	Method MakeMingw()
 
 		CreateDir "mingw/"+CASED_CONFIG
+		CreateDir "mingw/"+CASED_CONFIG+"/internal"
+		CreateDir "mingw/"+CASED_CONFIG+"/external"
 
 		CreateDataDir "mingw/"+CASED_CONFIG+"/data"
 		
@@ -62,7 +64,10 @@ Class GlfwTarget Extends Target
 	End
 	
 	Method MakeVc2010()
+	
 		CreateDir "vc2010/"+CASED_CONFIG
+		CreateDir "vc2010/"+CASED_CONFIG+"/internal"
+		CreateDir "vc2010/"+CASED_CONFIG+"/external"
 		
 		CreateDataDir "vc2010/"+CASED_CONFIG+"/data"
 		

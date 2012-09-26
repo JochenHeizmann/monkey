@@ -39,7 +39,7 @@ private:
 // ***** databuffer.cpp *****
 
 //Forward refs to data functions.
-FILE *fopenFile( String path,const char *mode );
+FILE *fopenFile( String path,String mode );
 
 BBDataBuffer::BBDataBuffer():_data(0),_length(0){
 }

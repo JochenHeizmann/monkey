@@ -29,7 +29,7 @@ Class GLApp Extends App
 		
 		'Load/bind texture data
 		Local info[2]
-		Local tbuf:=LoadImageData( "Grass_1.png",info )
+		Local tbuf:=LoadImageData( "monkey://data/Grass_1.png",info )
 		Print "width="+info[0]
 		Print "height="+info[1]
 		If Not tbuf Error ""

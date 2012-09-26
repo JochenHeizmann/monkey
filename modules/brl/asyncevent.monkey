@@ -1,6 +1,4 @@
 
-Import brl.databuffer
-
 Private
 
 Global _sources:=New Stack<IAsyncEventSource>

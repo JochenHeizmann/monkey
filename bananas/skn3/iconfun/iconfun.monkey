@@ -23,7 +23,7 @@ Interface HTTPListener
 
 End
 
-Class HTTPGetter Implements IOnReadComplete, IOnWriteComplete, IOnConnectComplete
+Class HTTPGetter Implements IOnReadComplete,IOnWriteComplete,IOnConnectComplete
 	Field path:String
 	
 	Method GetPage:Void(host:String, port:Int, listener:HTTPListener)

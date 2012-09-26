@@ -2,6 +2,31 @@
 NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
 
 
+***** V66 *****
+
+Modules
+
+brl - added filestream module.
+
+psm/xna - tweaked update rate logic, should be a bit 'cleaner' now esp. on PSM. Added XNA_VSYNC_ENABLED config var (defaults to false) to XNA. Use this + 60FPS update rate to get 60FPS on WP7.
+
+xna/psm mojo - changed SaveState/LoadState filename to '.mojostate'.
+
+
+Targets:
+
+Added monkey://internal/ support to glfw, stdcpp, android, ios, xna and psm targets.
+
+Fixed ios view controller orientation issue with ios6.0.
+
+
+Trans (V1.42):
+
+Improved support for spaces in preprocessor stmts.
+
+ios target now creates a Documents dir on simulator for use by //internal/.
+
+
 ***** V65 *****
 
 Modules:

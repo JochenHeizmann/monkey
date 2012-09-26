@@ -163,7 +163,7 @@ extern "C" {
  #if defined(GLFW_INCLUDE_GL3)
   #include <OpenGL/gl3.h>
  #else
-  #define GL_GLEXT_LEGACY
+  //#define GL_GLEXT_LEGACY
   #include <OpenGL/gl.h>
  #endif
  #ifndef GLFW_NO_GLU

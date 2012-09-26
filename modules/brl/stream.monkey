@@ -1,17 +1,7 @@
 
 Import brl.databuffer
 
-#If LANG="cpp"
-Import "native/stream.cpp"
-#Else If LANG="java"
-Import "native/stream.java"
-#Else If LANG="js"
-Import "native/stream.js"
-#Else If LANG="cs"
-Import "native/stream.cs"
-#Else If LANG="as"
-Import "native/stream.as"
-#Endif
+Import "native/stream.${LANG}"
 
 Extern
 

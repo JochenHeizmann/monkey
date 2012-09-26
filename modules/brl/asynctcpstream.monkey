@@ -1,5 +1,8 @@
 
-Import brl.tcpstream
+#If LANG<>"cpp" And LANG<>"java"
+#Error "tcp streams are unavailable on this target"
+#Endif
+
 Import brl.asyncstream
 Import brl.asynctcpconnector
 

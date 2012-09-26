@@ -55,10 +55,21 @@ Class IosTarget Extends Target
 				'New XCode in /Applications?
 				If FileType( p1 )=FILETYPE_DIR
 				
-					Local dst:=home+"/Library/Application Support/iPhone Simulator/5.1"
-					CreateDir dst
+					Local dst:=""
+					
+					dst=home+"/Library/Application Support/iPhone Simulator/6.0"
+					If FileType( dst )<>FILETYPE_DIR
+						dst=home+"/Library/Application Support/iPhone Simulator/5.1"
+						If FileType( dst )<>FILETYPE_DIR 
+							Die "Can't find dir:"+dst
+						Endif
+					Endif
+'					CreateDir dst
+
 					dst+="/Applications"
 					CreateDir dst
+					If FileType( dst )<>FILETYPE_DIR Die "Failed to create dir:"+dst
+					
 					dst+="/"+uuid
 					If Not DeleteDir( dst,True ) Die "Failed to delete dir:"+dst
 					If Not CreateDir( dst ) Die "Failed to create dir:"+dst
@@ -66,6 +77,10 @@ Class IosTarget Extends Target
 					'Need to use this 'coz it does the permissions thang
 					'
 					Execute "cp -r ~q"+src+"~q ~q"+dst+"/MonkeyGame.app~q"
+					
+					'Have to manually create documents dir for monkey://internal/?
+					'
+					CreateDir dst+"/Documents"
 	
 					're-start emulator
 					'

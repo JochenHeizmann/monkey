@@ -21,6 +21,11 @@ typedef float Float;
 
 void dbg_error( const char *p );
 
+#if !_MSC_VER
+#define sprintf_s sprintf
+#define sscanf_s sscanf
+#endif
+
 //***** GC Config *****
 
 //How many objects to mark per update/render
@@ -518,7 +523,7 @@ public:
 
 	String( int n ){
 		char buf[256];
-		sprintf( buf,"%i",n );
+		sprintf_s( buf,"%i",n );
 		rep=Rep::alloc( t_strlen(buf) );
 		for( int i=0;i<rep->length;++i ) rep->data[i]=buf[i];
 	}
@@ -528,7 +533,7 @@ public:
 		
 		//would rather use snprintf, but it's doing weird things in MingW.
 		//
-		sprintf( buf,"%.17lg",n );
+		sprintf_s( buf,"%.17lg",n );
 		//
 		char *p;
 		for( p=buf;*p;++p ){
@@ -1098,7 +1103,7 @@ String dbg_value( String *p ){
 template<class T> String dbg_value( T *t ){
 	Object *p=dynamic_cast<Object*>( *t );
 	char buf[64];
-	sprintf( buf,"%p",p );
+	sprintf_s( buf,"%p",p );
 	return String("@") + (buf[0]=='0' && buf[1]=='x' ? buf+2 : buf );
 }
 
@@ -1263,7 +1268,7 @@ void dbg_stop(){
 			return;
 		case '@':	//dump object
 			p=0;
-			sscanf( buf+1,"%p",&p );
+			sscanf_s( buf+1,"%p",&p );
 			if( p ){
 				dbg_print( p->debug() );
 			}else{

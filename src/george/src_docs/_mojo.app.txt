@@ -104,7 +104,7 @@ hertz - update rate in 'updates per second'
 
 ## See also
 
-[[App.OnUpdate|OnUpdate]], [[UpdateRate]]
+[[Resource paths]], [[App.OnUpdate|OnUpdate]], [[UpdateRate]]
 
 ## Example
 

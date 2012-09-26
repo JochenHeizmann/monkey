@@ -21,8 +21,10 @@ private:
 	};
 
 	int _state;
+	
+#if __cplusplus_winrt
 
-#if _WIN32
+#elif _WIN32
 
 	DWORD _id;
 	HANDLE _handle;
@@ -55,7 +57,9 @@ bool BBThread::IsRunning(){
 void BBThread::Run__UNSAFE__(){
 }
 
-#if _WIN32
+#if __cplusplus_winrt
+
+#elif _WIN32
 
 void BBThread::Start(){
 	if( _state==RUNNING ) return;

@@ -1,6 +1,6 @@
 
-#If TARGET<>"stdcpp" And TARGET<>"glfw" And TARGET<>"android" And TARGET<>"ios"
-#Error "The async tcp connector module is only available on the stdcpp, glfw, android and ios targets"
+#If LANG<>"cpp" And LANG<>"java"
+#Error "tcp streams are unavailable on this target"
 #Endif
 
 Import brl.tcpstream
@@ -8,7 +8,7 @@ Import brl.asyncevent
 
 Private
 
-Import thread
+Import brl.thread
 
 Public
 

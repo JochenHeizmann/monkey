@@ -194,6 +194,23 @@
 	return NO;
 }
 
+-(NSUInteger)supportedInterfaceOrientations{
+    
+	CFArrayRef array=(CFArrayRef)CFBundleGetValueForInfoDictionaryKey( CFBundleGetMainBundle(),CFSTR("UISupportedInterfaceOrientations") );
+	if( !array ) return 0;
+    
+	CFRange range={ 0,CFArrayGetCount( array ) };
+    
+    NSUInteger mask=0;
+    
+    if( CFArrayContainsValue( array,range,CFSTR("UIInterfaceOrientationPortrait") ) ) mask|=UIInterfaceOrientationMaskPortrait;
+    if( CFArrayContainsValue( array,range,CFSTR("UIInterfaceOrientationPortraitUpsideDown") ) ) mask|=UIInterfaceOrientationMaskPortraitUpsideDown;
+    if( CFArrayContainsValue( array,range,CFSTR("UIInterfaceOrientationLandscapeLeft") ) ) mask|=UIInterfaceOrientationMaskLandscapeLeft;
+    if( CFArrayContainsValue( array,range,CFSTR("UIInterfaceOrientationLandscapeRight") ) ) mask|=UIInterfaceOrientationMaskLandscapeRight;
+    
+    return mask;
+}
+
 @end
 
 
@@ -202,9 +219,20 @@
 //${TRANSCODE_BEGIN}
 //${TRANSCODE_END}
 
-FILE *fopenFile( String path,const char *mode ){
-	if( path.StartsWith( "monkey://data/" ) ) path=String("data/")+path.Slice(14);
-	return fopen( path.ToCString<char>(),"rb" );
+FILE *fopenFile( String path,String mode ){
+
+	if( !path.StartsWith( "monkey:" ) ){
+		path=path;
+	}else if( path.StartsWith( "monkey://data/" ) ){
+		path=String("./data/")+path.Slice(14);
+	}else if( path.StartsWith( "monkey://internal/" ) ){
+		NSString *docs=[@"~/Documents" stringByExpandingTildeInPath];
+		path=String( docs )+"/"+path.Slice(18);
+	}else{
+		return 0;
+	}
+
+	return fopen( path.ToCString<char>(),mode.ToCString<char>() );
 }
 
 //***** main.m *****

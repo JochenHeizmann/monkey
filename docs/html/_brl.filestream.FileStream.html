@@ -187,8 +187,14 @@ pre{
 		
 		
 			
+				/  <a href='_brl.html'>brl</a> 
+				
+			
+				/  <a href='_brl.filestream.html'>filestream</a> 
+				
+			
 				/ 
-				 Module list 
+				 FileStream 
 			
 		
 			
@@ -199,82 +205,27 @@ pre{
 		
 		
 		
-			<h1>Module list</h1>
-			<ul>
-			
-				<li><a href='_brl.html'>brl</a></li>
-			
-				<li><a href='_brl.asyncevent.html'>brl.asyncevent</a></li>
-			
-				<li><a href='_brl.asyncstream.html'>brl.asyncstream</a></li>
-			
-				<li><a href='_brl.asynctcpconnector.html'>brl.asynctcpconnector</a></li>
-			
-				<li><a href='_brl.asynctcpstream.html'>brl.asynctcpstream</a></li>
-			
-				<li><a href='_brl.databuffer.html'>brl.databuffer</a></li>
-			
-				<li><a href='_brl.datastream.html'>brl.datastream</a></li>
-			
-				<li><a href='_brl.filestream.html'>brl.filestream</a></li>
-			
-				<li><a href='_brl.ringbuffer.html'>brl.ringbuffer</a></li>
-			
-				<li><a href='_brl.stream.html'>brl.stream</a></li>
-			
-				<li><a href='_brl.tcpstream.html'>brl.tcpstream</a></li>
-			
-				<li><a href='_mojo.html'>mojo</a></li>
-			
-				<li><a href='_mojo.app.html'>mojo.app</a></li>
-			
-				<li><a href='_mojo.asyncloaders.html'>mojo.asyncloaders</a></li>
-			
-				<li><a href='_mojo.audio.html'>mojo.audio</a></li>
-			
-				<li><a href='_mojo.graphics.html'>mojo.graphics</a></li>
-			
-				<li><a href='_mojo.input.html'>mojo.input</a></li>
-			
-				<li><a href='_monkey.html'>monkey</a></li>
-			
-				<li><a href='_monkey.boxes.html'>monkey.boxes</a></li>
-			
-				<li><a href='_monkey.lang.html'>monkey.lang</a></li>
-			
-				<li><a href='_monkey.list.html'>monkey.list</a></li>
-			
-				<li><a href='_monkey.map.html'>monkey.map</a></li>
-			
-				<li><a href='_monkey.math.html'>monkey.math</a></li>
-			
-				<li><a href='_monkey.random.html'>monkey.random</a></li>
-			
-				<li><a href='_monkey.set.html'>monkey.set</a></li>
-			
-				<li><a href='_monkey.stack.html'>monkey.stack</a></li>
-			
-				<li><a href='_opengl.html'>opengl</a></li>
-			
-				<li><a href='_opengl.databuffer.html'>opengl.databuffer</a></li>
-			
-				<li><a href='_opengl.gles11.html'>opengl.gles11</a></li>
-			
-				<li><a href='_opengl.gles20.html'>opengl.gles20</a></li>
-			
-				<li><a href='_os.html'>os</a></li>
-			
-				<li><a href='_reflection.html'>reflection</a></li>
-			
-			</ul>
-		
 			
 		
 		
 		
+		
+			<div class='box'>
+
 			
 			
 			
+				<h1>Class FileStream</h1>
+				<b>Extends</b> <a href='_brl.stream.Stream.html'>Stream</a><br><br>
+				
+				
+			
+			
+			
+			
+			
+				A filestream allows you to read/write data from/to a file. 
+				
 			
 			
 			</div>
@@ -298,6 +249,15 @@ pre{
 			
 			
 			
+				<div class='box'>
+				<h2>Functions</h2>
+				<table class='small'>
+				
+					<tr><td><a href='#Open'>Open</a> : FileStream ( path:String, mode:String )</td></tr>
+				
+				</table>
+				</div>
+			
 			
 			
 			
@@ -311,6 +271,27 @@ pre{
 
 			
 
+			
+				<div class='box'>
+				<h2>Function Documentation</h2>
+				
+					<a name='Open'></a>
+					<div class='box'>
+					<h3 class='rounded'>Function Open : <a href='_brl.filestream.FileStream.html'>FileStream</a> ( path:String, mode:String )</h3>
+					Opens a new filestream. The <i>mode</i> parameter should be one of the following:
+<p>
+<li>"r" - open a filestream for reading. </li>
+<p>
+<li>"w" - open a filestream for writing. If the file does not already exist, it will be created. If the file already exists, it will be deleted first.</li>
+<p>
+<li>"u" - open a filestream for updating. If the file does not already exist, it will be created.</li>
+					
+						<p><b>See also</b> <a href='Resource paths.html'>Resource paths</a>
+					
+					
+					</div>
+				
+				</div>
 			
 
 		

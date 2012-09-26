@@ -1,0 +1,20 @@
+
+#Resource paths in monkey.
+
+App resources may be stored in many different locations, for example, in an app's data dir, on the local filesystem, or on a remote server.
+
+When using functions and methods that open or load resources, you can use any of the following special prefixes when specifying resource paths:
+
++ Use the "./" prefix to locate resources stored in the current directory, or relative to the document URL.
+
++ Use the "/" prefix to locate resources stored in the root directory of the current directory, or relative to the root directory of the document URL.
+
++ Use the "http://" or "https://" prefix to locate resources stored on a server.
+
++ Use the "monkey://data/" prefix to locate resources that were placed in the app's data/ directory when it was built.
+
++ Use the "monkey://internal/" prefix to locate resources stored in the app's internal storage directory. Currently only available on the android and ios targets. On other targets, this will behave the same as the "./" prefix.
+
+Not all prefixes work on all targets and the exact behavior of each prefix is target dependant. For example, android and ios can load images from http:// but not audio, while glfw cannot load from http:// at all. Full support for all prefixes is an ongoing mission!
+
+Also, note that Mojo module load commands will automatically insert a "monkey://data/" prefix before any path that does not already containing a prefix.
