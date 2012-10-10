@@ -7,7 +7,8 @@ package{
 	import flash.net.*;
 	import flash.utils.ByteArray;
 
-	[SWF(width="640",height="480")]
+	[SWF(width="800",height="600")]
+	[Frame(factoryClass="Preloader")]
 	
 	public class MonkeyGame extends Sprite{
 	

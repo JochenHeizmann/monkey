@@ -937,7 +937,7 @@ public:
 				chars.push_back( c );
 			}
 			if( fail ){
-				puts( "Invalid UTF-8!" );fflush( stdout );
+				puts( "-- Invalid UTF-8!" );fflush( stdout );
 				return String( q,n );
 			}
 		}
